@@ -9,12 +9,17 @@ import type { ExerciseHistory } from "../types/exercise";
 
 import { getExercisesLogs } from "../services/exercises";
 
-import { formatDate, formatTime } from "../services/utils";
+import {
+  formatDate,
+  formatValueBasedOnUnit,
+  formatTime,
+} from "../services/utils";
+import type { PreferredWeightUnit } from "../types/profile";
 
 type ExerciseHistoryModalProps = {
   exerciseId: string;
   onClose: () => void;
-  preferredUnit: string;
+  preferredUnit: PreferredWeightUnit;
 };
 
 const ExerciseHistoryModal = ({
@@ -98,18 +103,10 @@ const ExerciseHistoryModal = ({
                       <tr key={set.set_number} className={styles.set}>
                         <td>{set.set_number}</td>
                         <td>
-                          <p>
-                            {preferredUnit === "lb"
-                              ? Math.round(set.weight * 2.20462262 * 10) / 10
-                              : set.weight}
-                          </p>
+                          {formatValueBasedOnUnit(set.weight, preferredUnit)}
                         </td>
-                        <td>
-                          <p>{set.reps}</p>
-                        </td>
-                        <td>
-                          <p>{set.done && "✅"}</p>
-                        </td>
+                        <td>{set.reps}</td>
+                        <td>{set.done && "✅"}</td>
                         <td>{formatTime(set.rest_seconds, "rest")}</td>
                       </tr>
                     ))}
