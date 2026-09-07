@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { LoaderCircle } from "lucide-react";
+import LoadingScreen from "./LoadingScreen";
+
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ProgressComponents.module.scss";
@@ -46,12 +47,7 @@ const WeightProgress = ({ unit, firstDayOfTheWeek }: WeightProgressProps) => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.mainContainer}>

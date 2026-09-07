@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
-  LoaderCircle,
   Pencil,
   Plus,
   Trash2,
@@ -20,6 +19,8 @@ import {
 } from "../services/weightLogs";
 import type { WeightLogDB } from "../types/weight";
 import { formatDate, formatDateForInput } from "../services/utils";
+
+import LoadingScreen from "../components/LoadingScreen";
 
 import ExecuteModal from "../components/ExecuteModal";
 import ManageLogModal from "../components/ManageLogModal";
@@ -197,12 +198,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

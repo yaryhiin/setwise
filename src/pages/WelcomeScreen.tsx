@@ -223,7 +223,7 @@ const WelcomeScreen = () => {
             Tim Yaryhin
           </a>
         </p>
-        <p>Setwise &copy; 2026</p>
+        <p>Setwise &copy; {new Date().getFullYear()}</p>
       </footer>
     </div>
   );

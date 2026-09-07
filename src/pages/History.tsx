@@ -1,17 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import {
-  LoaderCircle,
-  ArrowLeft,
-  Eye,
-  Pencil,
-  EllipsisVertical,
-} from "lucide-react";
+import { ArrowLeft, Eye, Pencil, EllipsisVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/History.module.scss";
 
 import type { WorkoutDB } from "../types/workout";
+
+import LoadingScreen from "../components/LoadingScreen";
 
 import { formatDate, formatDuration } from "../services/utils";
 import { getWorkoutsHistory } from "../services/workouts";
@@ -113,12 +109,7 @@ const History = () => {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.historyContainer}>

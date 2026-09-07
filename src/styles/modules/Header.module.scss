@@ -81,7 +81,12 @@
   max-width: 80px;
 
   select {
+    background-color: var(--card);
     width: 100%;
-    font-size: 14px;
+    height: 35px;
+    color: var(--text);
+    border-radius: 8px;
+    padding: 5px;
+    font-size: 14px
   }
 }

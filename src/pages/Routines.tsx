@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoaderCircle } from "lucide-react";
+import LoadingScreen from "../components/LoadingScreen";
+
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Routines.module.scss";
@@ -62,12 +63,7 @@ const Routines = () => {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        Loading...
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.routinesContainer}>

@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  EllipsisVertical,
-  Pencil,
-  Trash2,
-  LoaderCircle,
-  History,
-} from "lucide-react";
+import { EllipsisVertical, Pencil, Trash2, History } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Exercises.module.scss";
 
 import type { ExerciseDB } from "../types/exercise";
+
+import LoadingScreen from "../components/LoadingScreen";
 
 import ManageExerciseModal from "../components/ManageExerciseModal";
 import ExecuteModal from "../components/ExecuteModal";
@@ -149,12 +145,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.exercisesContainer}>

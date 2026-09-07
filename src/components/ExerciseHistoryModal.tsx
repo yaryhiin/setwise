@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { X, LoaderCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import LoadingScreen from "./LoadingScreen";
 
 import styles from "../styles/modules/ExerciseHistoryModal.module.scss";
 
@@ -48,10 +49,7 @@ const ExerciseHistoryModal = ({
     return (
       <div className="modal">
         <div className="modalContent">
-          <div className="loading">
-            <LoaderCircle size={20} className="loading__spinner" />
-            {t("common.loading")}
-          </div>
+          <LoadingScreen />
         </div>
       </div>
     );

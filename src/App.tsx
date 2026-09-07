@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,27 +7,34 @@ import {
   Navigate,
 } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
-import { LoaderCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import Home from "./pages/Home";
-import ActiveWorkout from "./pages/ActiveWorkout";
-import History from "./pages/History";
-import Progress from "./pages/Progress";
-import SignUp from "./pages/SignUp";
-import Login from "./pages/Login";
 import WelcomeScreen from "./pages/WelcomeScreen";
-import ChangeWorkout from "./pages/ChangeWorkout";
-import ViewWorkout from "./pages/ViewWorkout";
 import Layout from "./components/Layout";
-import Exercises from "./pages/Exercises";
-import Routines from "./pages/Routines";
-import RoutineBuilder from "./pages/RoutineBuilder";
-import ProfilePage from "./pages/ProfilePage";
+import LoadingScreen from "./components/LoadingScreen";
 
-import ProfileSetupModal from "./components/ProfileSetupModal";
-import WeightCheckinModal from "./components/WeightCheckinModal";
-import MeasurementsCheckinModal from "./components/MeasurementsCheckinModal";
+const Home = lazy(() => import("./pages/Home"));
+const ActiveWorkout = lazy(() => import("./pages/ActiveWorkout"));
+const History = lazy(() => import("./pages/History"));
+const Progress = lazy(() => import("./pages/Progress"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const Login = lazy(() => import("./pages/Login"));
+const ChangeWorkout = lazy(() => import("./pages/ChangeWorkout"));
+const ViewWorkout = lazy(() => import("./pages/ViewWorkout"));
+const Exercises = lazy(() => import("./pages/Exercises"));
+const Routines = lazy(() => import("./pages/Routines"));
+const RoutineBuilder = lazy(() => import("./pages/RoutineBuilder"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+
+const ProfileSetupModal = lazy(() => import("./components/ProfileSetupModal"));
+
+const WeightCheckinModal = lazy(
+  () => import("./components/WeightCheckinModal"),
+);
+
+const MeasurementsCheckinModal = lazy(
+  () => import("./components/MeasurementsCheckinModal"),
+);
 
 import type {
   PreferredWeightUnit,
@@ -268,116 +275,113 @@ function App() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   }
 
-  if (authLoading || profileLoading)
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        Loading...
-      </div>
-    );
+  if (authLoading || profileLoading) return <LoadingScreen />;
+
   return (
     <>
       <Router>
-        <Routes>
-          {!session ? (
-            <Route
-              element={
-                <Layout
-                  toggleTheme={toggleTheme}
-                  theme={theme}
-                  session={false}
-                  language={language}
-                  setLanguage={setLanguage}
-                />
-              }
-            >
-              <Route path="/" element={<WelcomeScreen />} />
-
-              <Route path="/signup" element={<SignUp />} />
-
-              <Route path="/login" element={<Login />} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          ) : (
-            profile && (
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            {!session ? (
               <Route
                 element={
                   <Layout
-                    session={true}
                     toggleTheme={toggleTheme}
                     theme={theme}
+                    session={false}
                     language={language}
                     setLanguage={setLanguage}
                   />
                 }
               >
-                <Route path="/" element={<Home name={profile.name} />} />
-                <Route path="/workout" element={<ActiveWorkout />} />
-                <Route
-                  path="/workout/routine/:routineId"
-                  element={<ActiveWorkout />}
-                />
+                <Route path="/" element={<WelcomeScreen />} />
 
-                <Route path="/history" element={<History />} />
-                <Route
-                  path="/history/:workoutId/edit"
-                  element={<ChangeWorkout />}
-                />
-                <Route path="/history/:workoutId" element={<ViewWorkout />} />
+                <Route path="/signup" element={<SignUp />} />
 
-                <Route path="/routines" element={<Routines />} />
-                <Route path="/routines/new" element={<RoutineBuilder />} />
-                <Route
-                  path="/routines/:routineId/edit"
-                  element={<RoutineBuilder />}
-                />
+                <Route path="/login" element={<Login />} />
 
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            ) : (
+              profile && (
                 <Route
-                  path="/exercises"
                   element={
-                    <Exercises
-                      preferredUnit={profile.preferred_workout_unit ?? "kg"}
-                    />
-                  }
-                />
-
-                <Route
-                  path="/profile"
-                  element={
-                    <ProfilePage
+                    <Layout
+                      session={true}
                       toggleTheme={toggleTheme}
                       theme={theme}
                       language={language}
                       setLanguage={setLanguage}
-                      profile={profile}
-                      handleUpdateProfile={handleUpdateProfile}
                     />
                   }
-                />
+                >
+                  <Route path="/" element={<Home name={profile.name} />} />
+                  <Route path="/workout" element={<ActiveWorkout />} />
+                  <Route
+                    path="/workout/routine/:routineId"
+                    element={<ActiveWorkout />}
+                  />
 
-                <Route
-                  path="/progress"
-                  element={<Progress profile={profile} />}
-                />
-                <Route
-                  path="/progress/weight"
-                  element={
-                    <WeightHistory unit={profile.preferred_weight_unit} />
-                  }
-                />
-                <Route
-                  path="/progress/measurements"
-                  element={
-                    <MeasurementsHistory
-                      unit={profile?.preferred_measurement_unit ?? "cm"}
-                    />
-                  }
-                />
-              </Route>
-            )
-          )}
-        </Routes>
+                  <Route path="/history" element={<History />} />
+                  <Route
+                    path="/history/:workoutId/edit"
+                    element={<ChangeWorkout />}
+                  />
+                  <Route path="/history/:workoutId" element={<ViewWorkout />} />
+
+                  <Route path="/routines" element={<Routines />} />
+                  <Route path="/routines/new" element={<RoutineBuilder />} />
+                  <Route
+                    path="/routines/:routineId/edit"
+                    element={<RoutineBuilder />}
+                  />
+
+                  <Route
+                    path="/exercises"
+                    element={
+                      <Exercises
+                        preferredUnit={profile.preferred_workout_unit ?? "kg"}
+                      />
+                    }
+                  />
+
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProfilePage
+                        toggleTheme={toggleTheme}
+                        theme={theme}
+                        language={language}
+                        setLanguage={setLanguage}
+                        profile={profile}
+                        handleUpdateProfile={handleUpdateProfile}
+                      />
+                    }
+                  />
+
+                  <Route
+                    path="/progress"
+                    element={<Progress profile={profile} />}
+                  />
+                  <Route
+                    path="/progress/weight"
+                    element={
+                      <WeightHistory unit={profile.preferred_weight_unit} />
+                    }
+                  />
+                  <Route
+                    path="/progress/measurements"
+                    element={
+                      <MeasurementsHistory
+                        unit={profile?.preferred_measurement_unit ?? "cm"}
+                      />
+                    }
+                  />
+                </Route>
+              )
+            )}
+          </Routes>
+        </Suspense>
       </Router>
       {showProfileSetup && (
         <ProfileSetupModal

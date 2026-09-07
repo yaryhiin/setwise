@@ -7,7 +7,6 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
-  LoaderCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -16,6 +15,8 @@ import styles from "../styles/modules/RoutineBuilder.module.scss";
 import type { Routine, RoutineDraft } from "../types/routine";
 import type { ExerciseDB } from "../types/exercise";
 import type { RoutineErrors } from "../types/errors";
+
+import LoadingScreen from "../components/LoadingScreen";
 
 import ExecuteModal from "../components/ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
@@ -298,12 +299,7 @@ const RoutineBuilder = () => {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.routineBuilderContainer}>

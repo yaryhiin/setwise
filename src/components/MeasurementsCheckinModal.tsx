@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import LoadingScreen from "./LoadingScreen";
+
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Modal.module.scss";
@@ -170,12 +171,7 @@ const MeasurementsCheckinModal = ({
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.laoding")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className="modal">

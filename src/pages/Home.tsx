@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { LoaderCircle, Eye, Pencil, EllipsisVertical } from "lucide-react";
+import { Eye, Pencil, EllipsisVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Home.module.scss";
@@ -12,6 +12,8 @@ import { getWorkoutsHistory } from "../services/workouts";
 import { getRoutines } from "../services/routines";
 
 import { formatDate, formatDuration } from "../services/utils";
+
+import LoadingScreen from "../components/LoadingScreen";
 
 import ChooseRoutineModal from "../components/ChooseRoutineModal";
 
@@ -76,12 +78,7 @@ const Home = ({ name }: HomeProps) => {
   }, [showOptions]);
 
   if (loading) {
-    return (
-      <div className="loading">
-        <LoaderCircle size={20} className="loading__spinner" />
-        {t("common.loading")}
-      </div>
-    );
+    return <LoadingScreen />;
   }
   return (
     <div className={styles.home}>
