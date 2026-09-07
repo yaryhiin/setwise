@@ -1,4 +1,3 @@
-import { supabase } from "./supabase";
 import { useState, useEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
@@ -103,25 +102,31 @@ function App() {
   });
 
   useEffect(() => {
+    let subscription: any;
+
     async function loadSession() {
+      const { supabase } = await import("./supabase");
+
       const { data, error } = await supabase.auth.getSession();
       if (error) {
         console.log("Error fetching session:", error);
       }
       setSession(data.session);
       setAuthLoading(false);
+
+      const {
+        data: { subscription: authSubscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+        setAuthLoading(false);
+      });
+
+      subscription = authSubscription;
     }
 
     loadSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setAuthLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   useEffect(() => {
