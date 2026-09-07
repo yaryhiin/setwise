@@ -169,16 +169,6 @@ const ActiveWorkout = () => {
   }, []);
 
   useEffect(() => {
-    const savedPreviousData = localStorage.getItem(
-      ACTIVE_WORKOUT_PREVIOUS_DATA_KEY,
-    );
-    if (savedPreviousData) {
-      const parsedData = JSON.parse(savedPreviousData);
-
-      if (Object.keys(parsedData).length > 0) {
-        return;
-      }
-    }
     async function loadPreviousData() {
       try {
         const exerciseIds = workout.exercises
@@ -195,24 +185,6 @@ const ActiveWorkout = () => {
 
     loadPreviousData();
   }, [exerciseIdsKey]);
-
-  useEffect(() => {
-    async function loadPreviousData() {
-      try {
-        const exerciseIds = workout.exercises
-          .map((exercise) => exercise.exercise_id)
-          .filter(Boolean);
-        if (exerciseIds.length === 0) return;
-
-        const data = await getPreviousExerciseData(exerciseIds);
-        setPreviousData(data);
-      } catch (error) {
-        console.error("Error fetching previous data:", error);
-      }
-    }
-
-    loadPreviousData();
-  }, [workout.exercises]);
 
   useEffect(() => {
     const savedWorkout = localStorage.getItem(ACTIVE_WORKOUT_KEY);
