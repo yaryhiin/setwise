@@ -35,6 +35,7 @@ const ChooseExerciseModal = ({
     (exercise) => !existingExercises.has(exercise.id),
   );
 
+  // If user is replacing exercise, show the exercise that is being replaced as selected
   useEffect(() => {
     if (!initialSelectedExerciseId) return;
     setChosenExercise(
