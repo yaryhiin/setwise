@@ -28,6 +28,8 @@ const days = [
 ];
 
 function parseDate(value: string): Date {
+  // "YYYY-MM-DD" strings get parsed in local time (new Date() alone
+  // would treat them as UTC and can shift the date by a day)
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [year, month, day] = value.split("-").map(Number);
     return new Date(year, month - 1, day);
@@ -88,6 +90,10 @@ const Chart = ({
       return;
     }
     let formatted: ChartData[] = [];
+
+    // Amount of data can be become very large on chart, so
+    // if user selected "all" or "3m" range, we show average of each week,
+    // based on first day of the week selected in profile
     if (label.includes(t("label.bw")) && (range === "all" || range === "3m")) {
       setNewLabel(t("label.avgWeight"));
       const firstDayOfTheWeekIndex = days.indexOf(
@@ -97,6 +103,9 @@ const Chart = ({
       let total = 0;
       let i = 0;
       let firstDate = new Date(chartData[0].date);
+
+      // Counting first week manually to avoid skipping the first week average
+      // if it doesn't start on the first day of the week
       do {
         total += chartData[i].value;
         i++;
@@ -110,11 +119,13 @@ const Chart = ({
         date: firstDate.toISOString(),
         value: Math.round((total / count) * 100) / 100,
       });
+
       if (i < chartData.length) {
         count = 0;
         total = 0;
         firstDate = new Date(chartData[i].date);
         for (i; i < chartData.length; i++) {
+          // If it's the last entry, we need to push the average of the last week
           if (i === chartData.length - 1) {
             count++;
             total += chartData[i].value;
@@ -124,6 +135,8 @@ const Chart = ({
             });
             break;
           }
+
+          // If the date is already a next week, we push the average of previous and start counting the new week
           if (getDifferenceInDays(firstDate, new Date(chartData[i].date)) > 6) {
             formatted.push({
               date: firstDate.toISOString(),
