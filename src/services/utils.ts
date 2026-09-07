@@ -124,3 +124,18 @@ export function formatValueBasedOnUnit(
       return Math.round((value / 2.54) * 10) / 10;
   }
 }
+
+export function convertValueToBaseUnit(
+  value: number,
+  unit: PreferredMeasurementUnit | PreferredWeightUnit,
+): number {
+  switch (unit) {
+    case "kg":
+    case "cm":
+      return value;
+    case "lb":
+      return Math.round((value / 2.20462262) * 100) / 100;
+    case "in":
+      return Math.round(value * 2.54 * 100) / 100;
+  }
+}

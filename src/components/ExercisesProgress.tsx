@@ -7,12 +7,14 @@ import styles from "../styles/modules/ProgressComponents.module.scss";
 
 import Chart from "./Chart";
 import { getExercises, getExercisesLogs } from "../services/exercises";
+import { formatValueBasedOnUnit } from "../services/utils";
 
 import type { ChartData } from "../types/chart";
 import type { ExerciseDB, ExerciseLogDB } from "../types/exercise";
+import type { PreferredWeightUnit } from "../types/profile";
 
 type ExercisesProgressProps = {
-  unit: "lb" | "kg";
+  unit: PreferredWeightUnit;
   firstDayOfTheWeek: string;
 };
 
@@ -78,6 +80,8 @@ const ExercisesProgress = ({
           if (completedSets.length === 0) return null;
 
           const bestSet = completedSets.reduce((best, current) => {
+            // If weight is 0, we consider it as 1 for volume calculation,
+            // to avoid having a volume of 0 for bodyweight exercises
             const formattedBestWeight = best.weight === 0 ? 1 : best.weight;
             const formattedCurrentWeight = best.weight === 0 ? 1 : best.weight;
             const bestVolume = formattedBestWeight * best.reps;
@@ -89,9 +93,7 @@ const ExercisesProgress = ({
           const displayedWeight =
             bestSet.weight === 0
               ? 1
-              : unit === "lb"
-                ? Math.round(bestSet.weight * 2.20462262 * 10) / 10
-                : bestSet.weight;
+              : formatValueBasedOnUnit(bestSet.weight, unit);
 
           return {
             date: entry.date.split("T")[0],
@@ -118,10 +120,7 @@ const ExercisesProgress = ({
             }
           }
 
-          const displayedWeight =
-            unit === "lb"
-              ? Math.round(totalVolume * 2.20462262 * 10) / 10
-              : totalVolume;
+          const displayedWeight = formatValueBasedOnUnit(totalVolume, unit);
 
           return {
             date: entry.date.split("T")[0],
@@ -142,10 +141,7 @@ const ExercisesProgress = ({
             return current.weight > best.weight ? current : best;
           });
 
-          const displayedWeight =
-            unit === "lb"
-              ? Math.round(best.weight * 2.20462262 * 10) / 10
-              : best.weight;
+          const displayedWeight = formatValueBasedOnUnit(best.weight, unit);
 
           return {
             date: entry.date.split("T")[0],

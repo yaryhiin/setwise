@@ -4,7 +4,16 @@ import { useState, useEffect, useRef } from "react";
 import { Pencil, Trash2, EllipsisVertical } from "lucide-react";
 
 import styles from "../styles/modules/ManageLogModal.module.scss";
+
+import { useOutsideClick } from "../hooks/useOutsideClick";
+import { convertValueToBaseUnit } from "../services/utils";
+
 import type { MeasurementTypeDB } from "../types/measurements";
+import type {
+  PreferredMeasurementUnit,
+  PreferredWeightUnit,
+} from "../types/profile";
+
 import ExecuteModal from "./ExecuteModal";
 
 type Log = {
@@ -13,7 +22,7 @@ type Log = {
 };
 
 type ManageLogModalProps = {
-  unit: string;
+  unit: PreferredWeightUnit | PreferredMeasurementUnit;
   log?: Log;
   measurementTypes?: MeasurementTypeDB[] | null;
   type?: string;
@@ -46,7 +55,9 @@ const ManageLogModal = ({
       value: 0,
     },
   );
-  const [typeId, setTypeId] = useState(type ?? "");
+  const [typeId, setTypeId] = useState(
+    type !== "" ? (type ?? "") : (measurementTypes?.[0].id ?? ""),
+  );
   const [newTypeName, setNewTypeName] = useState("");
   const [showOptions, setShowOptions] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -67,29 +78,9 @@ const ManageLogModal = ({
     }
   }, [typeId]);
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => {
+    setShowOptions(false);
+  });
 
   function handleSubmit() {
     let hasErrors = false;
@@ -112,17 +103,13 @@ const ManageLogModal = ({
       if (typeId)
         onSave(
           new Date(newLog.date).toISOString(),
-          unit === "lb"
-            ? Math.round((newLog.value / 2.20462262) * 100) / 100
-            : newLog.value,
+          convertValueToBaseUnit(newLog.value, unit),
           typeId,
         );
       else
         onSave(
           new Date(newLog.date).toISOString(),
-          unit === "lb"
-            ? Math.round((newLog.value / 2.20462262) * 100) / 100
-            : newLog.value,
+          convertValueToBaseUnit(newLog.value, unit),
         );
   }
 
@@ -165,7 +152,11 @@ const ManageLogModal = ({
         <div className={styles.mainContainer}>
           <div className={styles.valueContainer}>
             <p className={styles.inputLabel}>
-              {t("weightCheckin.new")} ({t(`units.${unit}`)})
+              {unit === "kg" || unit === "lb"
+                ? t("weightCheckin.new")
+                : measurementTypes?.find((type) => type.id === typeId)
+                    ?.name}{" "}
+              ({t(`units.${unit}`)})
             </p>
             <input
               className={`${styles.input} ${errors.value && "error"}`}
@@ -327,7 +318,9 @@ const ManageLogModal = ({
           <ExecuteModal
             text={t("modal.delete.type")}
             btnText={t("common.delete")}
-            onClose={() => setShowDeleteModal(false)}
+            onClose={() => {
+              setShowDeleteModal(false);
+            }}
             onDelete={() => {
               if (onArchiveType) onArchiveType(typeId);
               setShowDeleteModal(false);

@@ -90,6 +90,26 @@ button.error {
   border: 1px solid var(--danger);
 }
 
+input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text);
+  border-radius: 10px;
+  font-size: 16px;
+  padding: 8px;
+  width: 70px;
+}
+
+select {
+  width: 70%;
+  height: 35px;
+  font-size: 16px;
+  background-color: var(--card);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 5px;
+}
+
 input.error,
 input.error:focus {
   border: 1px solid var(--danger);

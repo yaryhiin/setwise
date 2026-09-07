@@ -21,8 +21,11 @@ import {
   updateMeasurementType,
   archiveMeasurementType,
 } from "../services/measurements";
-import type { WeightLogDB } from "../types/weight";
-import { formatDate, formatDateForInput } from "../services/utils";
+import {
+  formatDate,
+  formatDateForInput,
+  formatValueBasedOnUnit,
+} from "../services/utils";
 
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -33,9 +36,11 @@ import type {
   MeasurementLogDB,
   MeasurementTypeDB,
 } from "../types/measurements";
+import type { PreferredMeasurementUnit } from "../types/profile";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type MeasurementsHistoryProps = {
-  unit: string;
+  unit: PreferredMeasurementUnit;
 };
 
 const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
@@ -71,7 +76,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
         if (logs)
           setMeasurementsData(
             logs.sort(
-              (a: WeightLogDB, b: WeightLogDB) =>
+              (a: MeasurementLogDB, b: MeasurementLogDB) =>
                 new Date(b.measured_at).getTime() -
                 new Date(a.measured_at).getTime(),
             ),
@@ -87,29 +92,9 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
     getLogs();
   }, []);
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => {
+    setShowOptions(false);
+  });
 
   async function handleCreateLog(date: string, value: number, typeId?: string) {
     if (!typeId) return;
@@ -246,7 +231,6 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
   async function handleUpdateMeasurementType(id: string, name: string) {
     setSaving(true);
     try {
-      console.log(id);
       const updatedType = await updateMeasurementType(id, name);
       if (updatedType) {
         setMeasurementsTypes((prev) =>
@@ -336,9 +320,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                   }
                 </td>
                 <td>
-                  {unit === "in"
-                    ? Math.round(log.value_cm * 10 * 2.54) / 10
-                    : log.value_cm}{" "}
+                  {formatValueBasedOnUnit(log.value_cm, unit)}{" "}
                   {t(`units.${unit}`)}
                 </td>
                 <td>
