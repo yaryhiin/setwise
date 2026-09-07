@@ -1,4 +1,8 @@
 import i18n from "../i18n";
+import type {
+  PreferredMeasurementUnit,
+  PreferredWeightUnit,
+} from "../types/profile";
 
 const locales = {
   en: "en-CA",
@@ -104,4 +108,19 @@ export function getTodayDateString() {
   const day = String(today.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+export function formatValueBasedOnUnit(
+  value: number,
+  unit: PreferredMeasurementUnit | PreferredWeightUnit,
+): number {
+  switch (unit) {
+    case "kg":
+    case "cm":
+      return value;
+    case "lb":
+      return Math.round(value * 2.20462262 * 10) / 10;
+    case "in":
+      return Math.round((value / 2.54) * 10) / 10;
+  }
 }
