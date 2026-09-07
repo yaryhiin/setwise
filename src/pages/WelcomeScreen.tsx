@@ -103,6 +103,7 @@ const WelcomeScreen = () => {
                   </div>
                 ) : (
                   <button
+                    aria-label="Exercise Options"
                     className="accessBtn"
                     onClick={() => {
                       setShowExerciseOptions(true);

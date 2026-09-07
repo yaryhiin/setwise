@@ -68,6 +68,7 @@ const Header = ({
                 setLanguage(e.target.value);
               }}
               className={styles.input}
+              aria-label={t("language.title")}
             >
               <option value="en">{t("language.en")}</option>
               <option value="uk">{t("language.uk")}</option>
