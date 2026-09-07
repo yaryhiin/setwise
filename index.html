@@ -78,20 +78,27 @@
       }
     </script>
     <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-HZFP4ZEFJT"
-    ></script>
     <script>
-      if (!localStorage.getItem("admin")) {
+      window.addEventListener("load", () => {
+        if (localStorage.getItem("admin")) return;
+
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = "https://www.googletagmanager.com/gtag/js?id=G-HZFP4ZEFJT";
+
+        document.head.appendChild(script);
+
         window.dataLayer = window.dataLayer || [];
+
         function gtag() {
           dataLayer.push(arguments);
         }
-        gtag("js", new Date());
 
+        window.gtag = gtag;
+
+        gtag("js", new Date());
         gtag("config", "G-HZFP4ZEFJT");
-      }
+      });
     </script>
   </head>
   <body>
