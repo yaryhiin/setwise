@@ -8,7 +8,7 @@ import type { WeightCheckinErrors } from "../types/errors";
 import { createWeightLog, getLatestWeightLog } from "../services/weightLogs";
 
 import InfoModal from "../components/InfoModal";
-import { formatDate } from "../services/utils";
+import { convertValueToBaseUnit, formatDate } from "../services/utils";
 
 type WeightCheckinModalProps = {
   unit: "kg" | "lb";
@@ -53,8 +53,7 @@ const WeightCheckinModal = ({
     }
 
     const weight = Number(newWeight);
-    const weightInKg =
-      unit === "lb" ? Math.round((weight / 2.20462262) * 100) / 100 : weight;
+    const weightInKg = convertValueToBaseUnit(weight, unit);
     setSaving(true);
     try {
       await createWeightLog(weightInKg, new Date().toISOString());

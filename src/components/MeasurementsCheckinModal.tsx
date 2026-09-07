@@ -16,6 +16,7 @@ import {
 
 import ExecuteModal from "./ExecuteModal";
 import InfoModal from "../components/InfoModal";
+import { convertValueToBaseUnit } from "../services/utils";
 
 type MeasurementsCheckinModalProps = {
   unit: "cm" | "in";
@@ -144,8 +145,7 @@ const MeasurementsCheckinModal = ({
       .filter((measurement) => measurement.value_cm.trim() !== "")
       .map((measurement) => {
         const value = Number(measurement.value_cm);
-        const formatedValue =
-          unit === "in" ? Math.round(value * 2.54 * 100) / 100 : value;
+        const formatedValue = convertValueToBaseUnit(value, unit);
         return {
           measurement_type_id: measurement.measurement_type_id,
           value_cm: formatedValue,

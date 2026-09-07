@@ -19,9 +19,11 @@ import {
   deleteExercise,
   updateExercise,
 } from "../services/exercises";
+import type { PreferredWeightUnit } from "../types/profile";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type ExercisesProps = {
-  preferredUnit: string;
+  preferredUnit: PreferredWeightUnit;
 };
 
 const Exercises = ({ preferredUnit }: ExercisesProps) => {
@@ -60,29 +62,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
     }
   }
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function addExercise(name: string, category: string) {
     setSaving(true);

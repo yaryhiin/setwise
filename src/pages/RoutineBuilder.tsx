@@ -28,6 +28,7 @@ import {
   updateRoutine,
 } from "../services/routines";
 import { getExercises, createExercise } from "../services/exercises";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 function getInitialRoutine(draftKey: string) {
   const savedDraft = localStorage.getItem(draftKey);
@@ -109,29 +110,7 @@ const RoutineBuilder = () => {
     localStorage.setItem(draftKey, JSON.stringify(routineDraft));
   }, [routineDraft]);
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function loadData() {
     setLoading(true);

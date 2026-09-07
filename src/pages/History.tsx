@@ -11,6 +11,7 @@ import LoadingScreen from "../components/LoadingScreen";
 
 import { formatDate, formatDuration } from "../services/utils";
 import { getWorkoutsHistory } from "../services/workouts";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type SortKey = "duration_seconds" | "finished_at" | "name";
 
@@ -61,29 +62,7 @@ const History = () => {
     return 0;
   });
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   useEffect(() => {
     async function loadData() {

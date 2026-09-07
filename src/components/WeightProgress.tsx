@@ -10,6 +10,7 @@ import Chart from "./Chart";
 import { getWeightsHistory } from "../services/weightLogs";
 
 import type { ChartData } from "../types/chart";
+import { formatValueBasedOnUnit } from "../services/utils";
 
 type WeightProgressProps = {
   unit: "kg" | "lb";
@@ -29,10 +30,7 @@ const WeightProgress = ({ unit, firstDayOfTheWeek }: WeightProgressProps) => {
         if (!data) return;
         const formattedData = data.map((log) => ({
           date: log.measured_at,
-          value:
-            unit === "lb"
-              ? Math.round(log.weight_kg * 2.20462262 * 10) / 10
-              : log.weight_kg,
+          value: formatValueBasedOnUnit(log.weight_kg, unit),
         }));
 
         setWeightData(formattedData);

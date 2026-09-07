@@ -16,6 +16,7 @@ import { formatDate, formatDuration } from "../services/utils";
 import LoadingScreen from "../components/LoadingScreen";
 
 import ChooseRoutineModal from "../components/ChooseRoutineModal";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type HomeProps = {
   name: string;
@@ -53,29 +54,7 @@ const Home = ({ name }: HomeProps) => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   if (loading) {
     return <LoadingScreen />;

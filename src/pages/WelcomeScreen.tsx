@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import cn from "classnames";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,6 +15,7 @@ import Chart from "../components/Chart";
 import { exerciseData } from "../services/defaults";
 
 import styles from "../styles/modules/WelcomeScreen.module.scss";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
@@ -23,32 +24,9 @@ const WelcomeScreen = () => {
   const exerciseMenuRef = useRef<HTMLDivElement>(null);
   const [showExerciseOptions, setShowExerciseOptions] = useState(false);
 
-  useEffect(() => {
-    if (!showExerciseOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        exerciseMenuRef.current &&
-        !exerciseMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowExerciseOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowExerciseOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showExerciseOptions]);
+  useOutsideClick(exerciseMenuRef, showExerciseOptions, () =>
+    setShowExerciseOptions(false),
+  );
 
   return (
     <div className={styles.welcomeScreenContainer}>

@@ -10,6 +10,7 @@ import {
   getMeasurementTypes,
   getMeasurementsHistory,
 } from "../services/measurements";
+import { formatValueBasedOnUnit } from "../services/utils";
 
 import type {
   MeasurementTypeDB,
@@ -67,10 +68,7 @@ const MeasurementsProgress = ({
 
     const formattedData = chosenData.map((data) => ({
       date: data.measured_at,
-      value:
-        unit === "in"
-          ? Math.round((data.value_cm / 2.54) * 10) / 10
-          : data.value_cm,
+      value: formatValueBasedOnUnit(data.value_cm, unit),
     }));
 
     setFilteredData(formattedData);

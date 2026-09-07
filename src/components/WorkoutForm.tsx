@@ -21,9 +21,10 @@ import type { Dispatch, SetStateAction } from "react";
 import ExecuteModal from "./ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
 
-import { createLocalId } from "../services/utils";
+import { createLocalId, formatValueBasedOnUnit } from "../services/utils";
 import { formatTime } from "../services/utils";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
@@ -33,7 +34,7 @@ const WORKOUT_SUPERSET = "workoutSuperset";
 type WorkoutFormProps = {
   workout: Workout;
   pageType: string;
-  preferredUnit?: PreferredWeightUnit | null;
+  preferredUnit?: PreferredWeightUnit;
 
   setWorkout?: Dispatch<SetStateAction<Workout>>;
   exercises?: ExerciseDB[];
@@ -301,59 +302,13 @@ const WorkoutForm = ({
     return () => clearInterval(interval);
   }, [restStart, selectedExercise, selectedSet, superset]);
 
-  useEffect(() => {
-    if (!showExerciseOptions) return;
+  useOutsideClick(exerciseMenuRef, showExerciseOptions, () =>
+    setShowExerciseOptions(false),
+  );
 
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        exerciseMenuRef.current &&
-        !exerciseMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowExerciseOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowExerciseOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showExerciseOptions]);
-
-  useEffect(() => {
-    if (!showSupersetOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        supersetMenuRef.current &&
-        !supersetMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowSupersetOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowSupersetOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showSupersetOptions]);
+  useOutsideClick(supersetMenuRef, showSupersetOptions, () =>
+    setShowSupersetOptions(false),
+  );
 
   useEffect(() => {
     if (selectedExercise)
@@ -442,7 +397,7 @@ const WorkoutForm = ({
           return `${t("label.bw")} × ${reps.join(", ")}`;
         }
 
-        return `${preferredUnit === "lb" ? Math.round(weight * 2.20462262 * 10) / 10 : weight}${preferredUnit} x ${reps.join(", ")}`;
+        return `${formatValueBasedOnUnit(weight, preferredUnit ?? "kg")} x ${reps.join(", ")}`;
       })
       .join(", ");
   }

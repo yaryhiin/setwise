@@ -25,9 +25,10 @@ import LoadingScreen from "../components/LoadingScreen";
 import ExecuteModal from "../components/ExecuteModal";
 import ManageLogModal from "../components/ManageLogModal";
 import InfoModal from "../components/InfoModal";
+import type { PreferredWeightUnit } from "../types/profile";
 
 type WeightHistoryProps = {
-  unit: string;
+  unit: PreferredWeightUnit;
 };
 
 const WeightHistory = ({ unit }: WeightHistoryProps) => {

@@ -16,7 +16,7 @@ import WorkoutForm from "../components/WorkoutForm";
 import { getRoutineDetails } from "../services/routines";
 import { createExercise, getExercises } from "../services/exercises";
 import { createWorkout, getPreviousExerciseData } from "../services/workouts";
-import { formatTime } from "../services/utils";
+import { convertValueToBaseUnit, formatTime } from "../services/utils";
 import InfoModal from "../components/InfoModal";
 import type { PreferredWeightUnit } from "../types/profile";
 import { getProfile } from "../services/profiles";
@@ -94,10 +94,10 @@ function getInitialPreviousData() {
   return {};
 }
 
-function getInitialPreferredUnit(): "kg" | "lb" | null {
+function getInitialPreferredUnit(): "kg" | "lb" {
   const savedUnit = localStorage.getItem(ACTIVE_WORKOUT_PREFERRED_UNIT_KEY);
 
-  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : null;
+  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
 }
 
 const ActiveWorkout = () => {
@@ -108,8 +108,9 @@ const ActiveWorkout = () => {
   const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
   const [seconds, setSeconds] = useState(getInitialSeconds);
   const [exercises, setExercises] = useState<ExerciseDB[]>(getInitialExercises);
-  const [preferredUnit, setPreferredUnit] =
-    useState<PreferredWeightUnit | null>(getInitialPreferredUnit);
+  const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
+    getInitialPreferredUnit,
+  );
   const [previousData, setPreviousData] = useState<Record<string, any>>(
     getInitialPreviousData,
   );
@@ -315,10 +316,10 @@ const ActiveWorkout = () => {
       ...exercise,
       sets: exercise.sets.map((set) => ({
         ...set,
-        weight:
-          preferredUnit === "lb"
-            ? Math.round((set.weight / 2.20462262) * 100) / 100
-            : set.weight,
+        weight: convertValueToBaseUnit(
+          Number(set.weight),
+          preferredUnit ?? "kg",
+        ),
       })),
     }));
     const finishedWorkout: Workout = {
@@ -355,8 +356,7 @@ const ActiveWorkout = () => {
     }
   }
 
-  if (loading)
-    return <LoadingScreen />
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className={styles.workoutContainer}>

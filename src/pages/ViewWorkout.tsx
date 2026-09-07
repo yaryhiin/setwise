@@ -11,7 +11,7 @@ import type { Workout } from "../types/workout";
 import WorkoutForm from "../components/WorkoutForm";
 
 import { getWorkoutDetails } from "../services/workouts";
-import { formatTime } from "../services/utils";
+import { formatTime, formatValueBasedOnUnit } from "../services/utils";
 import type { PreferredWeightUnit } from "../types/profile";
 import { getProfile } from "../services/profiles";
 
@@ -61,10 +61,10 @@ const ChangeWorkout = () => {
                 .sort((a, b) => a.set_number - b.set_number)
                 .map((item) => ({
                   set_number: item.set_number,
-                  weight:
-                    preferredUnitData.preferred_workout_unit === "lb"
-                      ? Math.round(item.weight * 2.20462262 * 10) / 10
-                      : item.weight,
+                  weight: formatValueBasedOnUnit(
+                    item.weight_kg,
+                    preferredUnitData?.preferred_workout_unit ?? "kg",
+                  ),
                   reps: item.reps,
                   rest_seconds: item.rest_seconds,
                   done: item.done,
