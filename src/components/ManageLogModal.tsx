@@ -99,18 +99,18 @@ const ManageLogModal = ({
       hasErrors = true;
     }
     if (hasErrors) return;
-    if (Object.values(errors))
-      if (typeId)
-        onSave(
-          new Date(newLog.date).toISOString(),
-          convertValueToBaseUnit(newLog.value, unit),
-          typeId,
-        );
-      else
-        onSave(
-          new Date(newLog.date).toISOString(),
-          convertValueToBaseUnit(newLog.value, unit),
-        );
+    // if (Object.values(errors))
+    if (typeId)
+      onSave(
+        new Date(newLog.date).toISOString(),
+        convertValueToBaseUnit(newLog.value, unit),
+        typeId,
+      );
+    else
+      onSave(
+        new Date(newLog.date).toISOString(),
+        convertValueToBaseUnit(newLog.value, unit),
+      );
   }
 
   function handleCreateMeasurementType() {

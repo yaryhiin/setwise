@@ -2,7 +2,7 @@ import { useState } from "react";
 import cn from "classnames";
 import { useTranslation } from "react-i18next";
 
-import styles from "../styles//modules/Modal.module.scss";
+import styles from "../styles/modules/Modal.module.scss";
 
 import type { AddErrors } from "../types/errors";
 import type { ExerciseDB } from "../types/exercise";

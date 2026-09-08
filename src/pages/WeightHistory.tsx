@@ -18,7 +18,11 @@ import {
   updateWeightLog,
 } from "../services/weightLogs";
 import type { WeightLogDB } from "../types/weight";
-import { formatDate, formatDateForInput } from "../services/utils";
+import {
+  formatDate,
+  formatDateForInput,
+  formatValueBasedOnUnit,
+} from "../services/utils";
 
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -58,11 +62,16 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
         const logs = await getWeightsHistory();
         if (logs)
           setWeightData(
-            logs.sort(
-              (a: WeightLogDB, b: WeightLogDB) =>
-                new Date(b.measured_at).getTime() -
-                new Date(a.measured_at).getTime(),
-            ),
+            logs
+              .sort(
+                (a: WeightLogDB, b: WeightLogDB) =>
+                  new Date(b.measured_at).getTime() -
+                  new Date(a.measured_at).getTime(),
+              )
+              .map((log) => ({
+                ...log,
+                weight_kg: formatValueBasedOnUnit(log.weight_kg, unit),
+              })),
           );
       } catch (error) {
         console.error("Error getting weight logs:", error);
@@ -207,10 +216,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
               <tr key={log.id}>
                 <td>{formatDate(log.measured_at)}</td>
                 <td>
-                  {unit === "lb"
-                    ? Math.round(log.weight_kg * 10 * 2.20462262) / 10
-                    : log.weight_kg}{" "}
-                  {t(`units.${unit}`)}
+                  {log.weight_kg} {t(`units.${unit}`)}
                 </td>
                 <td>
                   <div className="exerciseMenuWrapper">

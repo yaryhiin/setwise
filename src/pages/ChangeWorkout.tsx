@@ -32,6 +32,8 @@ const CHANGE_WORKOUT_KEY = "changeWorkout";
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
 const WORKOUT_REST_START_KEY = "workoutRestStart";
+const EXERCISES_KEY = "exercises";
+const PREFERRED_UNIT_KEY = "preferredUnit";
 
 function createEmptyWorkout(): Workout {
   return {
@@ -57,14 +59,36 @@ function getInitialWorkout() {
   return createEmptyWorkout();
 }
 
+function getInitialExercises() {
+  const savedExercises = localStorage.getItem(EXERCISES_KEY);
+
+  if (savedExercises) {
+    try {
+      return JSON.parse(savedExercises) as ExerciseDB[];
+    } catch {
+      localStorage.removeItem(EXERCISES_KEY);
+    }
+  }
+
+  return [];
+}
+
+function getInitialPreferredUnit(): "kg" | "lb" {
+  const savedUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
+
+  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
+}
+
 const ChangeWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
-  const [exercises, setExercises] = useState<ExerciseDB[]>([]);
-  const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>();
+  const [exercises, setExercises] = useState<ExerciseDB[]>(getInitialExercises);
+  const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
+    getInitialPreferredUnit,
+  );
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -73,10 +97,6 @@ const ChangeWorkout = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   useEffect(() => {
     const savedWorkout = localStorage.getItem(CHANGE_WORKOUT_KEY);
@@ -91,6 +111,10 @@ const ChangeWorkout = () => {
           setPreferredUnit(preferredUnitData.preferred_workout_unit);
         }
         const workoutDetails = await getWorkoutDetails(String(workoutId));
+        if (!workoutDetails) {
+          console.error("Workout details not found");
+          return;
+        }
         setWorkout({
           name: workoutDetails.name,
           started_at: workoutDetails.started_at,
@@ -110,7 +134,7 @@ const ChangeWorkout = () => {
                 .map((item) => ({
                   set_number: item.set_number,
                   weight: formatValueBasedOnUnit(
-                    item.weight_kg,
+                    Number(item.weight),
                     preferredUnitData?.preferred_workout_unit ?? "kg",
                   ),
                   reps: item.reps,
@@ -130,8 +154,40 @@ const ChangeWorkout = () => {
   }, []);
 
   useEffect(() => {
+    const savedExercises = localStorage.getItem(EXERCISES_KEY);
+    if (savedExercises) {
+      const parsedExercises = JSON.parse(savedExercises) as ExerciseDB[];
+      if (parsedExercises.length > 0) {
+        return;
+      }
+    }
+
+    async function loadExercises() {
+      try {
+        const exercisesData = await getExercises();
+        if (exercisesData.length) {
+          setExercises(exercisesData);
+        }
+      } catch (error) {
+        console.error("Error fetching exercises:", error);
+      }
+    }
+
+    loadExercises();
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem(CHANGE_WORKOUT_KEY, JSON.stringify(workout));
   }, [workout]);
+
+  useEffect(() => {
+    if (preferredUnit)
+      localStorage.setItem(PREFERRED_UNIT_KEY, preferredUnit ?? "kg");
+  }, [preferredUnit]);
+
+  useEffect(() => {
+    localStorage.setItem(EXERCISES_KEY, JSON.stringify(exercises));
+  }, [exercises]);
 
   async function handleDelete() {
     setDeleting(true);
@@ -145,6 +201,7 @@ const ChangeWorkout = () => {
         localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
         localStorage.removeItem(WORKOUT_REST_START_KEY);
+        localStorage.removeItem("preferredUnit");
       }, 1000);
     } catch (error) {
       console.error("Error deleting workout:", error);
@@ -157,22 +214,11 @@ const ChangeWorkout = () => {
     }
   }
 
-  async function loadData() {
-    try {
-      const exercisesData = await getExercises();
-      if (exercisesData) {
-        setExercises(exercisesData);
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }
-
   async function addExercise(name: string, category: string) {
     setSaving(true);
     try {
-      await createExercise({ name, category });
-      await loadData();
+      const createdExercise = await createExercise({ name, category });
+      setExercises((prev) => [...prev, createdExercise]);
       setShowSuccessModal(true);
       setTimeout(() => {
         setShowSuccessModal(false);
@@ -212,6 +258,7 @@ const ChangeWorkout = () => {
         localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
         localStorage.removeItem(WORKOUT_REST_START_KEY);
+        localStorage.removeItem("preferredUnit");
       }, 1000);
     } catch (error) {
       console.error("Error updating workout:", error);
@@ -240,6 +287,7 @@ const ChangeWorkout = () => {
               localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
               localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
               localStorage.removeItem(WORKOUT_REST_START_KEY);
+              localStorage.removeItem("preferredUnit");
             }}
           >
             {t("common.back")}

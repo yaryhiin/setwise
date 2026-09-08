@@ -24,8 +24,8 @@ import { getProfile } from "../services/profiles";
 const ACTIVE_WORKOUT_ROUTINE_KEY = "activeWorkoutRoutine";
 const ACTIVE_WORKOUT_KEY = "activeWorkout";
 const ACTIVE_WORKOUT_SECONDS_KEY = "activeWorkoutSeconds";
-const ACTIVE_WORKOUT_EXERCISES_KEY = "activeWorkoutExercises";
-const ACTIVE_WORKOUT_PREFERRED_UNIT_KEY = "activeWorkoutPreferredUnit";
+const EXERCISES_KEY = "exercises";
+const PREFERRED_UNIT_KEY = "preferredUnit";
 const ACTIVE_WORKOUT_PREVIOUS_DATA_KEY = "activeWorkoutPreviousData";
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
@@ -65,13 +65,13 @@ function getInitialWorkout() {
 }
 
 function getInitialExercises() {
-  const savedExercises = localStorage.getItem(ACTIVE_WORKOUT_EXERCISES_KEY);
+  const savedExercises = localStorage.getItem(EXERCISES_KEY);
 
   if (savedExercises) {
     try {
       return JSON.parse(savedExercises) as ExerciseDB[];
     } catch {
-      localStorage.removeItem(ACTIVE_WORKOUT_EXERCISES_KEY);
+      localStorage.removeItem(EXERCISES_KEY);
     }
   }
 
@@ -95,7 +95,7 @@ function getInitialPreviousData() {
 }
 
 function getInitialPreferredUnit(): "kg" | "lb" {
-  const savedUnit = localStorage.getItem(ACTIVE_WORKOUT_PREFERRED_UNIT_KEY);
+  const savedUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
 
   return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
 }
@@ -126,7 +126,7 @@ const ActiveWorkout = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
-    const savedExercises = localStorage.getItem(ACTIVE_WORKOUT_EXERCISES_KEY);
+    const savedExercises = localStorage.getItem(EXERCISES_KEY);
     if (savedExercises) {
       const parsedExercises = JSON.parse(savedExercises) as ExerciseDB[];
       if (parsedExercises.length > 0) {
@@ -149,9 +149,7 @@ const ActiveWorkout = () => {
   }, []);
 
   useEffect(() => {
-    const savedPreferredUnit = localStorage.getItem(
-      ACTIVE_WORKOUT_PREFERRED_UNIT_KEY,
-    );
+    const savedPreferredUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
     if (savedPreferredUnit === "kg" || savedPreferredUnit === "lb") {
       setPreferredUnit(savedPreferredUnit);
       return;
@@ -266,7 +264,7 @@ const ActiveWorkout = () => {
 
   useEffect(() => {
     localStorage.setItem(
-      ACTIVE_WORKOUT_EXERCISES_KEY,
+      EXERCISES_KEY,
       JSON.stringify(exercises),
     );
   }, [exercises]);
@@ -274,7 +272,7 @@ const ActiveWorkout = () => {
   useEffect(() => {
     if (preferredUnit === "kg" || preferredUnit === "lb") {
       localStorage.setItem(
-        ACTIVE_WORKOUT_PREFERRED_UNIT_KEY,
+        PREFERRED_UNIT_KEY,
         String(preferredUnit),
       );
     }
@@ -336,9 +334,9 @@ const ActiveWorkout = () => {
         navigate("/");
         localStorage.removeItem(ACTIVE_WORKOUT_KEY);
         localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
-        localStorage.removeItem(ACTIVE_WORKOUT_EXERCISES_KEY);
+        localStorage.removeItem(EXERCISES_KEY);
         localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-        localStorage.removeItem(ACTIVE_WORKOUT_PREFERRED_UNIT_KEY);
+        localStorage.removeItem(PREFERRED_UNIT_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
         localStorage.removeItem(WORKOUT_REST_START_KEY);
@@ -396,9 +394,9 @@ const ActiveWorkout = () => {
             setShowBackModal(false);
             localStorage.removeItem(ACTIVE_WORKOUT_KEY);
             localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
-            localStorage.removeItem(ACTIVE_WORKOUT_EXERCISES_KEY);
+            localStorage.removeItem(EXERCISES_KEY);
             localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-            localStorage.removeItem(ACTIVE_WORKOUT_PREFERRED_UNIT_KEY);
+            localStorage.removeItem(PREFERRED_UNIT_KEY);
             localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
             localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
             localStorage.removeItem(WORKOUT_REST_START_KEY);

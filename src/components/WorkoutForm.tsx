@@ -124,13 +124,13 @@ const WorkoutForm = ({
   }, [selectedSet]);
 
   useEffect(() => {
-    if (pageType === "view") return;
-    localStorage.setItem(WORKOUT_REST_START_KEY, restStart);
+    if (pageType === "active")
+      localStorage.setItem(WORKOUT_REST_START_KEY, restStart);
   }, [restStart]);
 
   useEffect(() => {
-    if (pageType === "view") return;
-    localStorage.setItem(WORKOUT_SUPERSET, JSON.stringify(superset));
+    if (pageType === "active")
+      localStorage.setItem(WORKOUT_SUPERSET, JSON.stringify(superset));
   }, [superset]);
 
   useEffect(() => {
@@ -397,7 +397,7 @@ const WorkoutForm = ({
           return `${t("label.bw")} × ${reps.join(", ")}`;
         }
 
-        return `${formatValueBasedOnUnit(weight, preferredUnit ?? "kg")} x ${reps.join(", ")}`;
+        return `${formatValueBasedOnUnit(weight, preferredUnit ?? "kg")}${preferredUnit} x ${reps.join(", ")}`;
       })
       .join(", ");
   }

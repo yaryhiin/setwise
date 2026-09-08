@@ -22,6 +22,7 @@ import {
   archiveMeasurementType,
 } from "../services/measurements";
 import {
+  convertValueToBaseUnit,
   formatDate,
   formatDateForInput,
   formatValueBasedOnUnit,
@@ -75,11 +76,16 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
         const types = await getMeasurementTypes();
         if (logs)
           setMeasurementsData(
-            logs.sort(
-              (a: MeasurementLogDB, b: MeasurementLogDB) =>
-                new Date(b.measured_at).getTime() -
-                new Date(a.measured_at).getTime(),
-            ),
+            logs
+              .sort(
+                (a: MeasurementLogDB, b: MeasurementLogDB) =>
+                  new Date(b.measured_at).getTime() -
+                  new Date(a.measured_at).getTime(),
+              )
+              .map((log) => ({
+                ...log,
+                value_cm: formatValueBasedOnUnit(log.value_cm, unit),
+              })),
           );
         if (types) setMeasurementsTypes(types);
       } catch (error) {
@@ -101,7 +107,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
     setSaving(true);
     try {
       const newLog = await createMeasurementLog([
-        { value_cm: value, measured_at: date, measurement_type_id: typeId },
+        { value_cm: convertValueToBaseUnit(value, unit), measured_at: date, measurement_type_id: typeId },
       ]);
       if (newLog) {
         setMeasurementsData((prev) =>
@@ -320,8 +326,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                   }
                 </td>
                 <td>
-                  {formatValueBasedOnUnit(log.value_cm, unit)}{" "}
-                  {t(`units.${unit}`)}
+                  {log.value_cm} {t(`units.${unit}`)}
                 </td>
                 <td>
                   <div className="exerciseMenuWrapper">
