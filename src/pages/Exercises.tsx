@@ -191,6 +191,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
                         setShowOptions(true);
                         setChosenExercise(exercise);
                       }}
+                      aria-label="Exercise options"
                     >
                       <EllipsisVertical size={20} />
                     </button>

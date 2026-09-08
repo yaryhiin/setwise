@@ -93,7 +93,11 @@ const History = () => {
   return (
     <div className={styles.historyContainer}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate("/")}>
+        <button
+          className={styles.backBtn}
+          onClick={() => navigate("/")}
+          aria-label="Back to home"
+        >
           <ArrowLeft />
         </button>
         <h2 className={styles.title}>{t("history.title")}</h2>
@@ -159,6 +163,7 @@ const History = () => {
                           setShowOptions(true);
                           setChosenWorkoutId(workout.id);
                         }}
+                        aria-label="Workout options"
                       >
                         <EllipsisVertical size={20} />
                       </button>

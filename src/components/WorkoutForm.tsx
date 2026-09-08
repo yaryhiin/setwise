@@ -778,6 +778,7 @@ const WorkoutForm = ({
                                   ],
                             );
                           }}
+                          aria-label={t("common.superset")}
                         >
                           <Repeat2 size={17} /> {t("common.superset")}
                         </button>
@@ -814,6 +815,7 @@ const WorkoutForm = ({
                         setShowExerciseOptions(true);
                         setChosenExerciseId(exercise.exercise_id);
                       }}
+                      aria-label="Exercise options"
                     >
                       <EllipsisVertical size={20} />
                     </button>
@@ -936,6 +938,7 @@ const WorkoutForm = ({
                               e.stopPropagation();
                               deleteSet(exercise.exercise_id, set.set_number);
                             }}
+                            aria-label="Delete set"
                           >
                             ×
                           </button>
@@ -961,7 +964,7 @@ const WorkoutForm = ({
               superset?.some((e) => e.exercise1Id === exercise.exercise_id) && (
                 <div ref={supersetMenuRef} className={styles.supersetDivider}>
                   <p className={`${styles.supersetBtn} ${styles.superset}`}>
-                    Superset{" "}
+                    {t("common.superset")}{" "}
                     {superset.findIndex(
                       (e) => e.exercise1Id === exercise.exercise_id,
                     ) + 1}

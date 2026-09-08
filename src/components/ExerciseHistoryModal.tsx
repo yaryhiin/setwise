@@ -66,7 +66,11 @@ const ExerciseHistoryModal = ({
           <h2 className={styles.heading}>
             {exerciseHistory?.[0]?.workout_exercises?.[0]?.exercise_name}
           </h2>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <button
+            className={styles.closeBtn}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
             <X size={25} />
           </button>
         </div>

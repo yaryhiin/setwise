@@ -197,6 +197,7 @@ const ManageLogModal = ({
                       setEditing(false);
                     } else handleCreateMeasurementType();
                   }}
+                  aria-label={editing ? t("common.edit") : t("common.add")}
                 >
                   ✓
                 </button>
@@ -213,6 +214,7 @@ const ManageLogModal = ({
                       name: false,
                     });
                   }}
+                  aria-label={t("common.cancel")}
                 >
                   ✕
                 </button>
@@ -258,6 +260,7 @@ const ManageLogModal = ({
                             );
                             setEditing(true);
                           }}
+                          aria-label={t("common.edit")}
                         >
                           <Pencil size={15} />
                           {t("common.edit")}
@@ -266,6 +269,7 @@ const ManageLogModal = ({
                           onClick={() => {
                             setShowDeleteModal(true);
                           }}
+                          aria-label={t("common.delete")}
                         >
                           <Trash2 size={15} />
                           {t("common.delete")}
@@ -277,6 +281,7 @@ const ManageLogModal = ({
                         onClick={() => {
                           setShowOptions(true);
                         }}
+                        aria-label="Open options menu"
                       >
                         <EllipsisVertical size={20} />
                       </button>

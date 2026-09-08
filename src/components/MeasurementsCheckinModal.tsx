@@ -233,6 +233,7 @@ const MeasurementsCheckinModal = ({
                         setChosenType(type);
                         setShowModal(true);
                       }}
+                      aria-label={`Delete ${type.name}`}
                     >
                       ✕
                     </button>
@@ -257,12 +258,14 @@ const MeasurementsCheckinModal = ({
                 className={styles.addTypeBtn}
                 onClick={handleCreateMeasurementType}
                 disabled={addingMeasurement}
+                aria-label="Add measurement type"
               >
                 ✓
               </button>
               <button
                 className={styles.cancelBtn}
                 onClick={() => setIsAddingMeasurement(false)}
+                aria-label="Cancel adding measurement type"
               >
                 ✕
               </button>

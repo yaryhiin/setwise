@@ -26,6 +26,7 @@ import ExecuteModal from "../components/ExecuteModal";
 import ManageLogModal from "../components/ManageLogModal";
 import InfoModal from "../components/InfoModal";
 import type { PreferredWeightUnit } from "../types/profile";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type WeightHistoryProps = {
   unit: PreferredWeightUnit;
@@ -73,29 +74,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
     getLogs();
   }, []);
 
-  useEffect(() => {
-    if (!showOptions) return;
-
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    }
-
-    function handleScroll() {
-      setShowOptions(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll, true);
-    };
-  }, [showOptions]);
+  useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function handleCreateLog(date: string, value: number) {
     setSaving(true);

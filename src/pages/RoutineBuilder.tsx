@@ -310,6 +310,7 @@ const RoutineBuilder = () => {
                 className={styles.orderBtn}
                 onClick={() => moveExercise(exercise.exercise_id, "up")}
                 hidden={exercise.order_index === 1}
+                aria-label="Move exercise up"
               >
                 <ChevronUp size={17} strokeWidth={2} />
               </button>
@@ -317,6 +318,7 @@ const RoutineBuilder = () => {
                 className={styles.orderBtn}
                 onClick={() => moveExercise(exercise.exercise_id, "down")}
                 hidden={exercise.order_index === routineDraft.exercises.length}
+                aria-label="Move exercise down"
               >
                 <ChevronDown size={17} strokeWidth={2} />
               </button>
@@ -355,6 +357,7 @@ const RoutineBuilder = () => {
                         setShowOptions(true);
                         setChosenExerciseId(exercise.exercise_id);
                       }}
+                      aria-label="Exercise options"
                     >
                       <EllipsisVertical size={20} />
                     </button>

@@ -128,6 +128,7 @@ const Home = ({ name }: HomeProps) => {
                           setShowOptions(true);
                           setChosenWorkoutId(workout.id);
                         }}
+                        aria-label="Workout options"
                       >
                         <EllipsisVertical size={20} />
                       </button>

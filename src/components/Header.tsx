@@ -32,6 +32,7 @@ const Header = ({
           <button
             className={styles.profileLogo}
             onClick={() => navigate("/profile")}
+            aria-label={t("profile.title")}
           >
             <UserRound size={20} />
           </button>
@@ -48,6 +49,7 @@ const Header = ({
               onClick={toggleTheme}
               className={cn("button", styles.themeSwitch)}
               aria-pressed={theme === "dark"}
+              aria-label="Toggle theme"
               title={theme === "dark" ? "Switch to light" : "Switch to dark"}
             >
               {theme === "dark"
