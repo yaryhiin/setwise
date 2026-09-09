@@ -105,7 +105,7 @@ const RoutineBuilder = () => {
     const savedExercises = localStorage.getItem(EXERCISES_KEY);
     if (savedExercises) {
       const parsedExercises = JSON.parse(savedExercises) as ExerciseDB[];
-      if (parsedExercises.length > 0) {
+      if (parsedExercises && parsedExercises.length > 0) {
         return;
       }
     }
