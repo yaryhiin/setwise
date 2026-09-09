@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { EllipsisVertical, Pencil, Trash2, History } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Exercises.module.scss";
 
 import type { ExerciseDB } from "../types/exercise";
+import type { PreferredWeightUnit } from "../types/profile";
 
 import LoadingScreen from "../components/LoadingScreen";
-
 import ManageExerciseModal from "../components/ManageExerciseModal";
 import ExecuteModal from "../components/ExecuteModal";
 import InfoModal from "../components/InfoModal";
@@ -19,25 +19,28 @@ import {
   deleteExercise,
   updateExercise,
 } from "../services/exercises";
-import type { PreferredWeightUnit } from "../types/profile";
+import { getPersistedJSON } from "../services/storage";
+
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type ExercisesProps = {
   preferredUnit: PreferredWeightUnit;
 };
 
+const EXERCISES_KEY = "exercises";
+
 const Exercises = ({ preferredUnit }: ExercisesProps) => {
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
-  const [exercises, setExercises] = useState<ExerciseDB[]>([]);
-  const [chosenExercise, setChosenExercise] = useState<ExerciseDB>(
-    exercises[0],
+  const [exercises, setExercises] = useState<ExerciseDB[] | null>(
+    getPersistedJSON(EXERCISES_KEY, null),
+  );
+  const [chosenExercise, setChosenExercise] = useState<ExerciseDB | null>(
+    exercises?.[0] ?? null,
   );
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -47,81 +50,69 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
   const [showExerciseInfoModal, setShowExerciseInfoModal] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const exercisesData = await getExercises();
-      setExercises(exercisesData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
+    const savedExercises = localStorage.getItem(EXERCISES_KEY);
+    if (savedExercises) {
+      const parsedExercises = JSON.parse(savedExercises) as ExerciseDB[];
+      if (parsedExercises.length > 0) {
+        setLoading(false);
+        return;
+      }
     }
-  }
+
+    async function loadExercises() {
+      setLoading(true);
+      try {
+        const exercisesData = await getExercises();
+        if (exercisesData.length) {
+          setExercises(exercisesData);
+        }
+      } catch (error) {
+        console.error("Error fetching exercises:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadExercises();
+  }, []);
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function addExercise(name: string, category: string) {
-    setSaving(true);
-    try {
-      await createExercise({ name, category });
-      await loadData();
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error adding exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+    await run("saving", async () => {
+      const createdExercise = await createExercise({ name, category });
+      setExercises((prev) =>
+        prev ? [...prev, createdExercise] : [createdExercise],
+      );
+    });
   }
 
   async function handleUpdateExercise(name: string, category: string) {
-    setSaving(true);
-    try {
-      await updateExercise(name, category, chosenExercise.id);
-      await loadData();
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error updating exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+    await run("saving", async () => {
+      if (!chosenExercise) return;
+      const updatedExercise = await updateExercise(
+        name,
+        category,
+        chosenExercise?.id,
+      );
+      setExercises((prev) =>
+        prev
+          ? prev.map((exercise) =>
+              exercise.id === chosenExercise.id ? updatedExercise : exercise,
+            )
+          : null,
+      );
+    });
   }
 
   async function handleDeleteExercise(exercise: ExerciseDB) {
-    setDeleting(true);
-    try {
-      await deleteExercise(exercise.id);
-      setExercises((prev) => prev.filter((ex) => ex.id != exercise.id));
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error deleting exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setDeleting(false);
-    }
+    await run("deleting", async () => {
+      const deletedExercise = await deleteExercise(exercise.id);
+      if (deletedExercise)
+        setExercises((prev) =>
+          prev ? prev.filter((ex) => ex.id != exercise.id) : null,
+        );
+    });
   }
 
   if (loading) {
@@ -131,7 +122,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
     <div className={styles.exercisesContainer}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t("exercises.title")}</h1>
-        {exercises.length > 0 ? (
+        {exercises && exercises.length > 0 ? (
           <p>{t("exercises.description")}</p>
         ) : (
           <div className="emptyState">
@@ -148,13 +139,13 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
         </button>
       </div>
       <div className={styles.exercisesList}>
-        {exercises.map((exercise) => (
+        {exercises?.map((exercise) => (
           <div key={exercise.id} className={styles.exerciseElement}>
             <div className={styles.exerciseElementTop}>
               <div className={styles.exerciseElementHeader}>
                 <h3>{exercise.name}</h3>
                 <div className="exerciseMenuWrapper">
-                  {showOptions && chosenExercise.id === exercise.id ? (
+                  {showOptions && chosenExercise?.id === exercise.id ? (
                     <div ref={menuRef} className="exerciseMenu">
                       <button
                         className={styles.editExerciseBtn}
@@ -203,7 +194,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
           </div>
         ))}
       </div>
-      {showExerciseInfoModal && (
+      {showExerciseInfoModal && chosenExercise && (
         <ExerciseHistoryModal
           exerciseId={chosenExercise.id}
           onClose={() => setShowExerciseInfoModal(false)}
@@ -216,14 +207,14 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
           onAddExercise={addExercise}
         />
       )}
-      {showEditModal && (
+      {showEditModal && chosenExercise && (
         <ManageExerciseModal
           onClose={() => setShowEditModal(false)}
           onAddExercise={handleUpdateExercise}
           exercise={chosenExercise}
         />
       )}
-      {showMessageModal && (
+      {showMessageModal && chosenExercise && (
         <ExecuteModal
           text={t("modal.delete.exercise")}
           btnText={t("common.delete")}
@@ -234,10 +225,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
           }}
         />
       )}
-      {saving && <InfoModal type={"saving"} />}
-      {deleting && <InfoModal type={"deleting"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

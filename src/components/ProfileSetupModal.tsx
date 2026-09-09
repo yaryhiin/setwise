@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Dispatch, SetStateAction } from "react";
 
 import styles from "../styles/modules/ProfileSetupModal.module.scss";
 
+import type { Dispatch, SetStateAction } from "react";
 import type {
   PreferredWeightUnit,
   PreferredMeasurementUnit,
 } from "../types/profile";
 
 import InfoModal from "../components/InfoModal";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type ProfileSetupModal = {
   onCreate: (
@@ -28,6 +30,7 @@ const ProfileSetupModal = ({
   setLanguage,
 }: ProfileSetupModal) => {
   const { t, i18n } = useTranslation();
+  const { run, state } = useAsyncAction();
 
   const [name, setName] = useState("");
   const [preferredWeightUnit, setPreferredWeightUnit] =
@@ -37,32 +40,15 @@ const ProfileSetupModal = ({
   const [preferredMeasurementUnit, setPreferredMeasurementUnit] =
     useState<PreferredMeasurementUnit>("cm");
 
-  const [saving, setSaving] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  function onSubmit() {
-    try {
-      setSaving(true);
+  async function onSubmit() {
+    await run("saving", async () => {
       onCreate(
         name,
         preferredWeightUnit,
         preferredWorkoutUnit,
         preferredMeasurementUnit,
       );
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error creating profile", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (
@@ -169,9 +155,7 @@ const ProfileSetupModal = ({
           </button>
         </div>
       </div>
-      {saving && <InfoModal type={"saving"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

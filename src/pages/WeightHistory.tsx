@@ -11,26 +11,28 @@ import { useNavigate } from "react-router-dom";
 
 import styles from "../styles/modules/WeightHistory.module.scss";
 
+import type { PreferredWeightUnit } from "../types/profile";
+import type { WeightLogDB } from "../types/weight";
+
+import LoadingScreen from "../components/LoadingScreen";
+import ExecuteModal from "../components/ExecuteModal";
+import ManageLogModal from "../components/ManageLogModal";
+import InfoModal from "../components/InfoModal";
+
 import {
   getWeightsHistory,
   createWeightLog,
   deleteWeightLog,
   updateWeightLog,
 } from "../services/weightLogs";
-import type { WeightLogDB } from "../types/weight";
 import {
   formatDate,
   formatDateForInput,
   formatValueBasedOnUnit,
 } from "../services/utils";
 
-import LoadingScreen from "../components/LoadingScreen";
-
-import ExecuteModal from "../components/ExecuteModal";
-import ManageLogModal from "../components/ManageLogModal";
-import InfoModal from "../components/InfoModal";
-import type { PreferredWeightUnit } from "../types/profile";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type WeightHistoryProps = {
   unit: PreferredWeightUnit;
@@ -39,9 +41,7 @@ type WeightHistoryProps = {
 const WeightHistory = ({ unit }: WeightHistoryProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { run, state } = useAsyncAction();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -52,8 +52,6 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     async function getLogs() {
@@ -86,8 +84,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function handleCreateLog(date: string, value: number) {
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const newLog = await createWeightLog(value, date);
       if (newLog) {
         setWeightData((prev) =>
@@ -105,62 +102,14 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
               )
             : null,
         );
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-        }, 1000);
+        setShowAddModal(false);
       }
-    } catch (error) {
-      console.error("Error creating weight log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setShowAddModal(false);
-      setSaving(false);
-    }
-  }
-
-  async function handleDeleteLog() {
-    if (chosenLogId === "") return;
-    setDeleting(true);
-    try {
-      const deletedLog = await deleteWeightLog(chosenLogId);
-      if (deletedLog) {
-        setWeightData((prev) =>
-          prev
-            ? prev
-                .filter((data) => data.id !== chosenLogId)
-                .sort(
-                  (a: WeightLogDB, b: WeightLogDB) =>
-                    new Date(b.measured_at).getTime() -
-                    new Date(a.measured_at).getTime(),
-                )
-            : null,
-        );
-      }
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error deleting weight log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setChosenLogId("");
-      setDeleting(false);
-      setShowDeleteModal(false);
-    }
+    });
   }
 
   async function handleEditLog(date: string, value: number) {
     if (chosenLogId === "") return;
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const updatedLog = await updateWeightLog({ date, value }, chosenLogId);
       if (updatedLog) {
         setWeightData((prev) =>
@@ -184,22 +133,32 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
                 )
             : null,
         );
+        setChosenLogId("");
+        setShowEditModal(false);
       }
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error editing weight log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setChosenLogId("");
-      setSaving(false);
-      setShowEditModal(false);
-    }
+    });
+  }
+
+  async function handleDeleteLog() {
+    if (chosenLogId === "") return;
+    await run("deleting", async () => {
+      const deletedLog = await deleteWeightLog(chosenLogId);
+      if (deletedLog) {
+        setWeightData((prev) =>
+          prev
+            ? prev
+                .filter((data) => data.id !== chosenLogId)
+                .sort(
+                  (a: WeightLogDB, b: WeightLogDB) =>
+                    new Date(b.measured_at).getTime() -
+                    new Date(a.measured_at).getTime(),
+                )
+            : null,
+        );
+        setChosenLogId("");
+        setShowDeleteModal(false);
+      }
+    });
   }
 
   if (loading) {
@@ -318,10 +277,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
           }}
         />
       )}
-      {saving && <InfoModal type="saving" />}
-      {showErrorModal && <InfoModal type="error" />}
-      {showSuccessModal && <InfoModal type="success" />}
-      {deleting && <InfoModal type="deleting" />}
+      <InfoModal state={state} />
     </div>
   );
 };

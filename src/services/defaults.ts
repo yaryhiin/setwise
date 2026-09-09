@@ -1,5 +1,16 @@
 import type { ChartData } from "../types/chart";
+import type { Workout } from "../types/workout";
 import i18n from "../i18n";
+
+export function createEmptyWorkout(): Workout {
+  return {
+    name: "Custom Workout",
+    started_at: Date.now().toString(),
+    finished_at: "",
+    duration_seconds: 0,
+    exercises: [],
+  };
+}
 
 export const getDefaultExercises = () =>
   [

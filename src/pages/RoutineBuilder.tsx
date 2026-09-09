@@ -17,7 +17,6 @@ import type { ExerciseDB } from "../types/exercise";
 import type { RoutineErrors } from "../types/errors";
 
 import LoadingScreen from "../components/LoadingScreen";
-
 import ExecuteModal from "../components/ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
 import InfoModal from "../components/InfoModal";
@@ -28,41 +27,32 @@ import {
   updateRoutine,
 } from "../services/routines";
 import { getExercises, createExercise } from "../services/exercises";
+import { getPersistedJSON } from "../services/storage";
+
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
-function getInitialRoutine(draftKey: string) {
-  const savedDraft = localStorage.getItem(draftKey);
-
-  if (savedDraft) {
-    try {
-      return JSON.parse(savedDraft) as RoutineDraft;
-    } catch {
-      localStorage.removeItem(draftKey);
-    }
-  }
-
-  return {
-    name: "",
-    exercises: [],
-  };
-}
+const EXERCISES_KEY = "exercises";
 
 const RoutineBuilder = () => {
   const navigate = useNavigate();
   const { routineId } = useParams();
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
   const draftKey = routineId ? `routineDraft:${routineId}` : "routineDraft:new";
 
-  const [routineDraft, setRoutineDraft] = useState<RoutineDraft>(() =>
-    getInitialRoutine(draftKey),
+  const [routineDraft, setRoutineDraft] = useState<RoutineDraft>(
+    getPersistedJSON(draftKey, {
+      name: "",
+      exercises: [],
+    }),
   );
-  const [exercises, setExercises] = useState<ExerciseDB[]>([]);
+  const [exercises, setExercises] = useState<ExerciseDB[] | null>(
+    getPersistedJSON(EXERCISES_KEY, null),
+  );
   const [chosenExerciseId, setChosenExerciseId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -76,14 +66,17 @@ const RoutineBuilder = () => {
   const [showBackModal, setShowBackModal] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
     const savedRoutine = localStorage.getItem(draftKey);
-    if (savedRoutine) return;
-    if (!routineId) return;
+    if (savedRoutine) {
+      setLoading(false);
+      return;
+    }
+    if (!routineId) {
+      setLoading(false);
+      return;
+    }
     async function getDetails() {
+      setLoading(true);
       try {
         const routine = await getRoutineDetails(String(routineId));
         if (!routine) return;
@@ -100,6 +93,8 @@ const RoutineBuilder = () => {
         });
       } catch (error) {
         console.error("Error loading data: ", error);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -107,21 +102,86 @@ const RoutineBuilder = () => {
   }, [routineId]);
 
   useEffect(() => {
-    localStorage.setItem(draftKey, JSON.stringify(routineDraft));
+    const savedExercises = localStorage.getItem(EXERCISES_KEY);
+    if (savedExercises) {
+      const parsedExercises = JSON.parse(savedExercises) as ExerciseDB[];
+      if (parsedExercises.length > 0) {
+        return;
+      }
+    }
+
+    async function loadExercises() {
+      try {
+        const exercisesData = await getExercises();
+        if (exercisesData.length) {
+          setExercises(exercisesData);
+        }
+      } catch (error) {
+        console.error("Error fetching exercises:", error);
+      }
+    }
+
+    loadExercises();
+  }, []);
+
+  useEffect(() => {
+    if (routineDraft)
+      localStorage.setItem(draftKey, JSON.stringify(routineDraft));
   }, [routineDraft]);
+
+  useEffect(() => {
+    if (exercises)
+      localStorage.setItme(EXERCISES_KEY, JSON.stringify(exercises));
+  });
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
-  async function loadData() {
-    setLoading(true);
-    try {
-      const exercisesData = await getExercises();
-      setExercises(exercisesData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
+  async function addRoutine(routine: Routine) {
+    const newErrors = { name: false, exercises: false };
+    if (!routineDraft.name.trim()) newErrors.name = true;
+    if (routineDraft.exercises.length === 0) newErrors.exercises = true;
+    if (Object.values(newErrors).some(Boolean)) {
+      setErrors(newErrors);
+      return;
     }
+    const success = await run("saving", async () => {
+      await createRoutine(routine);
+    });
+    if (success) {
+      localStorage.removeItem(draftKey);
+      setTimeout(() => {
+        navigate("/routines");
+      }, 1000);
+    }
+  }
+
+  async function handleUpdateRoutine(routine: Routine, routineId: string) {
+    const newErrors = { name: false, exercises: false };
+    if (!routineDraft.name.trim()) newErrors.name = true;
+    if (routineDraft.exercises.length === 0) newErrors.exercises = true;
+    if (Object.values(newErrors).some(Boolean)) {
+      setErrors(newErrors);
+      return;
+    }
+    const success = await run("saving", async () => {
+      await updateRoutine(routine, routineId);
+    });
+    if (success) {
+      localStorage.removeItem(draftKey);
+      setTimeout(() => {
+        navigate("/routines");
+      }, 1000);
+    }
+  }
+
+  async function addExercise(name: string, category: string) {
+    await run("saving", async () => {
+      const createdExercise = await createExercise({ name, category });
+      if (createExercise)
+        setExercises((prev) =>
+          prev ? [...prev, createdExercise] : [createExercise],
+        );
+    });
   }
 
   function chooseExercise(exercise: ExerciseDB) {
@@ -199,82 +259,6 @@ const RoutineBuilder = () => {
         exercises: reorderedExercises,
       };
     });
-  }
-
-  async function addRoutine(routine: Routine) {
-    const newErrors = { name: false, exercises: false };
-    if (!routineDraft.name.trim()) newErrors.name = true;
-    if (routineDraft.exercises.length === 0) newErrors.exercises = true;
-    if (Object.values(newErrors).some(Boolean)) {
-      setErrors(newErrors);
-      return;
-    }
-    setSaving(true);
-    try {
-      await createRoutine(routine);
-      await loadData();
-      localStorage.removeItem(draftKey);
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        navigate("/routines");
-      }, 1000);
-    } catch (error) {
-      console.error("Error creating routine:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleUpdateRoutine(routine: Routine, routineId: string) {
-    const newErrors = { name: false, exercises: false };
-    if (!routineDraft.name.trim()) newErrors.name = true;
-    if (routineDraft.exercises.length === 0) newErrors.exercises = true;
-    if (Object.values(newErrors).some(Boolean)) {
-      setErrors(newErrors);
-      return;
-    }
-    setSaving(true);
-    try {
-      await updateRoutine(routine, routineId);
-      await loadData();
-      localStorage.removeItem(draftKey);
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        navigate("/routines");
-      }, 1000);
-    } catch (error) {
-      console.error("Error updating routine:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function addExercise(name: string, category: string) {
-    setSaving(true);
-    try {
-      await createExercise({ name, category });
-      await loadData();
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error adding exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
   }
 
   if (loading) {
@@ -423,7 +407,7 @@ const RoutineBuilder = () => {
           onDelete={deleteExercise}
         />
       )}
-      {showChooseExerciseModal && (
+      {showChooseExerciseModal && exercises && (
         <ChooseExerciseModal
           initialSelectedExerciseId={chosenExerciseId}
           exercises={exercises}
@@ -452,9 +436,7 @@ const RoutineBuilder = () => {
           }}
         />
       )}
-      {saving && <InfoModal type={"saving"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

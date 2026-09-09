@@ -11,6 +11,17 @@ import { useNavigate } from "react-router-dom";
 
 import styles from "../styles/modules/WeightHistory.module.scss";
 
+import type {
+  MeasurementLogDB,
+  MeasurementTypeDB,
+} from "../types/measurements";
+import type { PreferredMeasurementUnit } from "../types/profile";
+
+import LoadingScreen from "../components/LoadingScreen";
+import ExecuteModal from "../components/ExecuteModal";
+import ManageLogModal from "../components/ManageLogModal";
+import InfoModal from "../components/InfoModal";
+
 import {
   createMeasurementLog,
   getMeasurementsHistory,
@@ -27,17 +38,8 @@ import {
   formatValueBasedOnUnit,
 } from "../services/utils";
 
-import LoadingScreen from "../components/LoadingScreen";
-
-import ExecuteModal from "../components/ExecuteModal";
-import ManageLogModal from "../components/ManageLogModal";
-import InfoModal from "../components/InfoModal";
-import type {
-  MeasurementLogDB,
-  MeasurementTypeDB,
-} from "../types/measurements";
-import type { PreferredMeasurementUnit } from "../types/profile";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type MeasurementsHistoryProps = {
   unit: PreferredMeasurementUnit;
@@ -46,9 +48,7 @@ type MeasurementsHistoryProps = {
 const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { run, state } = useAsyncAction();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const [showOptions, setShowOptions] = useState(false);
@@ -64,8 +64,6 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     async function getLogs() {
@@ -103,8 +101,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
 
   async function handleCreateLog(date: string, value: number, typeId?: string) {
     if (!typeId) return;
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const newLog = await createMeasurementLog([
         { value_cm: value, measured_at: date, measurement_type_id: typeId },
       ]);
@@ -124,51 +121,14 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
               )
             : null,
         );
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-        }, 1000);
+        setShowAddModal(false);
       }
-    } catch (error) {
-      console.error("Error creating measurement log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setShowAddModal(false);
-      setSaving(false);
-    }
-  }
-
-  async function handleArchiveMeasurementType(id: string) {
-    setDeleting(true);
-    try {
-      const deletedType = await archiveMeasurementType(id);
-      if (deletedType) {
-        setMeasurementsTypes((prev) =>
-          prev ? prev.filter((type) => type.id !== id) : null,
-        );
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-        }, 1000);
-      }
-    } catch (error) {
-      console.error("Error deleting measurement type:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setDeleting(false);
-    }
+    });
   }
 
   async function handleDeleteLog() {
     if (chosenLogId === "") return;
-    setDeleting(true);
-    try {
+    await run("deleting", async () => {
       const deletedLog = await deleteMeasurementLog(chosenLogId);
       if (deletedLog) {
         setMeasurementsData((prev) =>
@@ -182,29 +142,16 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                 )
             : null,
         );
+        setChosenLogId("");
+        setShowDeleteModal(false);
       }
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error deleting measurement log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setChosenLogId("");
-      setDeleting(false);
-      setShowDeleteModal(false);
-    }
+    });
   }
 
   async function handleEditLog(date: string, value: number, typeId?: string) {
     if (!typeId) return;
     if (chosenLogId === "") return;
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const updatedLog = await updateMeasurementLog(
         { value_cm: value, measured_at: date, measurement_type_id: typeId },
         chosenLogId,
@@ -231,27 +178,24 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                 )
             : null,
         );
+        setChosenLogId("");
+        setShowEditModal(false);
       }
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error editing measurement log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setChosenLogId("");
-      setSaving(false);
-      setShowEditModal(false);
-    }
+    });
+  }
+
+  async function handleCreateMeasurementType(name: string) {
+    await run("saving", async () => {
+      const createdType = await createMeasurementType(name);
+      if (createdType)
+        setMeasurementsTypes((prev) =>
+          prev ? [...prev, createdType] : [createdType],
+        );
+    });
   }
 
   async function handleUpdateMeasurementType(id: string, name: string) {
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const updatedType = await updateMeasurementType(id, name);
       if (updatedType) {
         setMeasurementsTypes((prev) =>
@@ -259,43 +203,19 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
             ? prev.map((type) => (type.id === id ? { ...type, name } : type))
             : null,
         );
-        setShowSuccessModal(true);
-        setTimeout(() => {
-          setShowSuccessModal(false);
-        }, 1000);
       }
-    } catch (error) {
-      console.error("Error updating measurement type:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
-  async function handleCreateMeasurementType(name: string) {
-    setSaving(true);
-    try {
-      setSaving(true);
-      const createdType = await createMeasurementType(name);
-      setMeasurementsTypes((prev) =>
-        prev ? [...prev, createdType] : [createdType],
-      );
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error creating measurement type:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+  async function handleArchiveMeasurementType(id: string) {
+    await run("deleting", async () => {
+      const deletedType = await archiveMeasurementType(id);
+      if (deletedType) {
+        setMeasurementsTypes((prev) =>
+          prev ? prev.filter((type) => type.id !== id) : null,
+        );
+      }
+    });
   }
 
   if (loading) {
@@ -439,10 +359,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
           }}
         />
       )}
-      {saving && <InfoModal type="saving" />}
-      {showErrorModal && <InfoModal type="error" />}
-      {showSuccessModal && <InfoModal type="success" />}
-      {deleting && <InfoModal type="deleting" />}
+      <InfoModal state={state} />
     </div>
   );
 };

@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
-import { useAsyncAction } from "../hooks/useAsyncAction";
-import LoadingScreen from "../components/LoadingScreen";
-
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
 import type { Workout } from "../types/workout";
 import type { ExerciseDB } from "../types/exercise";
+import type { PreferredWeightUnit } from "../types/profile";
 
 import ExecuteModal from "../components/ExecuteModal";
 import WorkoutForm from "../components/WorkoutForm";
+import InfoModal from "../components/InfoModal";
+import LoadingScreen from "../components/LoadingScreen";
 
 import { getRoutineDetails } from "../services/routines";
 import { createExercise, getExercises } from "../services/exercises";
 import { createWorkout, getPreviousExerciseData } from "../services/workouts";
 import { convertValueToBaseUnit, formatTime } from "../services/utils";
-import InfoModal from "../components/InfoModal";
-import type { PreferredWeightUnit } from "../types/profile";
+import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
 import { getProfile } from "../services/profiles";
+import { createEmptyWorkout } from "../services/defaults";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const ACTIVE_WORKOUT_ROUTINE_KEY = "activeWorkoutRoutine";
 const ACTIVE_WORKOUT_KEY = "activeWorkout";
@@ -33,16 +35,6 @@ const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
 const WORKOUT_REST_START_KEY = "workoutRestStart";
 const WORKOUT_SUPERSET = "workoutSuperset";
 
-function createEmptyWorkout(): Workout {
-  return {
-    name: "Custom Workout",
-    started_at: new Date().toISOString(),
-    finished_at: "",
-    duration_seconds: 0,
-    exercises: [],
-  };
-}
-
 function getInitialSeconds() {
   const savedSeconds = localStorage.getItem(ACTIVE_WORKOUT_SECONDS_KEY);
   if (!savedSeconds) return 0;
@@ -51,70 +43,24 @@ function getInitialSeconds() {
   return Number.isNaN(parsedSeconds) ? 0 : parsedSeconds;
 }
 
-function getInitialWorkout() {
-  const savedWorkout = localStorage.getItem(ACTIVE_WORKOUT_KEY);
-
-  if (savedWorkout) {
-    try {
-      return JSON.parse(savedWorkout) as Workout;
-    } catch {
-      localStorage.removeItem(ACTIVE_WORKOUT_KEY);
-    }
-  }
-
-  return createEmptyWorkout();
-}
-
-function getInitialExercises() {
-  const savedExercises = localStorage.getItem(EXERCISES_KEY);
-
-  if (savedExercises) {
-    try {
-      return JSON.parse(savedExercises) as ExerciseDB[];
-    } catch {
-      localStorage.removeItem(EXERCISES_KEY);
-    }
-  }
-
-  return [];
-}
-
-function getInitialPreviousData() {
-  const savedPreviousData = localStorage.getItem(
-    ACTIVE_WORKOUT_PREVIOUS_DATA_KEY,
-  );
-
-  if (savedPreviousData) {
-    try {
-      return JSON.parse(savedPreviousData) as Record<string, any>;
-    } catch {
-      localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-    }
-  }
-
-  return {};
-}
-
-function getInitialPreferredUnit(): "kg" | "lb" {
-  const savedUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
-
-  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
-}
-
 const ActiveWorkout = () => {
   const navigate = useNavigate();
   const { routineId } = useParams();
   const { t } = useTranslation();
   const { run, state } = useAsyncAction();
 
-  const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
+  const [workout, setWorkout] = useState<Workout>(
+    getPersistedJSON(ACTIVE_WORKOUT_KEY, createEmptyWorkout),
+  );
   const [seconds, setSeconds] = useState(getInitialSeconds);
-  const [exercises, setExercises] = useState<ExerciseDB[]>(getInitialExercises);
+  const [exercises, setExercises] = useState<ExerciseDB[] | null>(
+    getPersistedJSON(EXERCISES_KEY, null),
+  );
   const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
     getInitialPreferredUnit,
   );
   const [previousData, setPreviousData] = useState<Record<string, any>>(
-    getInitialPreviousData,
+    getPersistedJSON(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY, {}),
   );
   const exerciseIdsKey = workout.exercises
     .map((exercise) => exercise.exercise_id)
@@ -283,7 +229,9 @@ const ActiveWorkout = () => {
   async function addExercise(name: string, category: string) {
     await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
-      setExercises((prev) => [...prev, createdExercise]);
+      setExercises((prev) =>
+        prev ? [...prev, createdExercise] : [createdExercise],
+      );
     });
   }
 
@@ -365,7 +313,7 @@ const ActiveWorkout = () => {
       <WorkoutForm
         workout={workout}
         setWorkout={setWorkout}
-        exercises={exercises}
+        exercises={exercises ?? []}
         previousData={previousData}
         addExercise={addExercise}
         pageType="active"

@@ -1,17 +1,16 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import LoadingScreen from "../components/LoadingScreen";
-
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
 import type { ExerciseDB } from "../types/exercise";
 import type { Workout } from "../types/workout";
+import type { PreferredWeightUnit } from "../types/profile";
 
 import ExecuteModal from "../components/ExecuteModal";
 import WorkoutForm from "../components/WorkoutForm";
-
+import LoadingScreen from "../components/LoadingScreen";
 import InfoModal from "../components/InfoModal";
 
 import { createExercise, getExercises } from "../services/exercises";
@@ -26,7 +25,10 @@ import {
   formatValueBasedOnUnit,
 } from "../services/utils";
 import { getProfile } from "../services/profiles";
-import type { PreferredWeightUnit } from "../types/profile";
+import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
+import { createEmptyWorkout } from "../services/defaults";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const CHANGE_WORKOUT_KEY = "changeWorkout";
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
@@ -35,66 +37,23 @@ const WORKOUT_REST_START_KEY = "workoutRestStart";
 const EXERCISES_KEY = "exercises";
 const PREFERRED_UNIT_KEY = "preferredUnit";
 
-function createEmptyWorkout(): Workout {
-  return {
-    name: "Custom Workout",
-    started_at: Date.now().toString(),
-    finished_at: "",
-    duration_seconds: 0,
-    exercises: [],
-  };
-}
-
-function getInitialWorkout() {
-  const savedWorkout = localStorage.getItem(CHANGE_WORKOUT_KEY);
-
-  if (savedWorkout) {
-    try {
-      return JSON.parse(savedWorkout) as Workout;
-    } catch {
-      localStorage.removeItem(CHANGE_WORKOUT_KEY);
-    }
-  }
-
-  return createEmptyWorkout();
-}
-
-function getInitialExercises() {
-  const savedExercises = localStorage.getItem(EXERCISES_KEY);
-
-  if (savedExercises) {
-    try {
-      return JSON.parse(savedExercises) as ExerciseDB[];
-    } catch {
-      localStorage.removeItem(EXERCISES_KEY);
-    }
-  }
-
-  return [];
-}
-
-function getInitialPreferredUnit(): "kg" | "lb" {
-  const savedUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
-
-  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
-}
-
 const ChangeWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
-  const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
-  const [exercises, setExercises] = useState<ExerciseDB[]>(getInitialExercises);
+  const [workout, setWorkout] = useState<Workout>(
+    getPersistedJSON(CHANGE_WORKOUT_KEY, createEmptyWorkout),
+  );
+  const [exercises, setExercises] = useState<ExerciseDB[] | null>(
+    getPersistedJSON(EXERCISES_KEY, null),
+  );
   const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
     getInitialPreferredUnit,
   );
 
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -190,48 +149,29 @@ const ChangeWorkout = () => {
   }, [exercises]);
 
   async function handleDelete() {
-    setDeleting(true);
-    try {
+    const success = await run("deleting", async () => {
       await deleteWorkout(String(workoutId));
       setShowModal(false);
-      setShowSuccessModal(true);
+    });
+    if (success) {
       setTimeout(() => {
         navigate("/");
         localStorage.removeItem(CHANGE_WORKOUT_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
         localStorage.removeItem(WORKOUT_REST_START_KEY);
-        localStorage.removeItem("preferredUnit");
+        localStorage.removeItem(PREFERRED_UNIT_KEY);
       }, 1000);
-    } catch (error) {
-      console.error("Error deleting workout:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setDeleting(false);
     }
   }
 
   async function addExercise(name: string, category: string) {
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
-      setExercises((prev) => [...prev, createdExercise]);
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error adding exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+      setExercises((prev) =>
+        prev ? [...prev, createdExercise] : [createdExercise],
+      );
+    });
   }
 
   async function handleUpdate() {
@@ -245,29 +185,21 @@ const ChangeWorkout = () => {
         ),
       })),
     }));
-    setSaving(true);
-    try {
+    const success = await run("saving", async () => {
       await updateWorkout(
         { ...workout, exercises: formattedWorkoutExercises },
         String(workoutId),
       );
-      setShowSuccessModal(true);
+    });
+    if (success) {
       setTimeout(() => {
         navigate("/");
         localStorage.removeItem(CHANGE_WORKOUT_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
         localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
         localStorage.removeItem(WORKOUT_REST_START_KEY);
-        localStorage.removeItem("preferredUnit");
+        localStorage.removeItem(PREFERRED_UNIT_KEY);
       }, 1000);
-    } catch (error) {
-      console.error("Error updating workout:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -308,7 +240,7 @@ const ChangeWorkout = () => {
         workout={workout}
         pageType="change"
         setWorkout={setWorkout}
-        exercises={exercises}
+        exercises={exercises ?? []}
         addExercise={addExercise}
         preferredUnit={preferredUnit}
         handleUpdate={handleUpdate}
@@ -323,10 +255,7 @@ const ChangeWorkout = () => {
           onDelete={handleDelete}
         />
       )}
-      {saving && <InfoModal type={"saving"} />}
-      {deleting && <InfoModal type={"deleting"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

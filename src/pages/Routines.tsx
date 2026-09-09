@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LoadingScreen from "../components/LoadingScreen";
-
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Routines.module.scss";
@@ -10,56 +8,63 @@ import type { RoutineDB } from "../types/routine";
 
 import ExecuteModal from "../components/ExecuteModal";
 import InfoModal from "../components/InfoModal";
+import LoadingScreen from "../components/LoadingScreen";
 
 import { getRoutines, deleteRoutine } from "../services/routines";
+import { getPersistedJSON } from "../services/storage";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
+
+const ROUTINES_KEY = "routines";
 
 const Routines = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
-  const [routines, setRoutines] = useState<RoutineDB[]>([]);
+  const [routines, setRoutines] = useState<RoutineDB[] | null>(
+    getPersistedJSON(ROUTINES_KEY, null),
+  );
   const [chosenRoutineId, setChosenRoutineId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [showMessageModal, setShowMessageModal] = useState(false);
 
   useEffect(() => {
-    loadData();
+    const savedRoutines = localStorage.getItem(ROUTINES_KEY);
+    if (savedRoutines) {
+      const parsedExercises = JSON.parse(savedRoutines) as RoutineDB[];
+      if (parsedExercises.length > 0) {
+        setLoading(false);
+        return;
+      }
+    }
+
+    async function loadRoutines() {
+      setLoading(true);
+      try {
+        const exercisesData = await getRoutines();
+        if (exercisesData.length) {
+          setRoutines(exercisesData);
+        }
+      } catch (error) {
+        console.error("Error fetching routines:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadRoutines();
   }, []);
 
-  async function loadData() {
-    setLoading(true);
-    try {
-      const routinesData = await getRoutines();
-      setRoutines(routinesData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleDeleteRoutine(id: string) {
-    setDeleting(true);
-    try {
-      await deleteRoutine(id);
-      setRoutines((prev) => prev.filter((routine) => routine.id != id));
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error deleting routine:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setDeleting(false);
-    }
+    await run("deleting", async () => {
+      const deletedRoutine = await deleteRoutine(id);
+      if (deletedRoutine)
+        setRoutines((prev) =>
+          prev ? prev.filter((routine) => routine.id != id) : null,
+        );
+    });
   }
 
   if (loading) {
@@ -69,7 +74,7 @@ const Routines = () => {
     <div className={styles.routinesContainer}>
       <div className={styles.header}>
         <h1 className={styles.title}>{t("routine.title2")}</h1>
-        {routines.length > 0 ? (
+        {routines && routines.length > 0 ? (
           <p>{t("routine.description")}</p>
         ) : (
           <div className="emptyState">
@@ -86,7 +91,7 @@ const Routines = () => {
         </button>
       </div>
       <div className={styles.routinesList}>
-        {routines.map((routine) => (
+        {routines?.map((routine) => (
           <div key={routine.id} className={styles.routineElement}>
             <div className={styles.routineElementTop}>
               <h3>{routine.name}</h3>
@@ -130,9 +135,7 @@ const Routines = () => {
           }}
         />
       )}
-      {deleting && <InfoModal type={"deleting"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

@@ -5,10 +5,12 @@ import styles from "../styles/modules/Modal.module.scss";
 
 import type { WeightCheckinErrors } from "../types/errors";
 
-import { createWeightLog, getLatestWeightLog } from "../services/weightLogs";
-
 import InfoModal from "../components/InfoModal";
+
+import { createWeightLog, getLatestWeightLog } from "../services/weightLogs";
 import { convertValueToBaseUnit, formatDate } from "../services/utils";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type WeightCheckinModalProps = {
   unit: "kg" | "lb";
@@ -22,16 +24,13 @@ const WeightCheckinModal = ({
   onSkip,
 }: WeightCheckinModalProps) => {
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
   const [newWeight, setNewWeight] = useState("");
   const [errors, setErrors] = useState<WeightCheckinErrors>({
     weight: false,
   });
   const [previousData, setPreviousData] = useState({ date: "", weight: "" });
-
-  const [saving, setSaving] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     async function getLatestData() {
@@ -54,22 +53,14 @@ const WeightCheckinModal = ({
 
     const weight = Number(newWeight);
     const weightInKg = convertValueToBaseUnit(weight, unit);
-    setSaving(true);
-    try {
+
+    const success = await run("saving", async () => {
       await createWeightLog(weightInKg, new Date().toISOString());
-      setShowSuccessModal(true);
+    });
+    if (success) {
       setTimeout(() => {
-        setShowSuccessModal(false);
+        onSkip();
       }, 1000);
-    } catch (error) {
-      console.error("Error creating weight log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      onSkip();
-      setSaving(false);
     }
   }
 
@@ -130,9 +121,7 @@ const WeightCheckinModal = ({
           </button>
         </div>
       </div>
-      {saving && <InfoModal type={"saving"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import LoadingScreen from "./LoadingScreen";
-
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Modal.module.scss";
 
-import { type MeasurementTypeDB } from "../types/measurements";
+import type { MeasurementTypeDB } from "../types/measurements";
+
+import ExecuteModal from "./ExecuteModal";
+import InfoModal from "../components/InfoModal";
 
 import {
   createMeasurementType,
@@ -13,10 +15,9 @@ import {
   getMeasurementTypes,
   createMeasurementLog,
 } from "../services/measurements";
-
-import ExecuteModal from "./ExecuteModal";
-import InfoModal from "../components/InfoModal";
 import { convertValueToBaseUnit } from "../services/utils";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type MeasurementsCheckinModalProps = {
   unit: "cm" | "in";
@@ -35,6 +36,7 @@ const MeasurementsCheckinModal = ({
   onSkip,
 }: MeasurementsCheckinModalProps) => {
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
   const [measurementTypes, setMeasurementTypes] = useState<
     MeasurementTypeDB[] | null
@@ -43,10 +45,6 @@ const MeasurementsCheckinModal = ({
     null,
   );
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [error, setError] = useState(false);
   const [chosenType, setChosenType] = useState<MeasurementTypeDB | null>(null);
 
@@ -88,54 +86,30 @@ const MeasurementsCheckinModal = ({
       setError(true);
       return;
     }
-    setSaving(true);
-    try {
+    const success = await run("saving", async () => {
       setAddingMeasurement(true);
       const createdType = await createMeasurementType(trimmedName);
-      setMeasurementTypes((prev) =>
-        prev ? [...prev, createdType] : [createdType],
-      );
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
+      if (createdType)
+        setMeasurementTypes((prev) =>
+          prev ? [...prev, createdType] : [createdType],
+        );
+    });
+    if (success) {
       setNewMeasurementName("");
       setIsAddingMeasurement(false);
-    } catch (error) {
-      console.error("Error creating measurement type:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setAddingMeasurement(false);
-      setSaving(false);
     }
   }
 
   async function handleDeleteType() {
-    setDeleting(true);
-    try {
-      if (!chosenType) return;
+    if (!chosenType) return;
+    await run("deleting", async () => {
       const deletedType = await archiveMeasurementType(chosenType.id);
-      if (!deletedType) return;
-      setMeasurementTypes((prev) =>
-        prev ? prev.filter((type) => type.id != chosenType.id) : null,
-      );
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error deleting type:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
+      if (deletedType)
+        setMeasurementTypes((prev) =>
+          prev ? prev.filter((type) => type.id != chosenType.id) : null,
+        );
       setShowModal(false);
-      setDeleting(false);
-    }
+    });
   }
 
   async function handleCreateMeasurementLog() {
@@ -152,21 +126,14 @@ const MeasurementsCheckinModal = ({
           measured_at: new Date().toISOString(),
         };
       });
-    setSaving(true);
-    try {
+
+    const success = await run("saving", async () => {
       await createMeasurementLog(formatedMeasurements);
-      setShowSuccessModal(true);
+    });
+    if (success) {
       setTimeout(() => {
         onSkip();
       }, 1000);
-    } catch (error) {
-      console.error("Error creating weight log:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -300,10 +267,7 @@ const MeasurementsCheckinModal = ({
           </button>
         </div>
       </div>
-      {saving && <InfoModal type={"saving"} />}
-      {deleting && <InfoModal type={"deleting"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

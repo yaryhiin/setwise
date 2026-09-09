@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import cn from "classnames";
 import { useTranslation } from "react-i18next";
 import type { Dispatch, SetStateAction } from "react";
+import { supabase } from "../supabase";
 
 import styles from "../styles/modules/Profile.module.scss";
 
 import type { ProfileDB, Profile } from "../types/profile";
 
-import { supabase } from "../supabase";
-
 import ExecuteModal from "../components/ExecuteModal";
 import InfoModal from "../components/InfoModal";
+
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 type ProfilePageProps = {
   toggleTheme: () => void;
@@ -32,10 +33,7 @@ const ProfilePage = ({
 }: ProfilePageProps) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-
-  const [saving, setSaving] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { run, state } = useAsyncAction();
 
   const [profileForm, setProfileForm] = useState<Profile>({
     name: profile.name || "",
@@ -79,22 +77,13 @@ const ProfilePage = ({
   }
 
   async function handleSave() {
-    setSaving(true);
-    try {
-      await handleUpdateProfile(profileForm);
-      setShowSuccessModal(true);
+    const success = await run("saving", async () => {
+      handleUpdateProfile(profileForm);
+    });
+    if (success)
       setTimeout(() => {
         navigate("/");
       }, 1000);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
   }
 
   return (
@@ -461,9 +450,7 @@ const ProfilePage = ({
           onDelete={handleLogout}
         />
       )}
-      {saving && <InfoModal type={"saving"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

@@ -85,15 +85,19 @@ export async function updateExercise(
   category: string,
   id: string,
 ) {
-  const { error: ExerciseError } = await supabase
+  const { data, error: ExerciseError } = await supabase
     .from("exercises")
     .update({
       name,
       category,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select()
+    .single();
 
   if (ExerciseError) throw ExerciseError;
+
+  return data;
 }
 
 export async function deleteExercise(exercise_id: string) {

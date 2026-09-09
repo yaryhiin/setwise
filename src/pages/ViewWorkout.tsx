@@ -1,59 +1,32 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import LoadingScreen from "../components/LoadingScreen";
-
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
 import type { Workout } from "../types/workout";
+import type { PreferredWeightUnit } from "../types/profile";
 
 import WorkoutForm from "../components/WorkoutForm";
+import LoadingScreen from "../components/LoadingScreen";
 
 import { getWorkoutDetails } from "../services/workouts";
 import { formatTime, formatValueBasedOnUnit } from "../services/utils";
-import type { PreferredWeightUnit } from "../types/profile";
+import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
 import { getProfile } from "../services/profiles";
+import { createEmptyWorkout } from "../services/defaults";
 
 const VIEW_WORKOUT_KEY = "viewWorkout";
 const PREFERRED_UNIT_KEY = "preferredUnit";
-
-function createEmptyWorkout(): Workout {
-  return {
-    name: "Custom Workout",
-    started_at: Date.now().toString(),
-    finished_at: "",
-    duration_seconds: 0,
-    exercises: [],
-  };
-}
-
-function getInitialWorkout() {
-  const savedWorkout = localStorage.getItem(VIEW_WORKOUT_KEY);
-
-  if (savedWorkout) {
-    try {
-      return JSON.parse(savedWorkout) as Workout;
-    } catch {
-      localStorage.removeItem(VIEW_WORKOUT_KEY);
-    }
-  }
-
-  return createEmptyWorkout();
-}
-
-function getInitialPreferredUnit(): "kg" | "lb" {
-  const savedUnit = localStorage.getItem(PREFERRED_UNIT_KEY);
-
-  return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
-}
 
 const ViewWorkout = () => {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
+  const [workout, setWorkout] = useState<Workout>(
+    getPersistedJSON(VIEW_WORKOUT_KEY, createEmptyWorkout),
+  );
   const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
     getInitialPreferredUnit,
   );
@@ -115,7 +88,8 @@ const ViewWorkout = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(VIEW_WORKOUT_KEY, JSON.stringify(workout));
+    if (workout)
+      localStorage.setItem(VIEW_WORKOUT_KEY, JSON.stringify(workout));
   }, [workout]);
 
   useEffect(() => {
