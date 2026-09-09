@@ -33,6 +33,7 @@ import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const EXERCISES_KEY = "exercises";
+const ROUTINE_DRAFT_KEY = "routineDraft";
 
 const RoutineBuilder = () => {
   const navigate = useNavigate();
@@ -40,10 +41,8 @@ const RoutineBuilder = () => {
   const { t } = useTranslation();
   const { run, state } = useAsyncAction();
 
-  const draftKey = routineId ? `routineDraft:${routineId}` : "routineDraft:new";
-
   const [routineDraft, setRoutineDraft] = useState<RoutineDraft>(
-    getPersistedJSON(draftKey, {
+    getPersistedJSON(ROUTINE_DRAFT_KEY, {
       name: "",
       exercises: [],
     }),
@@ -66,7 +65,7 @@ const RoutineBuilder = () => {
   const [showBackModal, setShowBackModal] = useState(false);
 
   useEffect(() => {
-    const savedRoutine = localStorage.getItem(draftKey);
+    const savedRoutine = localStorage.getItem(ROUTINE_DRAFT_KEY);
     if (savedRoutine) {
       setLoading(false);
       return;
@@ -79,18 +78,18 @@ const RoutineBuilder = () => {
       setLoading(true);
       try {
         const routine = await getRoutineDetails(String(routineId));
-        if (!routine) return;
-        setRoutineDraft({
-          name: routine.name,
-          exercises: [...routine.routine_exercises]
-            .sort((a, b) => a.order_index - b.order_index)
-            .map((item) => ({
-              exercise_id: item.exercise_id,
-              exercise_name: item.exercises.name,
-              category: item.exercises.category,
-              order_index: item.order_index,
-            })),
-        });
+        if (routine)
+          setRoutineDraft({
+            name: routine.name,
+            exercises: [...routine.routine_exercises]
+              .sort((a, b) => a.order_index - b.order_index)
+              .map((item) => ({
+                exercise_id: item.exercise_id,
+                exercise_name: item.exercises.name,
+                category: item.exercises.category,
+                order_index: item.order_index,
+              })),
+          });
       } catch (error) {
         console.error("Error loading data: ", error);
       } finally {
@@ -126,13 +125,13 @@ const RoutineBuilder = () => {
 
   useEffect(() => {
     if (routineDraft)
-      localStorage.setItem(draftKey, JSON.stringify(routineDraft));
+      localStorage.setItem(ROUTINE_DRAFT_KEY, JSON.stringify(routineDraft));
   }, [routineDraft]);
 
   useEffect(() => {
     if (exercises)
       localStorage.setItme(EXERCISES_KEY, JSON.stringify(exercises));
-  });
+  }, [exercises]);
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
@@ -148,7 +147,7 @@ const RoutineBuilder = () => {
       await createRoutine(routine);
     });
     if (success) {
-      localStorage.removeItem(draftKey);
+      localStorage.removeItem(ROUTINE_DRAFT_KEY);
       setTimeout(() => {
         navigate("/routines");
       }, 1000);
@@ -167,7 +166,7 @@ const RoutineBuilder = () => {
       await updateRoutine(routine, routineId);
     });
     if (success) {
-      localStorage.removeItem(draftKey);
+      localStorage.removeItem(ROUTINE_DRAFT_KEY);
       setTimeout(() => {
         navigate("/routines");
       }, 1000);
@@ -431,7 +430,7 @@ const RoutineBuilder = () => {
           onClose={() => setShowBackModal(false)}
           onDelete={() => {
             setShowBackModal(false);
-            localStorage.removeItem(draftKey);
+            localStorage.removeItem(ROUTINE_DRAFT_KEY);
             navigate("/routines");
           }}
         />

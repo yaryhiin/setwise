@@ -57,6 +57,10 @@ const Routines = () => {
     loadRoutines();
   }, []);
 
+  useEffect(() => {
+    if (routines) localStorage.setItem(ROUTINES_KEY, JSON.stringify(routines));
+  }, [routines]);
+
   async function handleDeleteRoutine(id: string) {
     await run("deleting", async () => {
       const deletedRoutine = await deleteRoutine(id);
