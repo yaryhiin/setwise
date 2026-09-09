@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 import LoadingScreen from "../components/LoadingScreen";
 
 import { useTranslation } from "react-i18next";
@@ -104,6 +105,7 @@ const ActiveWorkout = () => {
   const navigate = useNavigate();
   const { routineId } = useParams();
   const { t } = useTranslation();
+  const { run, state } = useAsyncAction();
 
   const [workout, setWorkout] = useState<Workout>(getInitialWorkout);
   const [seconds, setSeconds] = useState(getInitialSeconds);
@@ -118,12 +120,9 @@ const ActiveWorkout = () => {
     .map((exercise) => exercise.exercise_id)
     .join(",");
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
 
   const [showBackModal, setShowBackModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     const savedExercises = localStorage.getItem(EXERCISES_KEY);
@@ -263,18 +262,12 @@ const ActiveWorkout = () => {
   }, [seconds]);
 
   useEffect(() => {
-    localStorage.setItem(
-      EXERCISES_KEY,
-      JSON.stringify(exercises),
-    );
+    localStorage.setItem(EXERCISES_KEY, JSON.stringify(exercises));
   }, [exercises]);
 
   useEffect(() => {
     if (preferredUnit === "kg" || preferredUnit === "lb") {
-      localStorage.setItem(
-        PREFERRED_UNIT_KEY,
-        String(preferredUnit),
-      );
+      localStorage.setItem(PREFERRED_UNIT_KEY, String(preferredUnit));
     }
   }, [preferredUnit]);
 
@@ -288,28 +281,13 @@ const ActiveWorkout = () => {
   }, [previousData]);
 
   async function addExercise(name: string, category: string) {
-    setSaving(true);
-    try {
+    await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
       setExercises((prev) => [...prev, createdExercise]);
-      setShowSuccessModal(true);
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error adding exercise:", error);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   async function finishWorkout() {
-    setSaving(true);
-
     const formattedWorkoutExercises = workout.exercises.map((exercise) => ({
       ...exercise,
       sets: exercise.sets.map((set) => ({
@@ -326,10 +304,11 @@ const ActiveWorkout = () => {
       finished_at: new Date().toISOString(),
       duration_seconds: seconds,
     };
-    try {
+    const success = await run("saving", async () => {
       await createWorkout(finishedWorkout);
       setShowFinishModal(false);
-      setShowSuccessModal(true);
+    });
+    if (success) {
       setTimeout(() => {
         navigate("/");
         localStorage.removeItem(ACTIVE_WORKOUT_KEY);
@@ -343,15 +322,22 @@ const ActiveWorkout = () => {
         localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
         localStorage.removeItem(WORKOUT_SUPERSET);
       }, 1000);
-    } catch (error) {
-      setShowFinishModal(false);
-      setShowErrorModal(true);
-      setTimeout(() => {
-        setShowErrorModal(false);
-      }, 3000);
-    } finally {
-      setSaving(false);
     }
+  }
+
+  function handleBack() {
+    setShowBackModal(false);
+    localStorage.removeItem(ACTIVE_WORKOUT_KEY);
+    localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
+    localStorage.removeItem(EXERCISES_KEY);
+    localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
+    localStorage.removeItem(PREFERRED_UNIT_KEY);
+    localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
+    localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
+    localStorage.removeItem(WORKOUT_REST_START_KEY);
+    localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
+    localStorage.removeItem(WORKOUT_SUPERSET);
+    navigate("/");
   }
 
   if (loading) return <LoadingScreen />;
@@ -390,20 +376,7 @@ const ActiveWorkout = () => {
           text={t("modal.back")}
           btnText={t("common.exit")}
           onClose={() => setShowBackModal(false)}
-          onDelete={() => {
-            setShowBackModal(false);
-            localStorage.removeItem(ACTIVE_WORKOUT_KEY);
-            localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
-            localStorage.removeItem(EXERCISES_KEY);
-            localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-            localStorage.removeItem(PREFERRED_UNIT_KEY);
-            localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
-            localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
-            localStorage.removeItem(WORKOUT_REST_START_KEY);
-            localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
-            localStorage.removeItem(WORKOUT_SUPERSET);
-            navigate("/");
-          }}
+          onDelete={handleBack}
         />
       )}
       {showFinishModal && (
@@ -418,9 +391,7 @@ const ActiveWorkout = () => {
       )}
 
       <div className={styles.buttonContainer}></div>
-      {saving && <InfoModal type={"saving"} />}
-      {showErrorModal && <InfoModal type={"error"} />}
-      {showSuccessModal && <InfoModal type={"success"} />}
+      <InfoModal state={state} />
     </div>
   );
 };

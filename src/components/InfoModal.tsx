@@ -3,13 +3,21 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/InfoModal.module.scss";
 
+type ActionState =
+  | { phase: "idle" }
+  | { phase: "loading"; type: string }
+  | { phase: "success" }
+  | { phase: "error" };
+
 type InfoModalProps = {
-  type: string;
+  state: ActionState;
 };
 
-const InfoModal = ({ type }: InfoModalProps) => {
+const InfoModal = ({ state }: InfoModalProps) => {
   const { t } = useTranslation();
   type InfoModalType = keyof typeof INFO_MODAL_MESSAGES;
+  const displayType = state.phase === "loading" ? state.type : state.phase;
+
   const INFO_MODAL_MESSAGES = {
     saving: {
       icon: LoaderCircle,
@@ -40,7 +48,7 @@ const InfoModal = ({ type }: InfoModalProps) => {
     },
   };
 
-  const message = INFO_MODAL_MESSAGES[type as InfoModalType] || {
+  const message = INFO_MODAL_MESSAGES[displayType as InfoModalType] || {
     icon: Info,
     title: t("infoModal.info.title"),
     text: t("infoModal.info.text"),
@@ -48,6 +56,8 @@ const InfoModal = ({ type }: InfoModalProps) => {
   };
 
   const Icon = message.icon;
+
+  if (state.phase === "idle") return null;
 
   return (
     <div className={styles.modal}>
