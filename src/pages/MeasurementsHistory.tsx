@@ -22,7 +22,6 @@ import {
   archiveMeasurementType,
 } from "../services/measurements";
 import {
-  convertValueToBaseUnit,
   formatDate,
   formatDateForInput,
   formatValueBasedOnUnit,
@@ -107,12 +106,18 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
     setSaving(true);
     try {
       const newLog = await createMeasurementLog([
-        { value_cm: convertValueToBaseUnit(value, unit), measured_at: date, measurement_type_id: typeId },
+        { value_cm: value, measured_at: date, measurement_type_id: typeId },
       ]);
       if (newLog) {
         setMeasurementsData((prev) =>
           prev
-            ? [...prev, newLog[0]].sort(
+            ? [
+                ...prev,
+                {
+                  ...newLog[0],
+                  value_cm: formatValueBasedOnUnit(newLog[0].value_cm, unit),
+                },
+              ].sort(
                 (a: MeasurementLogDB, b: MeasurementLogDB) =>
                   new Date(b.measured_at).getTime() -
                   new Date(a.measured_at).getTime(),
@@ -208,7 +213,17 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
         setMeasurementsData((prev) =>
           prev
             ? prev
-                .map((log) => (log.id === updatedLog.id ? updatedLog : log))
+                .map((log) =>
+                  log.id === updatedLog.id
+                    ? {
+                        ...updatedLog,
+                        value_cm: formatValueBasedOnUnit(
+                          updatedLog.value_cm,
+                          unit,
+                        ),
+                      }
+                    : log,
+                )
                 .sort(
                   (a: MeasurementLogDB, b: MeasurementLogDB) =>
                     new Date(b.measured_at).getTime() -

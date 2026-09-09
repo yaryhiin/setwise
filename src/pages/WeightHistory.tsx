@@ -92,7 +92,13 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
       if (newLog) {
         setWeightData((prev) =>
           prev
-            ? [...prev, newLog].sort(
+            ? [
+                ...prev,
+                {
+                  ...newLog,
+                  weight_kg: formatValueBasedOnUnit(newLog.weight_kg, unit),
+                },
+              ].sort(
                 (a: WeightLogDB, b: WeightLogDB) =>
                   new Date(b.measured_at).getTime() -
                   new Date(a.measured_at).getTime(),
@@ -160,7 +166,17 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
         setWeightData((prev) =>
           prev
             ? prev
-                .map((log) => (log.id === updatedLog.id ? updatedLog : log))
+                .map((log) =>
+                  log.id === updatedLog.id
+                    ? {
+                        ...updatedLog,
+                        weight_kg: formatValueBasedOnUnit(
+                          updatedLog.weight_kg,
+                          unit,
+                        ),
+                      }
+                    : log,
+                )
                 .sort(
                   (a: WeightLogDB, b: WeightLogDB) =>
                     new Date(b.measured_at).getTime() -
