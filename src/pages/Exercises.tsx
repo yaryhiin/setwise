@@ -76,6 +76,11 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
     loadExercises();
   }, []);
 
+  useEffect(() => {
+    if (exercises)
+      localStorage.setItem(EXERCISES_KEY, JSON.stringify(exercises));
+  }, [exercises]);
+
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   async function addExercise(name: string, category: string) {
