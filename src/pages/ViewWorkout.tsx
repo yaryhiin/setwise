@@ -11,8 +11,8 @@ import WorkoutForm from "../components/WorkoutForm";
 import LoadingScreen from "../components/LoadingScreen";
 
 import { getWorkoutDetails } from "../services/workouts";
-import { formatTime, formatValueBasedOnUnit } from "../services/utils";
-import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
+import { formatTime, formatValueBasedOnUnit } from "../utils/utils";
+import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
 import { getProfile } from "../services/profiles";
 import { createEmptyWorkout } from "../services/defaults";
 

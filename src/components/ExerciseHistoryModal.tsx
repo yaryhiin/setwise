@@ -9,11 +9,7 @@ import type { ExerciseHistory } from "../types/exercise";
 
 import { getExercisesLogs } from "../services/exercises";
 
-import {
-  formatDate,
-  formatValueBasedOnUnit,
-  formatTime,
-} from "../services/utils";
+import { formatDate, formatValueBasedOnUnit, formatTime } from "../utils/utils";
 import type { PreferredWeightUnit } from "../types/profile";
 
 type ExerciseHistoryModalProps = {

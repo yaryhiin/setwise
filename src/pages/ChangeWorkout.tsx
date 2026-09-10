@@ -23,9 +23,9 @@ import {
   convertValueToBaseUnit,
   formatTime,
   formatValueBasedOnUnit,
-} from "../services/utils";
+} from "../utils/utils";
 import { getProfile } from "../services/profiles";
-import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
+import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
 import { createEmptyWorkout } from "../services/defaults";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";

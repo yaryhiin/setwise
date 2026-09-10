@@ -9,7 +9,7 @@ import type { WorkoutDB } from "../types/workout";
 
 import LoadingScreen from "../components/LoadingScreen";
 
-import { formatDate, formatDuration } from "../services/utils";
+import { formatDate, formatDuration } from "../utils/utils";
 import { getWorkoutsHistory } from "../services/workouts";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 

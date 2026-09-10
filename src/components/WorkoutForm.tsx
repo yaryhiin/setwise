@@ -21,8 +21,8 @@ import type { Dispatch, SetStateAction } from "react";
 import ExecuteModal from "./ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
 
-import { createLocalId, formatValueBasedOnUnit } from "../services/utils";
-import { formatTime } from "../services/utils";
+import { createLocalId, formatValueBasedOnUnit } from "../utils/utils";
+import { formatTime } from "../utils/utils";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 
@@ -87,6 +87,9 @@ const WorkoutForm = ({
   const [showExerciseOptions, setShowExerciseOptions] = useState(false);
   const [showSupersetOptions, setShowSupersetOptions] = useState(false);
 
+  // Fires up after user finished the last exercise in the list
+  // sets up first exercise in the list with unfinished sets/set
+  // if none, sets it to null to signal user that full workout is done
   useEffect(() => {
     if (workout.exercises.length > 0) {
       if (!selectedExercise) {
@@ -133,6 +136,7 @@ const WorkoutForm = ({
       localStorage.setItem(WORKOUT_SUPERSET, JSON.stringify(superset));
   }, [superset]);
 
+  // Rest timer logic
   useEffect(() => {
     if (
       !restStart ||
@@ -144,6 +148,7 @@ const WorkoutForm = ({
       return;
 
     const interval = setInterval(() => {
+      // Checking if we are in superset exercise
       if (
         superset &&
         superset.some(
@@ -151,38 +156,54 @@ const WorkoutForm = ({
             e.exercise1Id === selectedExercise.exercise_id ||
             e.exercise2Id === selectedExercise.exercise_id,
         ) &&
+        // Skipping first set on first exercise in the superset,
+        // cause we need rest time to go into before superset exercise`s last set
         !(
           selectedSet.set_number === 1 &&
           superset.some((e) => e.exercise1Id === selectedExercise.exercise_id)
         )
       ) {
-        if (superset && selectedExercise && selectedSet) {
-          for (let i of superset) {
-            const timePassed1 =
-              Date.now() - new Date(i.exercise1RestStart).getTime();
-            const timePassed2 =
-              Date.now() - new Date(i.exercise2RestStart).getTime();
+        for (let i of superset) {
+          const timePassed1 =
+            Date.now() - new Date(i.exercise1RestStart).getTime();
+          const timePassed2 =
+            Date.now() - new Date(i.exercise2RestStart).getTime();
 
-            let setNumber1 = 0;
-            let exerciseId1 = "";
-            let setNumber2 = 0;
-            let exerciseId2 = "";
-            let completedSetFound1 = false;
-            let completedSetFound2 = false;
+          let setNumber1 = 0;
+          let exerciseId1 = "";
+          let setNumber2 = 0;
+          let exerciseId2 = "";
+          let completedSetFound1 = false;
+          let completedSetFound2 = false;
 
-            const exercise1 = workout.exercises.find(
-              (exercise) => exercise.exercise_id === i.exercise1Id,
-            );
+          const exercise1 = workout.exercises.find(
+            (exercise) => exercise.exercise_id === i.exercise1Id,
+          );
 
-            const exercise2 = workout.exercises.find(
-              (exercise) => exercise.exercise_id === i.exercise2Id,
-            );
+          const exercise2 = workout.exercises.find(
+            (exercise) => exercise.exercise_id === i.exercise2Id,
+          );
 
-            if (!exercise1 || !exercise2) return;
-            const exerciseIndex1 = exercise1.order_index - 1;
-            const exerciseIndex2 = exercise2.order_index - 1;
+          if (!exercise1 || !exercise2) return;
+          const exerciseIndex1 = exercise1.order_index - 1;
+          const exerciseIndex2 = exercise2.order_index - 1;
 
-            for (let e = exerciseIndex1; e >= 0 && !completedSetFound1; e--) {
+          for (let e = exerciseIndex1; e >= 0 && !completedSetFound1; e--) {
+            const currentExercise = workout.exercises[e];
+            const startingSetIndex = currentExercise.sets.length - 1;
+
+            for (let j = startingSetIndex; j >= 0; j--) {
+              const previousSet = currentExercise.sets[j];
+
+              if (previousSet.done) {
+                setNumber1 = previousSet.set_number;
+                exerciseId1 = currentExercise.exercise_id;
+                completedSetFound1 = true;
+                break;
+              }
+            }
+
+            for (let e = exerciseIndex2; e >= 0 && !completedSetFound2; e--) {
               const currentExercise = workout.exercises[e];
               const startingSetIndex = currentExercise.sets.length - 1;
 
@@ -190,67 +211,51 @@ const WorkoutForm = ({
                 const previousSet = currentExercise.sets[j];
 
                 if (previousSet.done) {
-                  setNumber1 = previousSet.set_number;
-                  exerciseId1 = currentExercise.exercise_id;
-                  completedSetFound1 = true;
+                  setNumber2 = previousSet.set_number;
+                  exerciseId2 = currentExercise.exercise_id;
+                  completedSetFound2 = true;
                   break;
                 }
               }
-
-              for (let e = exerciseIndex2; e >= 0 && !completedSetFound2; e--) {
-                const currentExercise = workout.exercises[e];
-                const startingSetIndex = currentExercise.sets.length - 1;
-
-                for (let j = startingSetIndex; j >= 0; j--) {
-                  const previousSet = currentExercise.sets[j];
-
-                  if (previousSet.done) {
-                    setNumber2 = previousSet.set_number;
-                    exerciseId2 = currentExercise.exercise_id;
-                    completedSetFound2 = true;
-                    break;
-                  }
-                }
-                if (setNumber1 && exerciseId1 && timePassed1) {
-                  updateSet(
-                    exerciseId1,
-                    setNumber1,
-                    "rest_seconds",
-                    Math.floor(timePassed1 / 1000),
-                  );
-                }
-                if (setNumber2 && exerciseId2 && timePassed2) {
-                  updateSet(
-                    exerciseId2,
-                    setNumber2,
-                    "rest_seconds",
-                    Math.floor(timePassed2 / 1000),
-                  );
-                }
-                if (
-                  superset.some(
-                    (e) => e.exercise1Id === selectedExercise.exercise_id,
-                  )
-                ) {
-                  if (timePassed1)
-                    setSelectedSet((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            rest_seconds: Math.floor(timePassed1 / 1000),
-                          }
-                        : null,
-                    );
-                } else if (timePassed2)
+              if (setNumber1 && exerciseId1 && timePassed1) {
+                updateSet(
+                  exerciseId1,
+                  setNumber1,
+                  "rest_seconds",
+                  Math.floor(timePassed1 / 1000),
+                );
+              }
+              if (setNumber2 && exerciseId2 && timePassed2) {
+                updateSet(
+                  exerciseId2,
+                  setNumber2,
+                  "rest_seconds",
+                  Math.floor(timePassed2 / 1000),
+                );
+              }
+              if (
+                superset.some(
+                  (e) => e.exercise1Id === selectedExercise.exercise_id,
+                )
+              ) {
+                if (timePassed1)
                   setSelectedSet((prev) =>
                     prev
                       ? {
                           ...prev,
-                          rest_seconds: Math.floor(timePassed2 / 1000),
+                          rest_seconds: Math.floor(timePassed1 / 1000),
                         }
                       : null,
                   );
-              }
+              } else if (timePassed2)
+                setSelectedSet((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        rest_seconds: Math.floor(timePassed2 / 1000),
+                      }
+                    : null,
+                );
             }
           }
         }

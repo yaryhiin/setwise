@@ -11,7 +11,7 @@ import type { WorkoutDB } from "../types/workout";
 import { getWorkoutsHistory } from "../services/workouts";
 import { getRoutines } from "../services/routines";
 
-import { formatDate, formatDuration } from "../services/utils";
+import { formatDate, formatDuration } from "../utils/utils";
 
 import LoadingScreen from "../components/LoadingScreen";
 

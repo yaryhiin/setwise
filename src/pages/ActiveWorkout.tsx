@@ -17,8 +17,8 @@ import LoadingScreen from "../components/LoadingScreen";
 import { getRoutineDetails } from "../services/routines";
 import { createExercise, getExercises } from "../services/exercises";
 import { createWorkout, getPreviousExerciseData } from "../services/workouts";
-import { convertValueToBaseUnit, formatTime } from "../services/utils";
-import { getPersistedJSON, getInitialPreferredUnit } from "../services/storage";
+import { convertValueToBaseUnit, formatTime } from "../utils/utils";
+import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
 import { getProfile } from "../services/profiles";
 import { createEmptyWorkout } from "../services/defaults";
 

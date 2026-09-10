@@ -15,7 +15,7 @@ import {
   getMeasurementTypes,
   createMeasurementLog,
 } from "../services/measurements";
-import { convertValueToBaseUnit } from "../services/utils";
+import { convertValueToBaseUnit } from "../utils/utils";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
 

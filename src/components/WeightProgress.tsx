@@ -10,7 +10,7 @@ import Chart from "./Chart";
 import { getWeightsHistory } from "../services/weightLogs";
 
 import type { ChartData } from "../types/chart";
-import { formatValueBasedOnUnit } from "../services/utils";
+import { formatValueBasedOnUnit } from "../utils/utils";
 
 type WeightProgressProps = {
   unit: "kg" | "lb";

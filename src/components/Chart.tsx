@@ -14,7 +14,7 @@ import styles from "../styles/modules/Chart.module.scss";
 
 import type { ChartBriefInfo, ChartData } from "../types/chart";
 
-import { formatTime } from "../services/utils";
+import { formatTime } from "../utils/utils";
 import { ArrowRight } from "lucide-react";
 
 const days = [

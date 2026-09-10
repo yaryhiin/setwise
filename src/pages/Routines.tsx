@@ -11,7 +11,7 @@ import InfoModal from "../components/InfoModal";
 import LoadingScreen from "../components/LoadingScreen";
 
 import { getRoutines, deleteRoutine } from "../services/routines";
-import { getPersistedJSON } from "../services/storage";
+import { getPersistedJSON } from "../utils/storage";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
 

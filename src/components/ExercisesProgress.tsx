@@ -7,7 +7,7 @@ import styles from "../styles/modules/ProgressComponents.module.scss";
 
 import Chart from "./Chart";
 import { getExercises, getExercisesLogs } from "../services/exercises";
-import { formatValueBasedOnUnit } from "../services/utils";
+import { formatValueBasedOnUnit } from "../utils/utils";
 
 import type { ChartData } from "../types/chart";
 import type { ExerciseDB, ExerciseLogDB } from "../types/exercise";

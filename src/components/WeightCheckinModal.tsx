@@ -8,7 +8,7 @@ import type { WeightCheckinErrors } from "../types/errors";
 import InfoModal from "../components/InfoModal";
 
 import { createWeightLog, getLatestWeightLog } from "../services/weightLogs";
-import { convertValueToBaseUnit, formatDate } from "../services/utils";
+import { convertValueToBaseUnit, formatDate } from "../utils/utils";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
 

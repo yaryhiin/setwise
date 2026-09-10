@@ -27,7 +27,7 @@ import {
   updateRoutine,
 } from "../services/routines";
 import { getExercises, createExercise } from "../services/exercises";
-import { getPersistedJSON } from "../services/storage";
+import { getPersistedJSON } from "../utils/storage";
 
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useAsyncAction } from "../hooks/useAsyncAction";

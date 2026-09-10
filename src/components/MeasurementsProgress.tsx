@@ -10,7 +10,7 @@ import {
   getMeasurementTypes,
   getMeasurementsHistory,
 } from "../services/measurements";
-import { formatValueBasedOnUnit } from "../services/utils";
+import { formatValueBasedOnUnit } from "../utils/utils";
 
 import type {
   MeasurementTypeDB,

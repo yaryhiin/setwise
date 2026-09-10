@@ -6,7 +6,7 @@ import { Pencil, Trash2, EllipsisVertical } from "lucide-react";
 import styles from "../styles/modules/ManageLogModal.module.scss";
 
 import { useOutsideClick } from "../hooks/useOutsideClick";
-import { convertValueToBaseUnit } from "../services/utils";
+import { convertValueToBaseUnit } from "../utils/utils";
 
 import type { MeasurementTypeDB } from "../types/measurements";
 import type {

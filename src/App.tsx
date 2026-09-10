@@ -44,7 +44,7 @@ import type {
 
 import { getProfile, createProfile, updateProfile } from "./services/profiles";
 import { getLatestWeightLog } from "./services/weightLogs";
-import { getDaysSince, getTodayDateString } from "./services/utils";
+import { getDaysSince, getTodayDateString } from "./utils/utils";
 import {
   getLatestMeasurementLog,
   createDefaultMeasurementTypes,
