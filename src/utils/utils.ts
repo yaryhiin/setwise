@@ -3,6 +3,7 @@ import type {
   PreferredMeasurementUnit,
   PreferredWeightUnit,
 } from "../types/profile";
+import type { WorkoutSet } from "../types/workout";
 
 const locales = {
   en: "en-CA",
@@ -138,4 +139,37 @@ export function convertValueToBaseUnit(
     case "in":
       return Math.round(value * 2.54 * 100) / 100;
   }
+}
+
+type PreviousExercise = {
+  workout_sets: WorkoutSet[];
+};
+
+export function formatPreviousSets(
+  preferredUnit: PreferredWeightUnit,
+  previousExercise?: PreviousExercise | null,
+) {
+  if (!previousExercise) return "No previous data";
+
+  const grouped = new Map<number, number[]>();
+
+  [...previousExercise.workout_sets]
+    .sort((a, b) => a.set_number - b.set_number)
+    .filter((set) => set.done)
+    .filter((set) => set.reps > 0)
+    .forEach((set) => {
+      const reps = grouped.get(set.weight) ?? [];
+      reps.push(set.reps);
+      grouped.set(set.weight, reps);
+    });
+
+  return [...grouped.entries()]
+    .map(([weight, reps]) => {
+      if (weight === 0) {
+        return `${i18n.t("label.bw")} × ${reps.join(", ")}`;
+      }
+
+      return `${formatValueBasedOnUnit(weight, preferredUnit ?? "kg")}${preferredUnit} x ${reps.join(", ")}`;
+    })
+    .join(", ");
 }

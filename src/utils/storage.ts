@@ -17,3 +17,17 @@ export function getInitialPreferredUnit(): "kg" | "lb" {
 
   return savedUnit === "kg" || savedUnit === "lb" ? savedUnit : "kg";
 }
+
+export function getInitialRestStart(key: string) {
+  const savedRestStart = localStorage.getItem(key);
+
+  if (savedRestStart) {
+    try {
+      return savedRestStart;
+    } catch {
+      localStorage.removeItem(key);
+    }
+  }
+
+  return new Date().toISOString();
+}

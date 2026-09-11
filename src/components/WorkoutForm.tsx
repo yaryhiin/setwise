@@ -21,10 +21,11 @@ import type { Dispatch, SetStateAction } from "react";
 import ExecuteModal from "./ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
 
-import { createLocalId, formatValueBasedOnUnit } from "../utils/utils";
-import { formatTime } from "../utils/utils";
+import { createLocalId } from "../utils/utils";
+import { formatTime, formatPreviousSets } from "../utils/utils";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+import { getPersistedJSON, getInitialRestStart } from "../utils/storage";
 
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
@@ -41,10 +42,6 @@ type WorkoutFormProps = {
   previousData?: Record<string, any>;
   addExercise?: (name: string, category: string) => Promise<void>;
   handleUpdate?: () => Promise<void>;
-};
-
-type PreviousExercise = {
-  workout_sets: WorkoutSet[];
 };
 
 type Superset = {
@@ -74,13 +71,23 @@ const WorkoutForm = ({
   const supersetMenuRef = useRef<HTMLDivElement>(null);
   const [chosenExerciseId, setChosenExerciseId] = useState("");
   const [selectedSet, setSelectedSet] = useState<WorkoutSet | null>(
-    getInitialSelectedSet,
+    getPersistedJSON(
+      WORKOUT_SELECTED_SET_KEY,
+      workout?.exercises[0]?.sets[0] ?? null,
+    ),
   );
-  const [restStart, setRestStart] = useState(getInitialRestStart);
+  const [restStart, setRestStart] = useState(
+    getInitialRestStart(WORKOUT_REST_START_KEY),
+  );
   const [selectedExercise, setSelectedExercise] =
-    useState<WorkoutExercise | null>(getInitialSelectedExercise);
+    useState<WorkoutExercise | null>(
+      getPersistedJSON(
+        WORKOUT_SELECTED_EXERCISE_KEY,
+        workout?.exercises[0] ?? null,
+      ),
+    );
   const [superset, setSuperset] = useState<Superset[] | null>(
-    getInititalSuperset,
+    getPersistedJSON(WORKOUT_SUPERSET, null),
   );
 
   const [showNotes, setShowNotes] = useState<Record<string, boolean>>({});
@@ -174,10 +181,10 @@ const WorkoutForm = ({
             Date.now() - new Date(i.exercise1RestStart).getTime();
           const timePassed2 =
             Date.now() - new Date(i.exercise2RestStart).getTime();
+
           const exercise1 = workout.exercises.find(
             (exercise) => exercise.exercise_id === i.exercise1Id,
           );
-
           const exercise2 = workout.exercises.find(
             (exercise) => exercise.exercise_id === i.exercise2Id,
           );
@@ -187,6 +194,7 @@ const WorkoutForm = ({
           let setNumber1 = null;
           let setNumber2 = null;
 
+          // Looking for the last completed set in each superset exercise
           for (let j = exercise1.sets.length - 1; j >= 0; j--) {
             if (exercise1.sets[j].done) {
               setNumber1 = exercise1.sets[j].set_number;
@@ -216,6 +224,8 @@ const WorkoutForm = ({
               Math.floor(timePassed2 / 1000),
             );
           }
+
+          // Checking which exercise we are currently on and showing that rest seconds on the bottom bar
           if (
             superset.some((e) => e.exercise1Id === selectedExercise.exercise_id)
           ) {
@@ -238,7 +248,9 @@ const WorkoutForm = ({
                 : null,
             );
         }
-      } else {
+      }
+      // Not superset timer logic
+      else {
         const timePassed = Date.now() - new Date(restStart).getTime();
         let setNumber = 0;
         let exerciseId = "";
@@ -301,90 +313,6 @@ const WorkoutForm = ({
         block: "start",
       });
   }, [selectedExercise?.exercise_id, selectedSet?.set_number]);
-
-  function getInitialSelectedExercise() {
-    const savedSelectedExercise = localStorage.getItem(
-      WORKOUT_SELECTED_EXERCISE_KEY,
-    );
-
-    if (savedSelectedExercise) {
-      try {
-        return JSON.parse(savedSelectedExercise) as WorkoutExercise;
-      } catch {
-        localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
-      }
-    }
-
-    return workout?.exercises[0] ?? null;
-  }
-
-  function getInitialRestStart() {
-    const savedRestStart = localStorage.getItem(WORKOUT_REST_START_KEY);
-
-    if (savedRestStart) {
-      try {
-        return savedRestStart;
-      } catch {
-        localStorage.removeItem(WORKOUT_REST_START_KEY);
-      }
-    }
-
-    return new Date().toISOString();
-  }
-
-  function getInitialSelectedSet() {
-    const savedSelectedSet = localStorage.getItem(WORKOUT_SELECTED_SET_KEY);
-
-    if (savedSelectedSet) {
-      try {
-        return JSON.parse(savedSelectedSet) as WorkoutSet;
-      } catch {
-        localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
-      }
-    }
-
-    return workout?.exercises[0]?.sets[0] ?? null;
-  }
-
-  function getInititalSuperset() {
-    const savedSuperset = localStorage.getItem(WORKOUT_SUPERSET);
-
-    if (savedSuperset) {
-      try {
-        return JSON.parse(savedSuperset) as Superset[];
-      } catch {
-        localStorage.removeItem(WORKOUT_SUPERSET);
-      }
-    }
-
-    return null;
-  }
-
-  function formatPreviousSets(previousExercise?: PreviousExercise | null) {
-    if (!previousExercise) return "No previous data";
-
-    const grouped = new Map<number, number[]>();
-
-    [...previousExercise.workout_sets]
-      .sort((a, b) => a.set_number - b.set_number)
-      .filter((set) => set.done)
-      .filter((set) => set.reps > 0)
-      .forEach((set) => {
-        const reps = grouped.get(set.weight) ?? [];
-        reps.push(set.reps);
-        grouped.set(set.weight, reps);
-      });
-
-    return [...grouped.entries()]
-      .map(([weight, reps]) => {
-        if (weight === 0) {
-          return `${t("label.bw")} × ${reps.join(", ")}`;
-        }
-
-        return `${formatValueBasedOnUnit(weight, preferredUnit ?? "kg")}${preferredUnit} x ${reps.join(", ")}`;
-      })
-      .join(", ");
-  }
 
   function addSet(exerciseId: string) {
     if (!setWorkout || pageType === "view") return;
@@ -809,7 +737,10 @@ const WorkoutForm = ({
               {previousData?.[exercise.exercise_id] && (
                 <p className={styles.exercisePrev}>
                   {t("workout.last")}{" "}
-                  {formatPreviousSets(previousData[exercise.exercise_id])}
+                  {formatPreviousSets(
+                    preferredUnit ?? "kg",
+                    previousData[exercise.exercise_id],
+                  )}
                 </p>
               )}
               {previousData?.[exercise.exercise_id]?.notes && (
@@ -1332,7 +1263,7 @@ const WorkoutForm = ({
       )}
       {showRemoveExerciseModal && (
         <ExecuteModal
-          text={t("modal.selete.exerciseWorkout")}
+          text={t("modal.delete.exerciseWorkout")}
           btnText={t("common.delete")}
           onClose={() => setShowRemoveExerciseModal(false)}
           onDelete={removeExercise}
