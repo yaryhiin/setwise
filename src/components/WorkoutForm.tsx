@@ -164,18 +164,16 @@ const WorkoutForm = ({
         )
       ) {
         for (let i of superset) {
+          if (
+            i.exercise1Id !== selectedExercise.exercise_id &&
+            i.exercise2Id !== selectedExercise.exercise_id
+          )
+            continue;
+
           const timePassed1 =
             Date.now() - new Date(i.exercise1RestStart).getTime();
           const timePassed2 =
             Date.now() - new Date(i.exercise2RestStart).getTime();
-
-          let setNumber1 = 0;
-          let exerciseId1 = "";
-          let setNumber2 = 0;
-          let exerciseId2 = "";
-          let completedSetFound1 = false;
-          let completedSetFound2 = false;
-
           const exercise1 = workout.exercises.find(
             (exercise) => exercise.exercise_id === i.exercise1Id,
           );
@@ -184,80 +182,61 @@ const WorkoutForm = ({
             (exercise) => exercise.exercise_id === i.exercise2Id,
           );
 
-          if (!exercise1 || !exercise2) return;
-          const exerciseIndex1 = exercise1.order_index - 1;
-          const exerciseIndex2 = exercise2.order_index - 1;
+          if (!exercise1 || !exercise2) continue;
 
-          for (let e = exerciseIndex1; e >= 0 && !completedSetFound1; e--) {
-            const currentExercise = workout.exercises[e];
-            const startingSetIndex = currentExercise.sets.length - 1;
+          let setNumber1 = null;
+          let setNumber2 = null;
 
-            for (let j = startingSetIndex; j >= 0; j--) {
-              const previousSet = currentExercise.sets[j];
-
-              if (previousSet.done) {
-                setNumber1 = previousSet.set_number;
-                exerciseId1 = currentExercise.exercise_id;
-                completedSetFound1 = true;
-                break;
-              }
-            }
-
-            for (let e = exerciseIndex2; e >= 0 && !completedSetFound2; e--) {
-              const currentExercise = workout.exercises[e];
-              const startingSetIndex = currentExercise.sets.length - 1;
-
-              for (let j = startingSetIndex; j >= 0; j--) {
-                const previousSet = currentExercise.sets[j];
-
-                if (previousSet.done) {
-                  setNumber2 = previousSet.set_number;
-                  exerciseId2 = currentExercise.exercise_id;
-                  completedSetFound2 = true;
-                  break;
-                }
-              }
-              if (setNumber1 && exerciseId1 && timePassed1) {
-                updateSet(
-                  exerciseId1,
-                  setNumber1,
-                  "rest_seconds",
-                  Math.floor(timePassed1 / 1000),
-                );
-              }
-              if (setNumber2 && exerciseId2 && timePassed2) {
-                updateSet(
-                  exerciseId2,
-                  setNumber2,
-                  "rest_seconds",
-                  Math.floor(timePassed2 / 1000),
-                );
-              }
-              if (
-                superset.some(
-                  (e) => e.exercise1Id === selectedExercise.exercise_id,
-                )
-              ) {
-                if (timePassed1)
-                  setSelectedSet((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          rest_seconds: Math.floor(timePassed1 / 1000),
-                        }
-                      : null,
-                  );
-              } else if (timePassed2)
-                setSelectedSet((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        rest_seconds: Math.floor(timePassed2 / 1000),
-                      }
-                    : null,
-                );
+          for (let j = exercise1.sets.length - 1; j >= 0; j--) {
+            if (exercise1.sets[j].done) {
+              setNumber1 = exercise1.sets[j].set_number;
+              break;
             }
           }
+
+          for (let j = exercise2.sets.length - 1; j >= 0; j--) {
+            if (exercise2.sets[j].done) {
+              setNumber2 = exercise2.sets[j].set_number;
+              break;
+            }
+          }
+          if (setNumber1 && timePassed1) {
+            updateSet(
+              exercise1.exercise_id,
+              setNumber1,
+              "rest_seconds",
+              Math.floor(timePassed1 / 1000),
+            );
+          }
+          if (setNumber2 && timePassed2) {
+            updateSet(
+              exercise2.exercise_id,
+              setNumber2,
+              "rest_seconds",
+              Math.floor(timePassed2 / 1000),
+            );
+          }
+          if (
+            superset.some((e) => e.exercise1Id === selectedExercise.exercise_id)
+          ) {
+            if (timePassed1)
+              setSelectedSet((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      rest_seconds: Math.floor(timePassed1 / 1000),
+                    }
+                  : null,
+              );
+          } else if (timePassed2)
+            setSelectedSet((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    rest_seconds: Math.floor(timePassed2 / 1000),
+                  }
+                : null,
+            );
         }
       } else {
         const timePassed = Date.now() - new Date(restStart).getTime();
