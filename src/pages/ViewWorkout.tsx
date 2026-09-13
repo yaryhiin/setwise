@@ -12,7 +12,12 @@ import LoadingScreen from "../components/LoadingScreen";
 
 import { getWorkoutDetails } from "../services/workouts";
 import { formatTime, formatValueBasedOnUnit } from "../utils/utils";
-import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
+import {
+  getPersistedJSON,
+  getInitialPreferredUnit,
+  setPersistedJSON,
+  setPersistedString,
+} from "../utils/storage";
 import { getProfile } from "../services/profiles";
 import { createEmptyWorkout } from "../services/defaults";
 
@@ -88,12 +93,13 @@ const ViewWorkout = () => {
   }, []);
 
   useEffect(() => {
-    if (workout)
-      localStorage.setItem(VIEW_WORKOUT_KEY, JSON.stringify(workout));
+    if (!workout) return;
+    setPersistedJSON(VIEW_WORKOUT_KEY, workout);
   }, [workout]);
 
   useEffect(() => {
-    if (preferredUnit) localStorage.setItem(PREFERRED_UNIT_KEY, preferredUnit);
+    if (preferredUnit) return;
+    setPersistedString(PREFERRED_UNIT_KEY, String(preferredUnit));
   }, [preferredUnit]);
 
   if (loading) {

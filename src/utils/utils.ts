@@ -173,3 +173,15 @@ export function formatPreviousSets(
     })
     .join(", ");
 }
+
+export function restStartFromSet(set: WorkoutSet | null): string {
+  const newRestStart = set
+    ? new Date(Date.now() - Math.max(set.rest_seconds, 0) * 1000).toISOString()
+    : "";
+  return newRestStart;
+}
+
+export function calculatePassedSeconds(startTime: string) {
+  const timePassed = Date.now() - new Date(startTime).getTime();
+  return Math.floor(timePassed / 1000);
+}

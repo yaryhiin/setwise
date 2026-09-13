@@ -25,7 +25,12 @@ import {
   formatValueBasedOnUnit,
 } from "../utils/utils";
 import { getProfile } from "../services/profiles";
-import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
+import {
+  getPersistedJSON,
+  getInitialPreferredUnit,
+  setPersistedJSON,
+  setPersistedString,
+} from "../utils/storage";
 import { createEmptyWorkout } from "../services/defaults";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
@@ -136,16 +141,18 @@ const ChangeWorkout = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(CHANGE_WORKOUT_KEY, JSON.stringify(workout));
+    if (!workout) return;
+    setPersistedJSON(CHANGE_WORKOUT_KEY, workout);
   }, [workout]);
 
   useEffect(() => {
-    if (preferredUnit)
-      localStorage.setItem(PREFERRED_UNIT_KEY, preferredUnit ?? "kg");
+    if (!preferredUnit) return;
+    setPersistedString(PREFERRED_UNIT_KEY, String(preferredUnit) ?? "kg");
   }, [preferredUnit]);
 
   useEffect(() => {
-    localStorage.setItem(EXERCISES_KEY, JSON.stringify(exercises));
+    if (!exercises) return;
+    setPersistedJSON(EXERCISES_KEY, exercises);
   }, [exercises]);
 
   async function handleDelete() {

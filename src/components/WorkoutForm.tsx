@@ -27,9 +27,23 @@ import ExecuteModal from "./ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 
-import { formatTime, formatPreviousSets, createLocalId } from "../utils/utils";
-import { getPersistedJSON, getInitialRestStart } from "../utils/storage";
-import { switchSet } from "../utils/workoutForm/findLastCompletedSet.ts";
+import {
+  formatTime,
+  formatPreviousSets,
+  createLocalId,
+  restStartFromSet,
+  calculatePassedSeconds,
+} from "../utils/utils";
+import {
+  getPersistedJSON,
+  getInitialRestStart,
+  setPersistedJSON,
+  setPersistedString,
+} from "../utils/storage";
+import {
+  findLastCompletedSetsInSuperset,
+  findLastCompletedSetInWorkout,
+} from "../utils/workoutForm/findLastCompletedSet.ts";
 import {
   supersetCompleteExercise,
   supersetCompleteSet,
@@ -123,26 +137,23 @@ const WorkoutForm = ({
   }, [workout.exercises]);
 
   useEffect(() => {
-    if (pageType === "view") return;
-    localStorage.setItem(
-      WORKOUT_SELECTED_EXERCISE_KEY,
-      JSON.stringify(selectedExercise),
-    );
+    if (pageType === "view" || !selectedExercise) return;
+    setPersistedJSON(WORKOUT_SELECTED_EXERCISE_KEY, selectedExercise);
   }, [selectedExercise]);
 
   useEffect(() => {
-    if (pageType === "view") return;
-    localStorage.setItem(WORKOUT_SELECTED_SET_KEY, JSON.stringify(selectedSet));
+    if (pageType === "view" || !selectedSet) return;
+    setPersistedJSON(WORKOUT_SELECTED_SET_KEY, selectedSet);
   }, [selectedSet]);
 
   useEffect(() => {
-    if (pageType === "active")
-      localStorage.setItem(WORKOUT_REST_START_KEY, restStart);
+    if (pageType !== "active") return;
+    setPersistedString(WORKOUT_REST_START_KEY, restStart);
   }, [restStart]);
 
   useEffect(() => {
-    if (pageType === "active")
-      localStorage.setItem(WORKOUT_SUPERSET, JSON.stringify(superset));
+    if (pageType !== "active") return;
+    setPersistedJSON(WORKOUT_SUPERSET, superset);
   }, [superset]);
 
   // Rest timer logic
@@ -172,129 +183,11 @@ const WorkoutForm = ({
           superset.some((e) => e.exercise1Id === selectedExercise.exercise_id)
         )
       ) {
-        for (let i of superset) {
-          if (
-            i.exercise1Id !== selectedExercise.exercise_id &&
-            i.exercise2Id !== selectedExercise.exercise_id
-          )
-            continue;
-
-          const timePassed1 =
-            Date.now() - new Date(i.exercise1RestStart).getTime();
-          const timePassed2 =
-            Date.now() - new Date(i.exercise2RestStart).getTime();
-
-          const exercise1 = workout.exercises.find(
-            (exercise) => exercise.exercise_id === i.exercise1Id,
-          );
-          const exercise2 = workout.exercises.find(
-            (exercise) => exercise.exercise_id === i.exercise2Id,
-          );
-
-          if (!exercise1 || !exercise2) continue;
-
-          let setNumber1 = null;
-          let setNumber2 = null;
-
-          // Looking for the last completed set in each superset exercise
-          for (let j = exercise1.sets.length - 1; j >= 0; j--) {
-            if (exercise1.sets[j].done) {
-              setNumber1 = exercise1.sets[j].set_number;
-              break;
-            }
-          }
-
-          for (let j = exercise2.sets.length - 1; j >= 0; j--) {
-            if (exercise2.sets[j].done) {
-              setNumber2 = exercise2.sets[j].set_number;
-              break;
-            }
-          }
-          if (setNumber1 && timePassed1) {
-            updateSet(
-              exercise1.exercise_id,
-              setNumber1,
-              "rest_seconds",
-              Math.floor(timePassed1 / 1000),
-            );
-          }
-          if (setNumber2 && timePassed2) {
-            updateSet(
-              exercise2.exercise_id,
-              setNumber2,
-              "rest_seconds",
-              Math.floor(timePassed2 / 1000),
-            );
-          }
-
-          // Checking which exercise we are currently on and showing that rest seconds on the bottom bar
-          if (
-            superset.some((e) => e.exercise1Id === selectedExercise.exercise_id)
-          ) {
-            if (timePassed1)
-              setSelectedSet((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      rest_seconds: Math.floor(timePassed1 / 1000),
-                    }
-                  : null,
-              );
-          } else if (timePassed2)
-            setSelectedSet((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    rest_seconds: Math.floor(timePassed2 / 1000),
-                  }
-                : null,
-            );
-        }
+        handleSupersetTimer(selectedExercise, superset);
       }
       // Not superset timer logic
       else {
-        const timePassed = Date.now() - new Date(restStart).getTime();
-
-        let setNumber = 0;
-        let exerciseId = "";
-        let completedSetFound = false;
-
-        const exerciseIndex = selectedExercise.order_index - 1;
-
-        for (let i = exerciseIndex; i >= 0 && !completedSetFound; i--) {
-          const currentExercise = workout.exercises[i];
-          const startingSetIndex =
-            i === exerciseIndex
-              ? selectedSet.set_number - 2
-              : currentExercise.sets.length - 1;
-
-          for (let j = startingSetIndex; j >= 0; j--) {
-            const previousSet = currentExercise.sets[j];
-
-            if (previousSet.done) {
-              setNumber = previousSet.set_number;
-              exerciseId = currentExercise.exercise_id;
-              completedSetFound = true;
-              break;
-            }
-          }
-        }
-        if (!setNumber || !exerciseId) return;
-
-        updateSet(
-          exerciseId,
-          setNumber,
-          "rest_seconds",
-          Math.floor(timePassed / 1000),
-        );
-        setSelectedSet((prev) =>
-          prev
-            ? {
-                ...prev,
-                rest_seconds: Math.floor(timePassed / 1000),
-              }
-            : null,
-        );
+        handleTimer(selectedExercise, selectedSet);
       }
     }, 1000);
 
@@ -598,11 +491,40 @@ const WorkoutForm = ({
   function handleSwitchSet(exercise: WorkoutExercise, set: WorkoutSet) {
     setSelectedExercise(exercise);
     setSelectedSet(set);
-    const { newValue } = switchSet(workout, exercise, set, superset);
-    if (typeof newValue === "string") {
-      setRestStart(newValue);
+    if (
+      superset &&
+      superset.some(
+        (e) =>
+          e.exercise1Id === exercise.exercise_id ||
+          e.exercise2Id === exercise.exercise_id,
+      )
+    ) {
+      const { completedSet1, completedSet2 } = findLastCompletedSetsInSuperset(
+        workout,
+        exercise,
+        superset,
+      );
+      setSuperset((prev) =>
+        prev
+          ? prev.map((s) =>
+              s.exercise1Id === exercise.exercise_id ||
+              s.exercise2Id === exercise.exercise_id
+                ? {
+                    ...s,
+                    exercise1RestStart: restStartFromSet(completedSet1),
+                    exercise2RestStart: restStartFromSet(completedSet2),
+                  }
+                : s,
+            )
+          : prev,
+      );
     } else {
-      setSuperset(newValue);
+      const { completedSet } = findLastCompletedSetInWorkout(
+        workout,
+        exercise,
+        set,
+      );
+      setRestStart(restStartFromSet(completedSet));
     }
   }
 
@@ -680,6 +602,87 @@ const WorkoutForm = ({
     );
     setSelectedSet(selectedExercise.sets[selectedSet.set_number] ?? null);
     setRestStart(new Date().toISOString());
+  }
+
+  function handleTimer(
+    selectedExercise: WorkoutExercise,
+    selectedSet: WorkoutSet,
+  ) {
+    const timePassed = calculatePassedSeconds(restStart);
+
+    const { completedSet, exerciseId } = findLastCompletedSetInWorkout(
+      workout,
+      selectedExercise,
+      selectedSet,
+    );
+    if (completedSet && exerciseId) {
+      updateSet(
+        exerciseId,
+        completedSet.set_number,
+        "rest_seconds",
+        timePassed,
+      );
+      setSelectedSet((prev) =>
+        prev
+          ? {
+              ...prev,
+              rest_seconds: Math.floor(timePassed / 1000),
+            }
+          : null,
+      );
+    }
+  }
+
+  function handleSupersetTimer(
+    selectedExercise: WorkoutExercise,
+    superset: Superset[],
+  ) {
+    const {
+      completedSet1,
+      completedSet2,
+      exerciseSuperset1,
+      exerciseSuperset2,
+    } = findLastCompletedSetsInSuperset(workout, selectedExercise, superset);
+    if (completedSet1 && exerciseSuperset1 && exerciseSuperset1.restStart) {
+      const timePassed1 = calculatePassedSeconds(exerciseSuperset1.restStart);
+      updateSet(
+        exerciseSuperset1.exerciseId,
+        completedSet1.set_number,
+        "rest_seconds",
+        timePassed1,
+      );
+      // Checking which exercise we are currently on and showing that rest seconds on the bottom bar
+      if (exerciseSuperset1.exerciseId === selectedExercise.exercise_id) {
+        setSelectedSet((prev) =>
+          prev
+            ? {
+                ...prev,
+                rest_seconds: timePassed1,
+              }
+            : null,
+        );
+      }
+    }
+    if (completedSet2 && exerciseSuperset2 && exerciseSuperset2.restStart) {
+      const timePassed2 = calculatePassedSeconds(exerciseSuperset2.restStart);
+      updateSet(
+        exerciseSuperset2.exerciseId,
+        completedSet2.set_number,
+        "rest_seconds",
+        timePassed2,
+      );
+      // Checking which exercise we are currently on and showing that rest seconds on the bottom bar
+      if (exerciseSuperset2.exerciseId === selectedExercise.exercise_id) {
+        setSelectedSet((prev) =>
+          prev
+            ? {
+                ...prev,
+                rest_seconds: Math.floor(timePassed2 / 1000),
+              }
+            : null,
+        );
+      }
+    }
   }
 
   return (

@@ -17,8 +17,17 @@ import LoadingScreen from "../components/LoadingScreen";
 import { getRoutineDetails } from "../services/routines";
 import { createExercise, getExercises } from "../services/exercises";
 import { createWorkout, getPreviousExerciseData } from "../services/workouts";
-import { convertValueToBaseUnit, formatTime } from "../utils/utils";
-import { getPersistedJSON, getInitialPreferredUnit } from "../utils/storage";
+import {
+  convertValueToBaseUnit,
+  formatTime,
+  calculatePassedSeconds,
+} from "../utils/utils";
+import {
+  getPersistedJSON,
+  getInitialPreferredUnit,
+  setPersistedJSON,
+  setPersistedString,
+} from "../utils/storage";
 import { getProfile } from "../services/profiles";
 import { createEmptyWorkout } from "../services/defaults";
 
@@ -137,7 +146,7 @@ const ActiveWorkout = () => {
       return;
     }
     if (routineId) {
-      localStorage.setItem(ACTIVE_WORKOUT_ROUTINE_KEY, routineId);
+      setPersistedString(ACTIVE_WORKOUT_ROUTINE_KEY, routineId);
       async function getDetails() {
         setLoading(true);
         try {
@@ -192,38 +201,37 @@ const ActiveWorkout = () => {
     if (!workout.started_at) return;
 
     const interval = setInterval(() => {
-      const timePassed = Date.now() - new Date(workout.started_at).getTime();
-      setSeconds(Math.floor(timePassed / 1000));
+      const timePassed = calculatePassedSeconds(workout.started_at);
+      setSeconds(timePassed);
     }, 1000);
 
     return () => clearInterval(interval);
   }, [workout.started_at]);
 
   useEffect(() => {
-    localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify(workout));
+    if (!workout) return;
+    setPersistedJSON(ACTIVE_WORKOUT_KEY, workout);
   }, [workout]);
 
   useEffect(() => {
-    localStorage.setItem(ACTIVE_WORKOUT_SECONDS_KEY, String(seconds));
+    setPersistedString(ACTIVE_WORKOUT_SECONDS_KEY, String(seconds));
   }, [seconds]);
 
   useEffect(() => {
-    localStorage.setItem(EXERCISES_KEY, JSON.stringify(exercises));
+    if (!exercises) return;
+    setPersistedJSON(EXERCISES_KEY, exercises);
   }, [exercises]);
 
   useEffect(() => {
     if (preferredUnit === "kg" || preferredUnit === "lb") {
-      localStorage.setItem(PREFERRED_UNIT_KEY, String(preferredUnit));
+      setPersistedString(PREFERRED_UNIT_KEY, String(preferredUnit));
     }
   }, [preferredUnit]);
 
   useEffect(() => {
     if (Object.keys(previousData).length === 0) return;
 
-    localStorage.setItem(
-      ACTIVE_WORKOUT_PREVIOUS_DATA_KEY,
-      JSON.stringify(previousData),
-    );
+    setPersistedJSON(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY, previousData);
   }, [previousData]);
 
   async function addExercise(name: string, category: string) {
