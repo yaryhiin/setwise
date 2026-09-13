@@ -62,3 +62,11 @@ export type WorkoutDetails = WorkoutDB & {
     }
   >;
 };
+
+export type Superset = {
+  exercise0Id: string;
+  exercise1Id: string;
+  exercise2Id: string;
+  exercise1RestStart: string;
+  exercise2RestStart: string;
+};
