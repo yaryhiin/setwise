@@ -13,19 +13,29 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/WorkoutForm.module.scss";
 
-import type { WorkoutExercise, Workout, WorkoutSet } from "../types/workout";
+import type {
+  WorkoutExercise,
+  Workout,
+  WorkoutSet,
+  Superset,
+} from "../types/workout";
 import type { ExerciseDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
 import type { Dispatch, SetStateAction } from "react";
 
 import ExecuteModal from "./ExecuteModal";
 import ChooseExerciseModal from "../components/ChooseExerciseModal";
-
-import { createLocalId } from "../utils/utils";
-import { formatTime, formatPreviousSets } from "../utils/utils";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
-import { useOutsideClick } from "../hooks/useOutsideClick";
+
+import { formatTime, formatPreviousSets, createLocalId } from "../utils/utils";
 import { getPersistedJSON, getInitialRestStart } from "../utils/storage";
+import { switchSet } from "../utils/workoutForm/findLastCompletedSet.ts";
+import {
+  supersetCompleteExercise,
+  supersetCompleteSet,
+} from "../utils/workoutForm/supersetActions.ts";
+
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
@@ -42,14 +52,6 @@ type WorkoutFormProps = {
   previousData?: Record<string, any>;
   addExercise?: (name: string, category: string) => Promise<void>;
   handleUpdate?: () => Promise<void>;
-};
-
-type Superset = {
-  exercise0Id: string;
-  exercise1Id: string;
-  exercise2Id: string;
-  exercise1RestStart: string;
-  exercise2RestStart: string;
 };
 
 const WorkoutForm = ({
@@ -252,6 +254,7 @@ const WorkoutForm = ({
       // Not superset timer logic
       else {
         const timePassed = Date.now() - new Date(restStart).getTime();
+
         let setNumber = 0;
         let exerciseId = "";
         let completedSetFound = false;
@@ -592,6 +595,93 @@ const WorkoutForm = ({
     }));
   }
 
+  function handleSwitchSet(exercise: WorkoutExercise, set: WorkoutSet) {
+    setSelectedExercise(exercise);
+    setSelectedSet(set);
+    const { newValue } = switchSet(workout, exercise, set, superset);
+    if (typeof newValue === "string") {
+      setRestStart(newValue);
+    } else {
+      setSuperset(newValue);
+    }
+  }
+
+  function handleSupersetCompleteExercise() {
+    if (!selectedExercise || !superset || !selectedSet) return;
+    updateSet(
+      selectedExercise.exercise_id,
+      selectedSet.set_number,
+      "done",
+      true,
+    );
+    const {
+      newSelectedExercise,
+      newSelectedSet,
+      addNewSet,
+      newSuperset,
+      endSuperset,
+    } = supersetCompleteExercise(
+      workout,
+      superset,
+      selectedExercise,
+      selectedSet,
+    );
+    setSelectedSet(newSelectedSet ?? null);
+    setSelectedExercise(newSelectedExercise ?? null);
+    if (addNewSet && newSelectedExercise)
+      addSet(newSelectedExercise.exercise_id);
+    setSuperset(newSuperset ?? superset);
+    if (endSuperset) setRestStart(new Date().toISOString());
+  }
+
+  function handleCompleteExercise() {
+    if (!selectedExercise || !selectedSet) return;
+    updateSet(
+      selectedExercise.exercise_id,
+      selectedSet.set_number,
+      "done",
+      true,
+    );
+    const nextExercise =
+      workout.exercises.find((exercise) =>
+        selectedExercise
+          ? selectedExercise?.order_index + 1 === exercise.order_index
+          : null,
+      ) ?? null;
+    setSelectedExercise(nextExercise);
+    setSelectedSet(nextExercise?.sets[0] ?? null);
+    setRestStart(new Date().toISOString());
+  }
+
+  function handleSupersetCompleteSet() {
+    if (!selectedExercise || !superset || !selectedSet) return;
+    updateSet(
+      selectedExercise.exercise_id,
+      selectedSet.set_number,
+      "done",
+      true,
+    );
+    const { newSelectedExercise, newSelectedSet, addNewSet, newSuperset } =
+      supersetCompleteSet(workout, superset, selectedExercise, selectedSet);
+    setSelectedSet(newSelectedSet ?? null);
+    setSelectedExercise(newSelectedExercise ?? null);
+    if (addNewSet && newSelectedExercise)
+      addSet(newSelectedExercise.exercise_id);
+    setSuperset(newSuperset ?? superset);
+  }
+
+  function handleCompleteSet() {
+    if (!selectedExercise || !selectedSet) return;
+    updateSet(
+      selectedExercise.exercise_id,
+      selectedSet.set_number,
+      "done",
+      true,
+    );
+    setSelectedSet(selectedExercise.sets[selectedSet.set_number] ?? null);
+    setRestStart(new Date().toISOString());
+  }
+
   return (
     <div className={styles.workoutFormContainer}>
       <div
@@ -800,42 +890,7 @@ const WorkoutForm = ({
                         key={set.set_number}
                         className={`${styles.set} ${exercise.exercise_id === selectedExercise?.exercise_id && set.set_number === selectedSet?.set_number ? styles.selected : ""}`}
                         onClick={() => {
-                          setSelectedExercise(exercise);
-                          setSelectedSet(set);
-                          let restTime = 0;
-                          let completedSetFound = false;
-
-                          const exerciseIndex = exercise.order_index - 1;
-
-                          for (
-                            let i = exerciseIndex;
-                            i >= 0 && !completedSetFound;
-                            i--
-                          ) {
-                            const currentExercise = workout.exercises[i];
-
-                            const startingSetIndex =
-                              i === exerciseIndex
-                                ? set.set_number - 2
-                                : currentExercise.sets.length - 1;
-
-                            for (let j = startingSetIndex; j >= 0; j--) {
-                              const previousSet = currentExercise.sets[j];
-
-                              if (previousSet.done) {
-                                restTime = previousSet.rest_seconds;
-                                completedSetFound = true;
-                                break;
-                              }
-                            }
-                          }
-                          setRestStart(
-                            restTime > 0
-                              ? new Date(
-                                  Date.now() - restTime * 1000,
-                                ).toISOString()
-                              : new Date().toISOString(),
-                          );
+                          handleSwitchSet(exercise, set);
                         }}
                       >
                         <td>{set.set_number}</td>
@@ -988,260 +1043,46 @@ const WorkoutForm = ({
               </label>
               {pageType === "active" &&
                 (selectedSet.set_number >= selectedExercise.sets.length ? (
+                  superset &&
+                  superset.some(
+                    (e) =>
+                      e.exercise1Id === selectedExercise.exercise_id ||
+                      e.exercise2Id === selectedExercise.exercise_id,
+                  ) ? (
+                    <button
+                      className={styles.completeSet}
+                      hidden={selectedSet.done}
+                      onClick={handleSupersetCompleteExercise}
+                    >
+                      {t("workout.completeExercise")}
+                    </button>
+                  ) : (
+                    <button
+                      className={styles.completeSet}
+                      hidden={selectedSet.done}
+                      onClick={handleCompleteExercise}
+                    >
+                      {t("workout.completeExercise")}
+                    </button>
+                  )
+                ) : superset &&
+                  superset.some(
+                    (e) =>
+                      e.exercise1Id === selectedExercise.exercise_id ||
+                      e.exercise2Id === selectedExercise.exercise_id,
+                  ) ? (
                   <button
                     className={styles.completeSet}
                     hidden={selectedSet.done}
-                    onClick={() => {
-                      updateSet(
-                        selectedExercise.exercise_id,
-                        selectedSet.set_number,
-                        "done",
-                        true,
-                      );
-                      const nextExercise =
-                        workout.exercises.find((exercise) =>
-                          selectedExercise
-                            ? selectedExercise?.order_index + 1 ===
-                              exercise.order_index
-                            : null,
-                        ) ?? null;
-                      const prevExercise =
-                        workout.exercises.find((exercise) =>
-                          selectedExercise
-                            ? selectedExercise?.order_index - 1 ===
-                              exercise.order_index
-                            : null,
-                        ) ?? null;
-                      if (
-                        superset &&
-                        superset.some(
-                          (e) =>
-                            e.exercise1Id === selectedExercise.exercise_id ||
-                            e.exercise2Id === selectedExercise.exercise_id,
-                        )
-                      ) {
-                        for (let i of superset) {
-                          if (i.exercise1Id === selectedExercise.exercise_id) {
-                            if (
-                              nextExercise &&
-                              nextExercise.sets?.length < selectedSet.set_number
-                            ) {
-                              addSet(nextExercise.exercise_id);
-                              setSelectedSet({
-                                set_number: selectedSet.set_number,
-                                weight:
-                                  workout.exercises.find(
-                                    (exercise) =>
-                                      exercise.exercise_id ===
-                                      nextExercise.exercise_id,
-                                  )?.sets[nextExercise.sets.length - 1]
-                                    .weight ?? 0,
-                                reps: 0,
-                                rest_seconds: 0,
-                                done: false,
-                              });
-                            } else {
-                              setSelectedSet(
-                                nextExercise?.sets[
-                                  selectedSet.set_number - 1
-                                ] ?? null,
-                              );
-                            }
-                            setSelectedExercise(nextExercise);
-                            setSuperset((prev) =>
-                              prev
-                                ? [
-                                    ...prev.map((e) =>
-                                      e.exercise1Id ===
-                                      selectedExercise.exercise_id
-                                        ? {
-                                            ...e,
-                                            exercise1RestStart:
-                                              new Date().toISOString(),
-                                          }
-                                        : e,
-                                    ),
-                                  ]
-                                : prev,
-                            );
-                            break;
-                          } else if (
-                            i.exercise2Id === selectedExercise.exercise_id
-                          ) {
-                            if (
-                              prevExercise &&
-                              prevExercise.sets.length > selectedSet.set_number
-                            ) {
-                              setSelectedExercise(prevExercise);
-                              setSelectedSet(
-                                prevExercise?.sets[selectedSet.set_number] ??
-                                  null,
-                              );
-                              setSuperset((prev) =>
-                                prev
-                                  ? [
-                                      ...prev.map((e) =>
-                                        e.exercise2Id ===
-                                        selectedExercise.exercise_id
-                                          ? {
-                                              ...e,
-                                              exercise2RestStart:
-                                                new Date().toISOString(),
-                                            }
-                                          : e,
-                                      ),
-                                    ]
-                                  : prev,
-                              );
-                              break;
-                            } else {
-                              setSelectedExercise(nextExercise);
-                              setSelectedSet(nextExercise?.sets[0] ?? null);
-                              setRestStart(new Date().toISOString());
-                            }
-                          }
-                        }
-                      } else {
-                        setSelectedExercise(nextExercise);
-                        setSelectedSet(nextExercise?.sets[0] ?? null);
-                        setRestStart(new Date().toISOString());
-                      }
-                    }}
+                    onClick={handleSupersetCompleteSet}
                   >
-                    {t("workout.completeExercise")}
+                    {t("workout.completeSet")}{" "}
                   </button>
                 ) : (
                   <button
                     className={styles.completeSet}
                     hidden={selectedSet.done}
-                    onClick={() => {
-                      updateSet(
-                        selectedExercise.exercise_id,
-                        selectedSet.set_number,
-                        "done",
-                        true,
-                      );
-                      if (
-                        superset &&
-                        superset.some(
-                          (e) =>
-                            e.exercise1Id === selectedExercise.exercise_id ||
-                            e.exercise2Id === selectedExercise.exercise_id,
-                        )
-                      ) {
-                        for (let i of superset) {
-                          if (i.exercise1Id === selectedExercise.exercise_id) {
-                            const nextExercise =
-                              workout.exercises.find((exercise) =>
-                                selectedExercise
-                                  ? selectedExercise?.order_index + 1 ===
-                                    exercise.order_index
-                                  : null,
-                              ) ?? null;
-                            if (
-                              nextExercise &&
-                              nextExercise.sets?.length < selectedSet.set_number
-                            ) {
-                              addSet(nextExercise.exercise_id);
-                              setSelectedSet({
-                                set_number: selectedSet.set_number,
-                                weight:
-                                  workout.exercises.find(
-                                    (exercise) =>
-                                      exercise.exercise_id ===
-                                      nextExercise.exercise_id,
-                                  )?.sets[nextExercise.sets.length - 1]
-                                    .weight ?? 0,
-                                reps: 0,
-                                rest_seconds: 0,
-                                done: false,
-                              });
-                            } else {
-                              setSelectedSet(
-                                nextExercise?.sets[
-                                  selectedSet.set_number - 1
-                                ] ?? null,
-                              );
-                            }
-                            setSelectedExercise(nextExercise);
-                            setSuperset((prev) =>
-                              prev
-                                ? [
-                                    ...prev.map((e) =>
-                                      e.exercise1Id ===
-                                      selectedExercise.exercise_id
-                                        ? {
-                                            ...e,
-                                            exercise1RestStart:
-                                              new Date().toISOString(),
-                                          }
-                                        : e,
-                                    ),
-                                  ]
-                                : prev,
-                            );
-                            break;
-                          }
-                          if (i.exercise2Id === selectedExercise.exercise_id) {
-                            const nextExercise =
-                              workout.exercises.find((exercise) =>
-                                selectedExercise
-                                  ? selectedExercise?.order_index - 1 ===
-                                    exercise.order_index
-                                  : null,
-                              ) ?? null;
-                            if (
-                              nextExercise &&
-                              nextExercise.sets?.length <=
-                                selectedSet.set_number
-                            ) {
-                              addSet(nextExercise.exercise_id);
-                              setSelectedSet({
-                                set_number: selectedSet.set_number + 1,
-                                weight:
-                                  workout.exercises.find(
-                                    (exercise) =>
-                                      exercise.exercise_id ===
-                                      nextExercise.exercise_id,
-                                  )?.sets[nextExercise.sets.length - 1]
-                                    .weight ?? 0,
-                                reps: 0,
-                                rest_seconds: 0,
-                                done: false,
-                              });
-                            } else {
-                              setSelectedSet(
-                                nextExercise?.sets[selectedSet.set_number] ??
-                                  null,
-                              );
-                            }
-                            setSelectedExercise(nextExercise);
-                            setSuperset((prev) =>
-                              prev
-                                ? [
-                                    ...prev.map((e) =>
-                                      e.exercise2Id ===
-                                      selectedExercise.exercise_id
-                                        ? {
-                                            ...e,
-                                            exercise2RestStart:
-                                              new Date().toISOString(),
-                                          }
-                                        : e,
-                                    ),
-                                  ]
-                                : prev,
-                            );
-                            break;
-                          }
-                        }
-                      } else {
-                        setSelectedSet(
-                          selectedExercise.sets[selectedSet.set_number] ?? null,
-                        );
-                        setRestStart(new Date().toISOString());
-                      }
-                    }}
+                    onClick={handleCompleteSet}
                   >
                     {t("workout.completeSet")}
                   </button>
