@@ -472,6 +472,16 @@ const WorkoutForm = ({
           .map((exercise, index) => ({ ...exercise, order_index: index + 1 })),
       ],
     }));
+    if (superset)
+      setSuperset((prev) =>
+        prev
+          ? prev.filter(
+              (e) =>
+                e.exercise1Id !== chosenExerciseId &&
+                e.exercise2Id !== chosenExerciseId,
+            )
+          : null,
+      );
     setChosenExerciseId("");
     setShowRemoveExerciseModal(false);
   }
@@ -686,6 +696,26 @@ const WorkoutForm = ({
     }
   }
 
+  function createSuperset(exercise: WorkoutExercise) {
+    const newSuperset = {
+      exercise0Id:
+        exercise.order_index > 1
+          ? workout.exercises[exercise.order_index - 2].exercise_id
+          : "",
+      exercise1Id: exercise.exercise_id,
+      exercise2Id: workout.exercises[exercise.order_index].exercise_id,
+      exercise1RestStart: "",
+      exercise2RestStart: "",
+    };
+    setSuperset((prev) => (prev ? [...prev, newSuperset] : [newSuperset]));
+  }
+
+  function removeSuperset(exercise: WorkoutExercise) {
+    setSuperset((prev) =>
+      prev ? prev.filter((e) => e.exercise1Id !== exercise.exercise_id) : prev,
+    );
+  }
+
   return (
     <div className={styles.workoutFormContainer}>
       <div
@@ -747,42 +777,7 @@ const WorkoutForm = ({
                         <button
                           className={styles.addSupersetBtn}
                           onClick={() => {
-                            setSuperset((prev) =>
-                              prev
-                                ? [
-                                    ...prev,
-                                    {
-                                      exercise0Id:
-                                        exercise.order_index > 1
-                                          ? workout.exercises[
-                                              exercise.order_index - 2
-                                            ].exercise_id
-                                          : "",
-                                      exercise1Id: exercise.exercise_id,
-                                      exercise2Id:
-                                        workout.exercises[exercise.order_index]
-                                          .exercise_id,
-                                      exercise1RestStart: "",
-                                      exercise2RestStart: "",
-                                    },
-                                  ]
-                                : [
-                                    {
-                                      exercise0Id:
-                                        exercise.order_index > 1
-                                          ? workout.exercises[
-                                              exercise.order_index - 2
-                                            ].exercise_id
-                                          : "",
-                                      exercise1Id: exercise.exercise_id,
-                                      exercise2Id:
-                                        workout.exercises[exercise.order_index]
-                                          .exercise_id,
-                                      exercise1RestStart: "",
-                                      exercise2RestStart: "",
-                                    },
-                                  ],
-                            );
+                            createSuperset(exercise);
                           }}
                           aria-label={t("common.superset")}
                         >
@@ -798,14 +793,7 @@ const WorkoutForm = ({
                           <button
                             className={styles.unlinkBtn}
                             onClick={() => {
-                              setSuperset((prev) =>
-                                prev
-                                  ? prev.filter(
-                                      (e) =>
-                                        e.exercise1Id !== exercise.exercise_id,
-                                    )
-                                  : prev,
-                              );
+                              removeSuperset(exercise);
                             }}
                           >
                             <Unlink size={15} />
@@ -950,13 +938,7 @@ const WorkoutForm = ({
                       <button
                         className={`${styles.supersetBtn} ${styles.superset}`}
                         onClick={() => {
-                          setSuperset((prev) =>
-                            prev
-                              ? prev.filter(
-                                  (e) => e.exercise1Id !== exercise.exercise_id,
-                                )
-                              : prev,
-                          );
+                          removeSuperset(exercise);
                         }}
                       >
                         <Unlink size={15} />
