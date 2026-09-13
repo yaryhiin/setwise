@@ -31,9 +31,9 @@ import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import {
   formatTime,
   formatPreviousSets,
-  createLocalId,
   restStartFromSet,
   calculatePassedSeconds,
+  buildWorkoutExercise,
 } from "../utils/utils";
 import {
   getPersistedJSON,
@@ -334,127 +334,42 @@ const WorkoutForm = ({
         ...prev,
         exercises: prev.exercises.map((e) =>
           e.exercise_id === chosenExerciseId
-            ? {
-                id: createLocalId(),
-                exercise_name: exercise.name,
-                exercise_id: exercise.id,
-                category: exercise.category,
-                order_index: e.order_index,
-                notes: "",
-                sets: [
-                  {
-                    set_number: 1,
-                    weight: 0,
-                    reps: 0,
-                    rest_seconds: 0,
-                    done: false,
-                  },
-                ],
-              }
+            ? buildWorkoutExercise(exercise, e.order_index)
             : e,
         ),
       }));
       if (selectedExercise?.exercise_id === chosenExerciseId) {
         setSelectedExercise((prev) =>
-          prev
-            ? {
-                id: createLocalId(),
-                exercise_name: exercise.name,
-                exercise_id: exercise.id,
-                category: exercise.category,
-                order_index: prev.order_index,
-                notes: "",
-                sets: [
-                  {
-                    set_number: 1,
-                    weight: 0,
-                    reps: 0,
-                    rest_seconds: 0,
-                    done: false,
-                  },
-                ],
-              }
-            : null,
+          prev ? buildWorkoutExercise(exercise, prev.order_index) : null,
         );
       }
-      if (
-        superset?.some(
-          (e) =>
-            e.exercise0Id === chosenExerciseId ||
-            e.exercise1Id === chosenExerciseId ||
-            e.exercise2Id === chosenExerciseId,
-        )
-      ) {
-        for (let i of superset) {
-          if (i.exercise0Id === chosenExerciseId) {
-            setSuperset((prev) =>
-              prev
-                ? prev.map((e) =>
-                    e.exercise0Id === chosenExerciseId
-                      ? {
-                          ...e,
-                          exercise0Id: exercise.id,
-                        }
-                      : e,
-                  )
-                : null,
-            );
-            break;
-          } else if (i.exercise1Id === chosenExerciseId) {
-            setSuperset((prev) =>
-              prev
-                ? prev.map((e) =>
-                    e.exercise1Id === chosenExerciseId
-                      ? {
-                          ...e,
-                          exercise1Id: exercise.id,
-                          exercise1RestStart: "",
-                        }
-                      : e,
-                  )
-                : null,
-            );
-            break;
-          } else if (i.exercise2Id === chosenExerciseId) {
-            setSuperset((prev) =>
-              prev
-                ? prev.map((e) =>
-                    e.exercise2Id === chosenExerciseId
-                      ? {
-                          ...e,
-                          exercise2Id: exercise.id,
-                          exercise2RestStart: "",
-                        }
-                      : e,
-                  )
-                : null,
-            );
-            break;
-          }
-        }
-      }
+      setSuperset((prev) =>
+        prev
+          ? prev.map((e) => {
+              if (e.exercise0Id === chosenExerciseId)
+                return { ...e, exercise0Id: exercise.id };
+              if (e.exercise1Id === chosenExerciseId)
+                return {
+                  ...e,
+                  exercise1Id: exercise.id,
+                  exercise1RestStart: "",
+                };
+              if (e.exercise2Id === chosenExerciseId)
+                return {
+                  ...e,
+                  exercise2Id: exercise.id,
+                  exercise2RestStart: "",
+                };
+              return e;
+            })
+          : prev,
+      );
     } else {
       setWorkout((prev) => ({
         ...prev,
         exercises: [
           ...prev.exercises,
-          {
-            id: createLocalId(),
-            exercise_name: exercise.name,
-            exercise_id: exercise.id,
-            category: exercise.category,
-            order_index: prev.exercises.length + 1,
-            notes: "",
-            sets: [
-              {
-                set_number: 1,
-                weight: 0,
-                reps: 0,
-                rest_seconds: 0,
-                done: false,
-              },
-            ],
-          },
+          buildWorkoutExercise(exercise, prev.exercises.length + 1),
         ],
       }));
     }
@@ -472,16 +387,9 @@ const WorkoutForm = ({
           .map((exercise, index) => ({ ...exercise, order_index: index + 1 })),
       ],
     }));
-    if (superset)
-      setSuperset((prev) =>
-        prev
-          ? prev.filter(
-              (e) =>
-                e.exercise1Id !== chosenExerciseId &&
-                e.exercise2Id !== chosenExerciseId,
-            )
-          : null,
-      );
+    if (superset) {
+      removeSuperset(chosenExerciseId);
+    }
     setChosenExerciseId("");
     setShowRemoveExerciseModal(false);
   }
@@ -637,7 +545,7 @@ const WorkoutForm = ({
         prev
           ? {
               ...prev,
-              rest_seconds: Math.floor(timePassed / 1000),
+              rest_seconds: timePassed,
             }
           : null,
       );
@@ -708,12 +616,19 @@ const WorkoutForm = ({
       exercise2RestStart: "",
     };
     setSuperset((prev) => (prev ? [...prev, newSuperset] : [newSuperset]));
+    setShowExerciseOptions(false);
   }
 
-  function removeSuperset(exercise: WorkoutExercise) {
+  function removeSuperset(exerciseId: string) {
     setSuperset((prev) =>
-      prev ? prev.filter((e) => e.exercise1Id !== exercise.exercise_id) : prev,
+      prev
+        ? prev.filter(
+            (e) => e.exercise1Id !== exerciseId && e.exercise2Id !== exerciseId,
+          )
+        : prev,
     );
+    setShowExerciseOptions(false);
+    setShowSupersetOptions(false);
   }
 
   return (
@@ -793,7 +708,7 @@ const WorkoutForm = ({
                           <button
                             className={styles.unlinkBtn}
                             onClick={() => {
-                              removeSuperset(exercise);
+                              removeSuperset(exercise.exercise_id);
                             }}
                           >
                             <Unlink size={15} />
@@ -938,7 +853,7 @@ const WorkoutForm = ({
                       <button
                         className={`${styles.supersetBtn} ${styles.superset}`}
                         onClick={() => {
-                          removeSuperset(exercise);
+                          removeSuperset(exercise.exercise_id);
                         }}
                       >
                         <Unlink size={15} />

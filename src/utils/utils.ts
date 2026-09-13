@@ -3,7 +3,8 @@ import type {
   PreferredMeasurementUnit,
   PreferredWeightUnit,
 } from "../types/profile";
-import type { WorkoutSet } from "../types/workout";
+import type { WorkoutExercise, WorkoutSet } from "../types/workout";
+import type { ExerciseDB } from "../types/exercise";
 
 const locales = {
   en: "en-CA",
@@ -184,4 +185,19 @@ export function restStartFromSet(set: WorkoutSet | null): string {
 export function calculatePassedSeconds(startTime: string) {
   const timePassed = Date.now() - new Date(startTime).getTime();
   return Math.floor(timePassed / 1000);
+}
+
+export function buildWorkoutExercise(
+  exercise: ExerciseDB,
+  orderIndex: number,
+): WorkoutExercise {
+  return {
+    id: createLocalId(),
+    exercise_name: exercise.name,
+    exercise_id: exercise.id,
+    category: exercise.category,
+    order_index: orderIndex,
+    notes: "",
+    sets: [{ set_number: 1, weight: 0, reps: 0, rest_seconds: 0, done: false }],
+  };
 }
