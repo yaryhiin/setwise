@@ -1,6 +1,7 @@
 import { supabase } from "../supabase";
 import { getCurrentUserId } from "./auth";
 import type { Workout } from "../types/workout";
+import type { PreviousExerciseRow } from "../types/workout";
 
 export async function getWorkoutsHistory() {
   const userId = await getCurrentUserId();
@@ -170,33 +171,6 @@ export async function deleteWorkout(workoutId: string) {
 
   return true;
 }
-
-type WorkoutRelation = {
-  id: string;
-  name: string;
-  finished_at: string | null;
-  created_at: string;
-};
-
-type WorkoutSet = {
-  id: string;
-  set_number: number;
-  weight: number | null;
-  reps: number | null;
-  rest_seconds: number | null;
-  done: boolean;
-};
-
-type PreviousExerciseRow = {
-  id: string;
-  exercise_id: string;
-  exercise_name: string;
-  workout_id: string;
-  order_index: number;
-  notes: string;
-  workout_sets: WorkoutSet[];
-  workouts: WorkoutRelation | null;
-};
 
 export async function getPreviousExerciseData(exerciseIds: string[]) {
   if (exerciseIds.length === 0) {

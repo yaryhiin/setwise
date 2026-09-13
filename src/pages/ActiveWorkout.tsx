@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
-import type { Workout } from "../types/workout";
+import type { Workout, PreviousExerciseRow } from "../types/workout";
 import type { ExerciseDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
 
@@ -68,9 +68,9 @@ const ActiveWorkout = () => {
   const [preferredUnit, setPreferredUnit] = useState<PreferredWeightUnit>(
     getInitialPreferredUnit,
   );
-  const [previousData, setPreviousData] = useState<Record<string, any>>(
-    getPersistedJSON(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY, {}),
-  );
+  const [previousData, setPreviousData] = useState<
+    Record<string, PreviousExerciseRow>
+  >(getPersistedJSON(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY, {}));
   const exerciseIdsKey = workout.exercises
     .map((exercise) => exercise.exercise_id)
     .join(",");

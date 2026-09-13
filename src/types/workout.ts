@@ -1,12 +1,12 @@
 export type WorkoutSetDB = {
   id: string;
-  workout_exercise_id: string;
+  workout_exercise_id?: string;
   set_number: number;
   weight: number;
   reps: number;
   rest_seconds: number;
   done: boolean;
-  created_at: string;
+  created_at?: string;
 };
 
 export type WorkoutExerciseDB = {
@@ -69,4 +69,22 @@ export type Superset = {
   exercise2Id: string;
   exercise1RestStart: string;
   exercise2RestStart: string;
+};
+
+type WorkoutRelation = {
+  id: string;
+  name: string;
+  finished_at: string | null;
+  created_at: string;
+};
+
+export type PreviousExerciseRow = {
+  id: string;
+  exercise_id: string;
+  exercise_name: string;
+  workout_id: string;
+  order_index: number;
+  notes: string;
+  workout_sets: WorkoutSetDB[];
+  workouts: WorkoutRelation | null;
 };

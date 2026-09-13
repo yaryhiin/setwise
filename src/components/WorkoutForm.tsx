@@ -18,6 +18,7 @@ import type {
   Workout,
   WorkoutSet,
   Superset,
+  PreviousExerciseRow,
 } from "../types/workout";
 import type { ExerciseDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
@@ -63,7 +64,7 @@ type WorkoutFormProps = {
 
   setWorkout?: Dispatch<SetStateAction<Workout>>;
   exercises?: ExerciseDB[];
-  previousData?: Record<string, any>;
+  previousData?: Record<string, PreviousExerciseRow>;
   addExercise?: (name: string, category: string) => Promise<void>;
   handleUpdate?: () => Promise<void>;
 };
