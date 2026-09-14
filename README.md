@@ -284,3 +284,28 @@ Serves the production build locally for previewing.
 Setwise is actively being developed and improved.
 
 The core workout-tracking experience is functional, with ongoing work focused on UI polish, usability improvements, additional progress insights, and future mobile support.
+
+## License
+
+Copyright © 2026 Tymofii Yaryhin. All rights reserved.
+
+The source code in this repository is publicly available for **viewing and educational purposes only**.
+
+You may:
+
+* View the source code.
+* Study it for learning and reference purposes.
+* Run the project locally for personal evaluation.
+
+You may **not**, without prior written permission:
+
+* Copy or redistribute substantial portions of the source code.
+* Modify and republish the project as your own.
+* Use the code in a commercial product or service.
+* Sell, sublicense, or otherwise commercially exploit the software.
+* Publish a derivative version of Setwise under another name.
+
+Setwise and its source code remain the intellectual property of **Tymofii Yaryhin**.
+
+For permission regarding reuse or commercial use, please contact the author.
+
