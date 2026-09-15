@@ -596,7 +596,7 @@ const WorkoutForm = ({
           prev
             ? {
                 ...prev,
-                rest_seconds: Math.floor(timePassed2 / 1000),
+                rest_seconds: timePassed2,
               }
             : null,
         );
