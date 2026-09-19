@@ -5,7 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import type { Session } from "@supabase/supabase-js";
+import type { Session, Subscription } from "@supabase/supabase-js";
 import { useTranslation } from "react-i18next";
 
 import WelcomeScreen from "./pages/WelcomeScreen";
@@ -94,15 +94,17 @@ function App() {
   const [language, setLanguage] = useState(() => {
     const saved = localStorage.getItem("language");
     if (saved) {
-      i18n.changeLanguage(saved);
       return saved;
     }
-    i18n.changeLanguage("en");
     return "en";
   });
 
   useEffect(() => {
-    let subscription: any;
+    i18n.changeLanguage(language);
+  }, [language, i18n]);
+
+  useEffect(() => {
+    let subscription: Subscription;
 
     async function loadSession() {
       const { supabase } = await import("./supabase");
