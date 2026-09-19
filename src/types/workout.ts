@@ -13,6 +13,7 @@ export type WorkoutExerciseDB = {
   id: string;
   workout_id: string;
   exercise_name: string;
+  exercise_id: string;
   category: string;
   order_index: number;
   notes: string;
