@@ -121,17 +121,47 @@ export async function createWorkout(workout: Workout) {
 export async function updateWorkout(workout: Workout, workoutId: string) {
   const userId = await getCurrentUserId();
 
+  const formattedWorkout = { name: workout.name };
+
+  let formattedExercises: WorkoutExerciseDB[] = [];
+  let formattedSets: WorkoutSetDB[] = [];
+  for (const exercise of workout.exercises) {
+    const newExerciseId = createLocalId();
+    formattedExercises.push({
+      id: newExerciseId,
+      workout_id: workoutId,
+      exercise_name: exercise.exercise_name,
+      exercise_id: exercise.exercise_id,
+      category: exercise.category,
+      order_index: exercise.order_index,
+      notes: exercise.notes,
+      created_at: new Date().toISOString(),
+    });
+    for (const set of exercise.sets) {
+      formattedSets.push({
+        id: createLocalId(),
+        workout_exercise_id: newExerciseId,
+        set_number: set.set_number,
+        weight: set.weight,
+        reps: set.reps,
+        done: set.done,
+        rest_seconds: set.rest_seconds,
+        created_at: new Date().toISOString(),
+      });
+    }
+  }
+
   const { data: updatedWorkout, error: workoutError } = await supabase
     .from("workouts")
-    .update({
-      name: workout.name,
-    })
+    .update(formattedWorkout)
     .eq("id", workoutId)
     .eq("user_id", userId)
     .select()
     .single();
 
-  if (workoutError) throw workoutError;
+  if (workoutError) {
+    throw workoutError;
+  }
 
   const { error: deleteError } = await supabase
     .from("workout_exercises")
@@ -140,36 +170,20 @@ export async function updateWorkout(workout: Workout, workoutId: string) {
 
   if (deleteError) throw deleteError;
 
-  for (const exercise of workout.exercises) {
-    const { data: createdExercise, error: exerciseError } = await supabase
-      .from("workout_exercises")
-      .insert({
-        workout_id: workoutId,
-        exercise_name: exercise.exercise_name,
-        exercise_id: exercise.exercise_id,
-        category: exercise.category,
-        order_index: exercise.order_index,
-        notes: exercise.notes,
-      })
-      .select()
-      .single();
+  const { error: exercisesError } = await supabase
+    .from("workout_exercises")
+    .insert(formattedExercises);
 
-    if (exerciseError) throw exerciseError;
+  if (exercisesError) {
+    throw exercisesError;
+  }
 
-    const setsToInsert = exercise.sets.map((set) => ({
-      workout_exercise_id: createdExercise.id,
-      set_number: set.set_number,
-      weight: set.weight,
-      reps: set.reps,
-      done: set.done,
-      rest_seconds: set.rest_seconds,
-    }));
+  const { error: setsError } = await supabase
+    .from("workout_sets")
+    .insert(formattedSets);
 
-    const { error: setsError } = await supabase
-      .from("workout_sets")
-      .insert(setsToInsert);
-
-    if (setsError) throw setsError;
+  if (setsError) {
+    throw setsError;
   }
 
   return updatedWorkout;
