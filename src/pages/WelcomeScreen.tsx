@@ -120,15 +120,9 @@ const WelcomeScreen = () => {
                 <tbody>
                   <tr className={styles.set}>
                     <td>1</td>
-                    <td>
-                      <p>140</p>
-                    </td>
-                    <td>
-                      <p>12</p>
-                    </td>
-                    <td>
-                      <p>✅</p>
-                    </td>
+                    <td>140</td>
+                    <td>12</td>
+                    <td>✅</td>
                     <td>2:36</td>
                     <td>
                       <button className={styles.deleteSet}>×</button>
@@ -136,15 +130,9 @@ const WelcomeScreen = () => {
                   </tr>
                   <tr className={`${styles.set} ${styles.selected}`}>
                     <td>2</td>
-                    <td>
-                      <p>140</p>
-                    </td>
-                    <td>
-                      <p>0</p>
-                    </td>
-                    <td>
-                      <p></p>
-                    </td>
+                    <td>140</td>
+                    <td>0</td>
+                    <td></td>
                     <td>0:00</td>
                     <td>
                       <button className={styles.deleteSet}>×</button>
