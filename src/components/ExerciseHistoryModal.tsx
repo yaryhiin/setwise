@@ -50,6 +50,13 @@ const ExerciseHistoryModal = ({
     return (
       <div className="modal">
         <div className="modalContent">
+          <button
+            className={styles.loadingCloseBtn}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            <X size={25} />
+          </button>
           <LoadingScreen />
         </div>
       </div>
