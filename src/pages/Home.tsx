@@ -8,7 +8,7 @@ import styles from "../styles/modules/Home.module.scss";
 import type { RoutineDB } from "../types/routine";
 import type { WorkoutDB } from "../types/workout";
 
-import { getWorkoutsHistory } from "../services/workouts";
+import { getLatestWorkouts } from "../services/workouts";
 import { getRoutines } from "../services/routines";
 
 import { formatDate, formatDuration } from "../utils/utils";
@@ -40,7 +40,7 @@ const Home = ({ name }: HomeProps) => {
     async function loadData() {
       setLoading(true);
       try {
-        const workoutsData = await getWorkoutsHistory();
+        const workoutsData = await getLatestWorkouts(3);
         setWorkouts(workoutsData);
         const routinesData = await getRoutines();
         setRoutines(routinesData);
@@ -92,7 +92,6 @@ const Home = ({ name }: HomeProps) => {
                 new Date(b.finished_at).getTime() -
                 new Date(a.finished_at).getTime(),
             )
-            .slice(0, 3)
             .map((workout) => (
               <div className={styles.historyElement} key={workout.id}>
                 <div className={styles.descName}>
@@ -151,7 +150,7 @@ const Home = ({ name }: HomeProps) => {
           </div>
         )}
 
-        {workouts.length > 3 && (
+        {workouts.length > 0 && (
           <button
             className={styles.viewAllBtn}
             onClick={() => navigate("/history")}

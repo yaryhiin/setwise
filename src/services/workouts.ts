@@ -2,13 +2,14 @@ import { supabase } from "../supabase";
 import { getCurrentUserId } from "./auth";
 import type {
   Workout,
+  WorkoutDB,
   WorkoutExerciseDB,
   WorkoutSetDB,
 } from "../types/workout";
 import type { PreviousExerciseRow } from "../types/workout";
 import { createLocalId } from "../utils/utils";
 
-export async function getWorkoutsHistory() {
+export async function getWorkoutsHistory(): Promise<WorkoutDB[]> {
   const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from("workouts")
@@ -18,10 +19,27 @@ export async function getWorkoutsHistory() {
 
   if (error) {
     console.error("Error fetching data:", error);
-    return [];
+    throw error;
   }
 
-  return data || [];
+  return data;
+}
+
+export async function getLatestWorkouts(limit: number): Promise<WorkoutDB[]> {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase
+    .from("workouts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+
+  return data;
 }
 
 export async function getWorkoutDetails(workoutId: string) {
