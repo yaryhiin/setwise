@@ -142,28 +142,27 @@ export function convertValueToBaseUnit(
   }
 }
 
-type PreviousExercise = {
-  workout_sets: WorkoutSet[];
-};
-
 export function formatPreviousSets(
   preferredUnit: PreferredWeightUnit,
-  previousExercise?: PreviousExercise | null,
+  previousExercise?: WorkoutSet[] | null,
 ) {
   if (!previousExercise) return "No previous data";
 
   const grouped = new Map<number, number[]>();
 
-  [...previousExercise.workout_sets]
+  [...previousExercise]
     .sort((a, b) => a.set_number - b.set_number)
     .filter((set) => set.done)
     .filter((set) => set.reps > 0)
     .forEach((set) => {
-      const reps = grouped.get(set.weight) ?? [];
-      reps.push(set.reps);
-      grouped.set(set.weight, reps);
-    });
+      const reps = grouped.get(set.weight);
 
+      if (reps) {
+        reps.push(set.reps);
+      } else {
+        grouped.set(set.weight, [set.reps]);
+      }
+    });
   return [...grouped.entries()]
     .map(([weight, reps]) => {
       if (weight === 0) {

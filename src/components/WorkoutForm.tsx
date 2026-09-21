@@ -736,7 +736,7 @@ const WorkoutForm = ({
                   {t("workout.last")}{" "}
                   {formatPreviousSets(
                     preferredUnit ?? "kg",
-                    previousData[exercise.exercise_id],
+                    previousData[exercise.exercise_id].workout_sets,
                   )}
                 </p>
               )}

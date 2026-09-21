@@ -224,67 +224,26 @@ export async function deleteWorkout(workoutId: string) {
   return true;
 }
 
-export async function getPreviousExerciseData(exerciseIds: string[]) {
+export async function getPreviousExerciseData(
+  exerciseIds: string[],
+): Promise<Record<string, PreviousExerciseRow> | null> {
   if (exerciseIds.length === 0) {
-    return {};
+    return null;
   }
 
-  const { data, error } = await supabase
-    .from("workout_exercises")
-    .select(
-      `
-        id,
-        exercise_id,
-        exercise_name,
-        workout_id,
-        order_index,
-        notes,
-        workout_sets (
-          id,
-          set_number,
-          weight,
-          reps,
-          rest_seconds,
-          done
-        ),
-        workouts (
-          id,
-          name,
-          finished_at,
-          created_at
-        )
-      `,
-    )
-    .in("exercise_id", exerciseIds);
-
-  if (error) {
-    console.error("Error fetching previous exercise data:", error);
-    return {};
-  }
-
-  // Supabase currently infers `workouts` as an array here,
-  // but the actual runtime result is one workout object per row.
-  const rows = (data ?? []) as unknown as PreviousExerciseRow[];
-
-  const sortedData = [...rows].sort((a, b) => {
-    const dateA = new Date(
-      a.workouts?.finished_at ?? a.workouts?.created_at ?? 0,
-    ).getTime();
-
-    const dateB = new Date(
-      b.workouts?.finished_at ?? b.workouts?.created_at ?? 0,
-    ).getTime();
-
-    return dateB - dateA;
+  const { data, error } = await supabase.rpc("get_previous_exercise_data", {
+    exercise_ids: exerciseIds,
   });
 
-  const previousByExerciseId: Record<string, PreviousExerciseRow> = {};
-
-  for (const item of sortedData) {
-    if (!previousByExerciseId[item.exercise_id]) {
-      previousByExerciseId[item.exercise_id] = item;
-    }
+  if (error) {
+    throw error;
   }
 
-  return previousByExerciseId;
+  const previousData: Record<string, PreviousExerciseRow> = {};
+
+  for (const item of data ?? []) {
+    previousData[item.exercise_id] = item;
+  }
+
+  return previousData;
 }
