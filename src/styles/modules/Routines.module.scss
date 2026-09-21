@@ -79,7 +79,7 @@
   background: var(--accent);
   box-shadow: 1px 1px 3px black;
 
-  &hover {
+  &:hover {
     background: var(--accent-hover);
   }
 }

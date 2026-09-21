@@ -199,7 +199,7 @@
   margin-top: 10px;
   padding: 5px 9px;
 
-  color: #aebbd0;
+  color: var(--text-secondary);
   background: transparent;
   border: 1px solid #3a4960;
   border-radius: 7px;
@@ -218,8 +218,7 @@
     color 0.2s ease;
 
   &:hover {
-    color: #ffffff;
-    background: #263349;
+    background: var(--card-hover);
     border-color: #536681;
   }
 

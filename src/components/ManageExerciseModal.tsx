@@ -54,42 +54,46 @@ const ManageExerciseModal = ({
   return (
     <div className="modal">
       <div className="modalContent">
-        <h2 className="heading">
-          {exercise ? t("manageExercise.edit") : t("manageExercise.create")}
-        </h2>
-        <div className={styles.inputNameContainer}>
-          <input
-            className={cn(styles.input, errors.name && "error")}
-            type="text"
-            value={newExerciseName}
-            onChange={(e) => setNewExerciseName(e.target.value)}
-            placeholder={t("manageExercise.placeHolder")}
-          />
-          {errors.name && (
-            <p className="errorMessage">{t("manageExercise.error.name")}</p>
-          )}
-        </div>
-        <div className={styles.categoryContainer}>
-          <h2 className={styles.label}>{t("manageExercise.category")}</h2>
-          <div className={styles.categories}>
-            {categories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                className={cn(
-                  styles.categoryBtn,
-                  newExerciseCategory === category && "active",
-                  errors.category && "error",
-                )}
-                onClick={() => setNewExerciseCategory(category)}
-              >
-                {t(`categories.${category.toLowerCase()}`)}
-              </button>
-            ))}
+        <div>
+          <h2 className="heading">
+            {exercise ? t("manageExercise.edit") : t("manageExercise.create")}
+          </h2>
+          <div className={styles.inputNameContainer}>
+            <input
+              className={cn(styles.input, errors.name && "error")}
+              type="text"
+              value={newExerciseName}
+              onChange={(e) => setNewExerciseName(e.target.value)}
+              placeholder={t("manageExercise.placeHolder")}
+            />
+            {errors.name && (
+              <p className="errorMessage">{t("manageExercise.error.name")}</p>
+            )}
           </div>
-          {errors.category && (
-            <p className="errorMessage">{t("manageExercise.error.category")}</p>
-          )}
+          <div className={styles.categoryContainer}>
+            <h2 className={styles.label}>{t("manageExercise.category")}</h2>
+            <div className={styles.categories}>
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={cn(
+                    styles.categoryBtn,
+                    newExerciseCategory === category && "active",
+                    errors.category && "error",
+                  )}
+                  onClick={() => setNewExerciseCategory(category)}
+                >
+                  {t(`categories.${category.toLowerCase()}`)}
+                </button>
+              ))}
+            </div>
+            {errors.category && (
+              <p className="errorMessage">
+                {t("manageExercise.error.category")}
+              </p>
+            )}
+          </div>
         </div>
         <div className="buttonContainer">
           <button
@@ -98,7 +102,7 @@ const ManageExerciseModal = ({
           >
             {t("common.save")}
           </button>
-          <button className={cn(styles.backBtn, "button")} onClick={onClose}>
+          <button className="button" onClick={onClose}>
             {t("common.back")}
           </button>
         </div>
