@@ -27,7 +27,7 @@ import {
   updateRoutine,
 } from "../services/routines";
 import { getExercises, createExercise } from "../services/exercises";
-import { getPersistedJSON } from "../utils/storage";
+import { setPersistedJSON, getPersistedJSON } from "../utils/storage";
 
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useAsyncAction } from "../hooks/useAsyncAction";
@@ -124,13 +124,11 @@ const RoutineBuilder = () => {
   }, []);
 
   useEffect(() => {
-    if (routineDraft)
-      localStorage.setItem(ROUTINE_DRAFT_KEY, JSON.stringify(routineDraft));
+    if (routineDraft) setPersistedJSON(ROUTINE_DRAFT_KEY, routineDraft);
   }, [routineDraft]);
 
   useEffect(() => {
-    if (exercises)
-      localStorage.setItme(EXERCISES_KEY, JSON.stringify(exercises));
+    if (exercises) setPersistedJSON(EXERCISES_KEY, exercises);
   }, [exercises]);
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
