@@ -25,6 +25,19 @@ export const formatDate = (dateString: string) => {
   );
 };
 
+export const formatHeaderDate = (dateString: string) => {
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString(
+    locales[i18n.language as keyof typeof locales] ?? "en-CA",
+    {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  );
+};
+
 export const formatDateForInput = (dateString: string) => {
   const date = new Date(dateString);
 

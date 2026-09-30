@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import styles from "../styles/modules/WeightHistory.module.scss";
+import styles from "../styles/modules/LogsHistory.module.scss";
 
 import type {
   MeasurementLogDB,
@@ -34,6 +34,7 @@ import {
 } from "../services/measurements";
 import {
   formatDate,
+  formatHeaderDate,
   formatDateForInput,
   formatValueBasedOnUnit,
 } from "../utils/utils";
@@ -54,6 +55,8 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
   const [showOptions, setShowOptions] = useState(false);
 
   const [loading, setLoading] = useState(true);
+  const [groupedMeasurementsData, setGroupedMeasurementsData] =
+    useState<Partial<Record<string, MeasurementLogDB[]>> | null>(null);
   const [measurementsData, setMeasurementsData] = useState<
     MeasurementLogDB[] | null
   >(null);
@@ -71,19 +74,22 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
       try {
         const logs = await getMeasurementsHistory();
         const types = await getMeasurementTypes();
-        if (logs)
-          setMeasurementsData(
-            logs
-              .sort(
-                (a: MeasurementLogDB, b: MeasurementLogDB) =>
-                  new Date(b.measured_at).getTime() -
-                  new Date(a.measured_at).getTime(),
-              )
-              .map((log) => ({
-                ...log,
-                value_cm: formatValueBasedOnUnit(log.value_cm, unit),
-              })),
+        if (logs) {
+          const sortedLogs = logs
+            .sort(
+              (a: MeasurementLogDB, b: MeasurementLogDB) =>
+                new Date(b.measured_at).getTime() -
+                new Date(a.measured_at).getTime(),
+            )
+            .map((log) => ({
+              ...log,
+              value_cm: formatValueBasedOnUnit(log.value_cm, unit),
+            }));
+          setMeasurementsData(sortedLogs);
+          setGroupedMeasurementsData(
+            Object.groupBy(sortedLogs, (log) => log.measured_at.split("T")[0]),
           );
+        }
         if (types) setMeasurementsTypes(types);
       } catch (error) {
         console.error("Error getting measurements data:", error);
@@ -106,20 +112,22 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
         { value_cm: value, measured_at: date, measurement_type_id: typeId },
       ]);
       if (newLog) {
-        setMeasurementsData((prev) =>
-          prev
-            ? [
-                ...prev,
-                {
-                  ...newLog[0],
-                  value_cm: formatValueBasedOnUnit(newLog[0].value_cm, unit),
-                },
-              ].sort(
-                (a: MeasurementLogDB, b: MeasurementLogDB) =>
-                  new Date(b.measured_at).getTime() -
-                  new Date(a.measured_at).getTime(),
-              )
-            : null,
+        const sortedLogs = measurementsData
+          ? [
+              ...measurementsData,
+              {
+                ...newLog[0],
+                value_cm: formatValueBasedOnUnit(newLog[0].value_cm, unit),
+              },
+            ].sort(
+              (a: MeasurementLogDB, b: MeasurementLogDB) =>
+                new Date(b.measured_at).getTime() -
+                new Date(a.measured_at).getTime(),
+            )
+          : [newLog[0]];
+        setMeasurementsData(sortedLogs);
+        setGroupedMeasurementsData(
+          Object.groupBy(sortedLogs, (log) => log.measured_at.split("T")[0]),
         );
         setShowAddModal(false);
       }
@@ -131,17 +139,21 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
     await run("deleting", async () => {
       const deletedLog = await deleteMeasurementLog(chosenLogId);
       if (deletedLog) {
-        setMeasurementsData((prev) =>
-          prev
-            ? prev
-                .filter((data) => data.id !== chosenLogId)
-                .sort(
-                  (a: MeasurementLogDB, b: MeasurementLogDB) =>
-                    new Date(b.measured_at).getTime() -
-                    new Date(a.measured_at).getTime(),
-                )
-            : null,
-        );
+        const sortedLogs = measurementsData
+          ? measurementsData
+              .filter((data) => data.id !== chosenLogId)
+              .sort(
+                (a: MeasurementLogDB, b: MeasurementLogDB) =>
+                  new Date(b.measured_at).getTime() -
+                  new Date(a.measured_at).getTime(),
+              )
+          : null;
+        setMeasurementsData(sortedLogs);
+        if (sortedLogs)
+          setGroupedMeasurementsData(
+            Object.groupBy(sortedLogs, (log) => log.measured_at.split("T")[0]),
+          );
+        else setGroupedMeasurementsData(null);
         setChosenLogId("");
         setShowDeleteModal(false);
       }
@@ -156,27 +168,30 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
         { value_cm: value, measured_at: date, measurement_type_id: typeId },
         chosenLogId,
       );
+
       if (updatedLog) {
-        setMeasurementsData((prev) =>
-          prev
-            ? prev
-                .map((log) =>
-                  log.id === updatedLog.id
-                    ? {
-                        ...updatedLog,
-                        value_cm: formatValueBasedOnUnit(
-                          updatedLog.value_cm,
-                          unit,
-                        ),
-                      }
-                    : log,
-                )
-                .sort(
-                  (a: MeasurementLogDB, b: MeasurementLogDB) =>
-                    new Date(b.measured_at).getTime() -
-                    new Date(a.measured_at).getTime(),
-                )
-            : null,
+        const sortedLogs = measurementsData
+          ? measurementsData
+              .map((log) =>
+                log.id === updatedLog.id
+                  ? {
+                      ...updatedLog,
+                      value_cm: formatValueBasedOnUnit(
+                        updatedLog.value_cm,
+                        unit,
+                      ),
+                    }
+                  : log,
+              )
+              .sort(
+                (a: MeasurementLogDB, b: MeasurementLogDB) =>
+                  new Date(b.measured_at).getTime() -
+                  new Date(a.measured_at).getTime(),
+              )
+          : [updatedLog];
+        setMeasurementsData(sortedLogs);
+        setGroupedMeasurementsData(
+          Object.groupBy(sortedLogs, (log) => log.measured_at.split("T")[0]),
         );
         setChosenLogId("");
         setShowEditModal(false);
@@ -239,73 +254,84 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
           <Plus />
         </button>
       </div>
-      {measurementsData && measurementsData.length > 0 ? (
-        <table className={styles.weightLogs}>
-          <thead>
-            <tr>
-              <th>{t("history.date")} </th>
-              <th>{t("history.type")} </th>
-              <th>{t("history.measurement")} </th>
-              <th>{t("history.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {measurementsData.map((log) => (
-              <tr key={log.id}>
-                <td>{formatDate(log.measured_at)}</td>
-                <td>
-                  {
-                    measurementsTypes?.find(
-                      (type) => type.id === log.measurement_type_id,
-                    )?.name
-                  }
-                </td>
-                <td>
-                  {log.value_cm} {t(`units.${unit}`)}
-                </td>
-                <td>
-                  <div className="exerciseMenuWrapper">
-                    {showOptions && chosenLogId === log.id ? (
-                      <div ref={menuRef} className="exerciseMenu">
-                        <button
-                          onClick={() => {
-                            setShowEditModal(true);
-                            setChosenLogId(log.id);
-                            setShowOptions(false);
-                          }}
-                        >
-                          <Pencil size={15} />
-                          {t("common.edit")}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowDeleteModal(true);
-                            setChosenLogId(log.id);
-                            setShowOptions(false);
-                          }}
-                        >
-                          <Trash2 size={15} />
-                          {t("common.delete")}
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="accessBtn"
-                        onClick={() => {
-                          setShowOptions(true);
-                          setChosenLogId(log.id);
-                        }}
-                      >
-                        <EllipsisVertical size={20} />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {groupedMeasurementsData &&
+      measurementsData &&
+      measurementsData.length > 0 ? (
+        <div className={styles.measurementLogs}>
+          {Object.entries(groupedMeasurementsData).map(([date, logs]) => (
+            <div key={date} className={styles.measurementLog}>
+              <p className={styles.measurementDate}>{formatHeaderDate(date)}</p>
+              <table className={styles.logsTable}>
+                <thead>
+                  <tr>
+                    <th>{t("history.date")} </th>
+                    <th>{t("history.type")} </th>
+                    <th>{t("history.measurement")} </th>
+                    <th>{t("history.actions")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs &&
+                    logs.map((log) => (
+                      <tr key={log.id}>
+                        <td>{formatDate(log.measured_at)}</td>
+                        <td>
+                          {
+                            measurementsTypes?.find(
+                              (type) => type.id === log.measurement_type_id,
+                            )?.name
+                          }
+                        </td>
+                        <td>
+                          {log.value_cm} {t(`units.${unit}`)}
+                        </td>
+                        <td>
+                          <div className="exerciseMenuWrapper">
+                            {showOptions && chosenLogId === log.id ? (
+                              <div ref={menuRef} className="exerciseMenu">
+                                <button
+                                  onClick={() => {
+                                    setShowEditModal(true);
+                                    setChosenLogId(log.id);
+                                    setShowOptions(false);
+                                  }}
+                                >
+                                  <Pencil size={15} />
+                                  {t("common.edit")}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowDeleteModal(true);
+                                    setChosenLogId(log.id);
+                                    setShowOptions(false);
+                                  }}
+                                >
+                                  <Trash2 size={15} />
+                                  {t("common.delete")}
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                className="accessBtn"
+                                onClick={() => {
+                                  setShowOptions(true);
+                                  setChosenLogId(log.id);
+                                }}
+                              >
+                                <EllipsisVertical size={20} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
       ) : (
+        //
         <div className={styles.emptyState}>
           <h3>{t("history.emptyState.title")}</h3>
           <p>{t("history.emptyState.description")}</p>

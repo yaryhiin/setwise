@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import styles from "../styles/modules/WeightHistory.module.scss";
+import styles from "../styles/modules/LogsHistory.module.scss";
 
 import type { PreferredWeightUnit } from "../types/profile";
 import type { WeightLogDB } from "../types/weight";
@@ -178,7 +178,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
         </button>
       </div>
       {weightData && weightData.length > 0 ? (
-        <table className={styles.weightLogs}>
+        <table className={styles.logsTable}>
           <thead>
             <tr>
               <th>{t("history.date")} </th>
