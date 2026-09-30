@@ -339,7 +339,6 @@ const RoutineBuilder = () => {
                       onClick={() => {
                         setShowOptions(true);
                         setChosenExerciseId(exercise.exercise_id);
-                        setShowOptions(false);
                       }}
                       aria-label="Exercise options"
                     >

@@ -78,3 +78,8 @@ export type PreviousExerciseRow = {
   notes: string;
   workout_sets: WorkoutSet[];
 };
+
+export type Range = {
+  from: number;
+  to: number;
+};

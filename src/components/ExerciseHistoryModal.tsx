@@ -6,6 +6,7 @@ import LoadingScreen from "./LoadingScreen";
 import styles from "../styles/modules/ExerciseHistoryModal.module.scss";
 
 import type { ExerciseHistory } from "../types/exercise";
+import type { Range } from "../types/workout";
 
 import { getExercisesLogs } from "../services/exercises";
 
@@ -18,6 +19,8 @@ type ExerciseHistoryModalProps = {
   preferredUnit: PreferredWeightUnit;
 };
 
+const step = 10;
+
 const ExerciseHistoryModal = ({
   exerciseId,
   onClose,
@@ -27,15 +30,18 @@ const ExerciseHistoryModal = ({
 
   const [exerciseHistory, setExerciseHistory] = useState<ExerciseHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState<Range>({ from: 0, to: 10 });
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     if (!exerciseId) return;
 
-    async function getExerciseHistory() {
+    async function getInitialExerciseHistory() {
       setLoading(true);
       try {
-        const history = await getExercisesLogs(exerciseId);
-        setExerciseHistory(history);
+        const history = await getExercisesLogs({ from: 0, to: 10 }, exerciseId);
+        setHasMore(history.length > 10);
+        setExerciseHistory(history.slice(0, 10));
       } catch (error) {
         console.error("Error fetching exercise history:", error);
       } finally {
@@ -43,8 +49,21 @@ const ExerciseHistoryModal = ({
       }
     }
 
-    getExerciseHistory();
+    getInitialExerciseHistory();
   }, [exerciseId]);
+
+  async function getExerciseHistory(newRange: Range) {
+    setLoading(true);
+    try {
+      const history = await getExercisesLogs(newRange, exerciseId);
+      setHasMore(history.length > 10);
+      setExerciseHistory((prev) => [...prev, ...history.slice(0, 10)]);
+    } catch (error) {
+      console.error("Error fetching exercise history:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -121,6 +140,21 @@ const ExerciseHistoryModal = ({
                 </table>
               </div>
             ))}
+            {hasMore && (
+              <button
+                className="loadMore"
+                onClick={() => {
+                  const newRange = {
+                    from: range.from + step,
+                    to: range.to + step,
+                  };
+                  setRange(newRange);
+                  getExerciseHistory(newRange);
+                }}
+              >
+                Load More
+              </button>
+            )}
           </div>
         ) : (
           <p>{t("exerciseHistory.emptyState")}</p>

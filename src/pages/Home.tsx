@@ -69,7 +69,8 @@ const Home = ({ name }: HomeProps) => {
             : new Date().getHours() < 18
               ? t("home.greeting.afternoon")
               : t("home.greeting.evening")}
-        , {name}
+        , <br></br>
+        {name}
       </h1>
       <button
         className={styles.startBtn}

@@ -5,17 +5,19 @@ import type {
   WorkoutDB,
   WorkoutExerciseDB,
   WorkoutSetDB,
+  Range,
 } from "../types/workout";
 import type { PreviousExerciseRow } from "../types/workout";
 import { createLocalId } from "../utils/utils";
 
-export async function getWorkoutsHistory(): Promise<WorkoutDB[]> {
+export async function getWorkoutsHistory(range: Range): Promise<WorkoutDB[]> {
   const userId = await getCurrentUserId();
   const { data, error } = await supabase
     .from("workouts")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(range.from, range.to);
 
   if (error) {
     console.error("Error fetching data:", error);

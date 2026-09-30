@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/History.module.scss";
 
-import type { WorkoutDB } from "../types/workout";
+import type { WorkoutDB, Range } from "../types/workout";
 
 import LoadingScreen from "../components/LoadingScreen";
 
@@ -22,6 +22,8 @@ type SortConfig = {
   direction: SortDirection;
 };
 
+const step = 10;
+
 const History = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -32,6 +34,9 @@ const History = () => {
 
   const menuRef = useRef<HTMLDivElement>(null);
   const [showOptions, setShowOptions] = useState(false);
+
+  const [range, setRange] = useState<Range>({ from: 0, to: 10 });
+  const [hasMore, setHasMore] = useState(false);
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "finished_at",
@@ -65,11 +70,12 @@ const History = () => {
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
   useEffect(() => {
-    async function loadData() {
+    async function loadInitialWorkoutsHistory() {
       setLoading(true);
       try {
-        const workoutsData = await getWorkoutsHistory();
-        setWorkouts(workoutsData);
+        const workoutsData = await getWorkoutsHistory({ from: 0, to: 10 });
+        setHasMore(workoutsData.length > 10);
+        setWorkouts(workoutsData.slice(0, 10));
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -77,8 +83,21 @@ const History = () => {
       }
     }
 
-    loadData();
+    loadInitialWorkoutsHistory();
   }, []);
+
+  async function loadWorkoutsHistory(newRange: Range) {
+    setLoading(true);
+    try {
+      const workoutsData = await getWorkoutsHistory(newRange);
+      setHasMore(workoutsData.length > 10);
+      setWorkouts((prev) => [...prev, ...workoutsData.slice(0, 10)]);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function handleSort(key: SortKey) {
     setSortConfig((prev) => ({
@@ -103,80 +122,99 @@ const History = () => {
         <h2 className={styles.title}>{t("history.title")}</h2>
       </div>
       {sortedWorkouts && sortedWorkouts.length > 0 ? (
-        <table className={styles.workouts}>
-          <thead>
-            <tr>
-              <th onClick={() => handleSort("finished_at")}>
-                <span className={styles.tableHeaderContent}>
-                  {t("history.date")}{" "}
-                  <span>{sortConfig.key === "finished_at" && arrow}</span>
-                </span>
-              </th>
-              <th onClick={() => handleSort("name")}>
-                <span className={styles.tableHeaderContent}>
-                  {t("history.workout")}{" "}
-                  <span>{sortConfig.key === "name" && arrow}</span>
-                </span>
-              </th>
-              <th onClick={() => handleSort("duration_seconds")}>
-                <span className={styles.tableHeaderContent}>
-                  {t("history.duration")}{" "}
-                  <span>{sortConfig.key === "duration_seconds" && arrow}</span>
-                </span>
-              </th>
-              <th>{t("history.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedWorkouts.map((workout) => (
-              <tr key={workout.id}>
-                <td>{formatDate(workout.started_at)}</td>
-                <td>{workout.name}</td>
-                <td>{formatDuration(workout.duration_seconds)} </td>
-                <td>
-                  <div className="exerciseMenuWrapper">
-                    {showOptions && chosenWorkoutId === workout.id ? (
-                      <div ref={menuRef} className="exerciseMenu">
-                        <button
-                          onClick={() => {
-                            navigate(`/history/${workout.id}`);
-                            setChosenWorkoutId("");
-                            setShowOptions(false);
-                          }}
-                        >
-                          <Eye size={15} />
-                          {t("common.view")}
-                        </button>
-                        <button
-                          onClick={() => {
-                            navigate(`/history/${workout.id}/edit`);
-                            setChosenWorkoutId("");
-                            setShowOptions(false);
-                          }}
-                        >
-                          <Pencil size={15} />
-                          {t("common.edit")}
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className="accessBtn"
-                        onClick={() => {
-                          setShowOptions(true);
-                          setChosenWorkoutId(workout.id);
-                        }}
-                        aria-label="Workout options"
-                      >
-                        <EllipsisVertical size={20} />
-                      </button>
-                    )}
-                  </div>
-                  <div className={styles.actions}></div>
-                </td>
+        <div className={styles.workouts}>
+          <table className={styles.workoutsTable}>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort("finished_at")}>
+                  <span className={styles.tableHeaderContent}>
+                    {t("history.date")}{" "}
+                    <span>{sortConfig.key === "finished_at" && arrow}</span>
+                  </span>
+                </th>
+                <th onClick={() => handleSort("name")}>
+                  <span className={styles.tableHeaderContent}>
+                    {t("history.workout")}{" "}
+                    <span>{sortConfig.key === "name" && arrow}</span>
+                  </span>
+                </th>
+                <th onClick={() => handleSort("duration_seconds")}>
+                  <span className={styles.tableHeaderContent}>
+                    {t("history.duration")}{" "}
+                    <span>
+                      {sortConfig.key === "duration_seconds" && arrow}
+                    </span>
+                  </span>
+                </th>
+                <th>{t("history.actions")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sortedWorkouts.map((workout) => (
+                <tr key={workout.id}>
+                  <td>{formatDate(workout.started_at)}</td>
+                  <td>{workout.name}</td>
+                  <td>{formatDuration(workout.duration_seconds)} </td>
+                  <td>
+                    <div className="exerciseMenuWrapper">
+                      {showOptions && chosenWorkoutId === workout.id ? (
+                        <div ref={menuRef} className="exerciseMenu">
+                          <button
+                            onClick={() => {
+                              navigate(`/history/${workout.id}`);
+                              setChosenWorkoutId("");
+                              setShowOptions(false);
+                            }}
+                          >
+                            <Eye size={15} />
+                            {t("common.view")}
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigate(`/history/${workout.id}/edit`);
+                              setChosenWorkoutId("");
+                              setShowOptions(false);
+                            }}
+                          >
+                            <Pencil size={15} />
+                            {t("common.edit")}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className="accessBtn"
+                          onClick={() => {
+                            setShowOptions(true);
+                            setChosenWorkoutId(workout.id);
+                          }}
+                          aria-label="Workout options"
+                        >
+                          <EllipsisVertical size={20} />
+                        </button>
+                      )}
+                    </div>
+                    <div className={styles.actions}></div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {hasMore && (
+            <button
+              className="loadMore"
+              onClick={() => {
+                const newRange = {
+                  from: range.from + step,
+                  to: range.to + step,
+                };
+                setRange(newRange);
+                loadWorkoutsHistory(newRange);
+              }}
+            >
+              Load More
+            </button>
+          )}
+        </div>
       ) : (
         <div className={styles.emptyText}>
           <h3>{t("home.emptyState.title")}</h3>

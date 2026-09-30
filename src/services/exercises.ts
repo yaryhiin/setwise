@@ -3,6 +3,7 @@ import { getCurrentUserId } from "./auth";
 import type { Exercise } from "../types/exercise";
 import { getDefaultExercises } from "./defaults";
 import i18n from "../i18n";
+import type { Range } from "../types/workout";
 
 export async function getExercises() {
   const { data, error } = await supabase
@@ -18,7 +19,7 @@ export async function getExercises() {
   return data || [];
 }
 
-export async function getExercisesLogs(exerciseId?: string) {
+export async function getExercisesLogs(range?: Range, exerciseId?: string) {
   const userId = await getCurrentUserId();
 
   let query = supabase
@@ -49,9 +50,10 @@ export async function getExercisesLogs(exerciseId?: string) {
     )
     .eq("user_id", userId);
 
-  if (exerciseId) {
+  if (exerciseId && range) {
     query = query.eq("workout_exercises.exercise_id", exerciseId);
     query = query.order("created_at", { ascending: false });
+    query = query.range(range.from, range.to);
   } else {
     query = query.order("created_at", { ascending: true });
   }

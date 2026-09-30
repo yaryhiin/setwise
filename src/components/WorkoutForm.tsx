@@ -20,7 +20,7 @@ import type {
   Superset,
   PreviousExerciseRow,
 } from "../types/workout";
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseDB } from "../types/exercise.ts";
 import type { PreferredWeightUnit } from "../types/profile";
 import type { Dispatch, SetStateAction } from "react";
 
