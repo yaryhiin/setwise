@@ -315,6 +315,7 @@ const RoutineBuilder = () => {
                         onClick={() => {
                           setShowChooseExerciseModal(true);
                           setChosenExerciseId(exercise.exercise_id);
+                          setShowOptions(false);
                         }}
                       >
                         <Pencil size={15} />
@@ -325,6 +326,7 @@ const RoutineBuilder = () => {
                         onClick={() => {
                           setShowDeleteModal(true);
                           setChosenExerciseId(exercise.exercise_id);
+                          setShowOptions(false);
                         }}
                       >
                         <Trash2 size={15} />
@@ -337,6 +339,7 @@ const RoutineBuilder = () => {
                       onClick={() => {
                         setShowOptions(true);
                         setChosenExerciseId(exercise.exercise_id);
+                        setShowOptions(false);
                       }}
                       aria-label="Exercise options"
                     >

@@ -259,6 +259,7 @@ const ManageLogModal = ({
                               )?.name ?? "",
                             );
                             setEditing(true);
+                            setShowOptions(false);
                           }}
                           aria-label={t("common.edit")}
                         >
@@ -268,6 +269,7 @@ const ManageLogModal = ({
                         <button
                           onClick={() => {
                             setShowDeleteModal(true);
+                            setShowOptions(false);
                           }}
                           aria-label={t("common.delete")}
                         >

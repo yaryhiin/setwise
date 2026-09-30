@@ -655,6 +655,7 @@ const WorkoutForm = ({
                           className={styles.editExerciseBtn}
                           onClick={() => {
                             setShowChooseExerciseModal(true);
+                            setShowExerciseOptions(false);
                           }}
                         >
                           <Pencil size={15} />
@@ -666,6 +667,7 @@ const WorkoutForm = ({
                           className={styles.deleteExerciseBtn}
                           onClick={() => {
                             setShowRemoveExerciseModal(true);
+                            setShowExerciseOptions(false);
                           }}
                         >
                           <Trash2 size={15} />
@@ -676,6 +678,7 @@ const WorkoutForm = ({
                         className={styles.exerciseHistoryBtn}
                         onClick={() => {
                           setShowExerciseInfoModal(true);
+                          setShowExerciseOptions(false);
                         }}
                       >
                         <History size={15} />
@@ -693,6 +696,7 @@ const WorkoutForm = ({
                           className={styles.addSupersetBtn}
                           onClick={() => {
                             createSuperset(exercise);
+                            setShowExerciseOptions(false);
                           }}
                           aria-label={t("common.superset")}
                         >
@@ -709,6 +713,7 @@ const WorkoutForm = ({
                             className={styles.unlinkBtn}
                             onClick={() => {
                               removeSuperset(exercise.exercise_id);
+                              setShowExerciseOptions(false);
                             }}
                           >
                             <Unlink size={15} />
@@ -854,6 +859,7 @@ const WorkoutForm = ({
                         className={`${styles.supersetBtn} ${styles.superset}`}
                         onClick={() => {
                           removeSuperset(exercise.exercise_id);
+                          setShowSupersetOptions(false);
                         }}
                       >
                         <Unlink size={15} />

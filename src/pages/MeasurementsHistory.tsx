@@ -271,6 +271,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                           onClick={() => {
                             setShowEditModal(true);
                             setChosenLogId(log.id);
+                            setShowOptions(false);
                           }}
                         >
                           <Pencil size={15} />
@@ -280,6 +281,7 @@ const MeasurementsHistory = ({ unit }: MeasurementsHistoryProps) => {
                           onClick={() => {
                             setShowDeleteModal(true);
                             setChosenLogId(log.id);
+                            setShowOptions(false);
                           }}
                         >
                           <Trash2 size={15} />

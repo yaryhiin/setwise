@@ -201,6 +201,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
                           onClick={() => {
                             setShowEditModal(true);
                             setChosenLogId(log.id);
+                            setShowOptions(false);
                           }}
                         >
                           <Pencil size={15} />
@@ -210,6 +211,7 @@ const WeightHistory = ({ unit }: WeightHistoryProps) => {
                           onClick={() => {
                             setShowDeleteModal(true);
                             setChosenLogId(log.id);
+                            setShowOptions(false);
                           }}
                         >
                           <Trash2 size={15} />

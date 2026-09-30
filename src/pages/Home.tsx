@@ -105,6 +105,7 @@ const Home = ({ name }: HomeProps) => {
                           onClick={() => {
                             navigate(`/history/${workout.id}`);
                             setChosenWorkoutId("");
+                            setShowOptions(false);
                           }}
                         >
                           <Eye size={15} />
@@ -114,6 +115,7 @@ const Home = ({ name }: HomeProps) => {
                           onClick={() => {
                             navigate(`/history/${workout.id}/edit`);
                             setChosenWorkoutId("");
+                            setShowOptions(false);
                           }}
                         >
                           <Pencil size={15} />

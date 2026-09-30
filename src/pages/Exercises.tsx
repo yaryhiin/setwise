@@ -156,6 +156,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
                         className={styles.editExerciseBtn}
                         onClick={() => {
                           setShowEditModal(true);
+                          setShowOptions(false);
                         }}
                       >
                         <Pencil size={15} />
@@ -165,6 +166,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
                         className={styles.deleteExerciseBtn}
                         onClick={() => {
                           setShowMessageModal(true);
+                          setShowOptions(false);
                         }}
                       >
                         <Trash2 size={15} />
@@ -174,6 +176,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
                         className={styles.exerciseHistoryBtn}
                         onClick={() => {
                           setShowExerciseInfoModal(true);
+                          setShowOptions(false);
                         }}
                       >
                         <History size={15} />
