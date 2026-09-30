@@ -45,36 +45,41 @@ export default function Layout({
 
   useEffect(() => {
     const activeWorkout = localStorage.getItem(ACTIVE_WORKOUT_KEY);
-    if (
-      activeWorkout &&
-      !matchPath("/workout/*", location.pathname) &&
-      session
-    ) {
-      setShowModal(true);
-      return;
-    }
-    if (!matchPath("/workout/*", location.pathname) && session) {
-      localStorage.removeItem(ACTIVE_WORKOUT_KEY);
-      localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
-      localStorage.removeItem(EXERCISES_KEY);
-      localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-      localStorage.removeItem(PREFERRED_UNIT_KEY);
-      localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
-      localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
-      localStorage.removeItem(WORKOUT_REST_START_KEY);
-      localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
-      localStorage.removeItem(WORKOUT_SUPERSET);
-    }
-    if (!matchPath("/history/*", location.pathname) && session) {
-      localStorage.removeItem(CHANGE_WORKOUT_KEY);
-      localStorage.removeItem(VIEW_WORKOUT_KEY);
-    }
-    if (!matchPath("/routines/*", location.pathname) && session) {
-      localStorage.removeItem(ROUTINES_KEY);
-      localStorage.removeItem(ROUTINE_DRAFT_KEY);
-    }
-    if (!matchPath("/exercises", location.pathname) && session) {
-      localStorage.removeItem(EXERCISES_KEY);
+    if (session) {
+      if (activeWorkout && !matchPath("/workout/*", location.pathname)) {
+        setShowModal(true);
+        return;
+      }
+      if (!matchPath("/workout/*", location.pathname)) {
+        localStorage.removeItem(ACTIVE_WORKOUT_KEY);
+        localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
+        localStorage.removeItem(EXERCISES_KEY);
+        localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
+        localStorage.removeItem(PREFERRED_UNIT_KEY);
+        localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
+        localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
+        localStorage.removeItem(WORKOUT_REST_START_KEY);
+        localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
+        localStorage.removeItem(WORKOUT_SUPERSET);
+      }
+      if (!matchPath("/history/*", location.pathname)) {
+        localStorage.removeItem(CHANGE_WORKOUT_KEY);
+        localStorage.removeItem(VIEW_WORKOUT_KEY);
+      }
+      if (!matchPath("/routines/*", location.pathname)) {
+        localStorage.removeItem(ROUTINES_KEY);
+      }
+      if (
+        !(
+          location.pathname.startsWith("/routines/") &&
+          location.pathname !== "/routines/"
+        )
+      ) {
+        localStorage.removeItem(ROUTINE_DRAFT_KEY);
+      }
+      if (!matchPath("/exercises", location.pathname)) {
+        localStorage.removeItem(EXERCISES_KEY);
+      }
     }
   }, [location.pathname]);
 
