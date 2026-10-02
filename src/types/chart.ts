@@ -8,3 +8,7 @@ export type ChartBriefInfo = {
   change: number;
   entries: number;
 };
+
+
+export type FilterCriteria = 
+  "best-set-volume" | "total-volume" | "est-1-rm" | "average-rest-time";

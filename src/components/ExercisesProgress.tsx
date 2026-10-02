@@ -9,7 +9,7 @@ import Chart from "./Chart";
 import { getExercises, getExercisesLogs } from "../services/exercises";
 import { formatValueBasedOnUnit } from "../utils/utils";
 
-import type { ChartData } from "../types/chart";
+import type { ChartData, FilterCriteria } from "../types/chart";
 import type { ExerciseDB, ExerciseLogDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
 
@@ -28,7 +28,8 @@ const ExercisesProgress = ({
   const [exercises, setExercises] = useState<ExerciseDB[]>();
   const [label, setLabel] = useState("");
 
-  const [filterCriteria, setFilterCriteria] = useState("best-set-volume");
+  const [filterCriteria, setFilterCriteria] =
+    useState<FilterCriteria>("best-set-volume");
   const [chosenExercise, setChosenExercise] = useState<ExerciseDB>();
   const [filteredData, setFilteredData] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +84,8 @@ const ExercisesProgress = ({
             // If weight is 0, we consider it as 1 for volume calculation,
             // to avoid having a volume of 0 for bodyweight exercises
             const formattedBestWeight = best.weight === 0 ? 1 : best.weight;
-            const formattedCurrentWeight = best.weight === 0 ? 1 : best.weight;
+            const formattedCurrentWeight =
+              current.weight === 0 ? 1 : current.weight;
             const bestVolume = formattedBestWeight * best.reps;
             const currentVolume = formattedCurrentWeight * current.reps;
 
@@ -129,19 +131,28 @@ const ExercisesProgress = ({
         })
         .filter((entry) => entry !== null);
       setLabel(t("label.totalVol"));
-    } else if (filterCriteria === "best-weight") {
+    } else if (filterCriteria === "est-1-rm") {
       filtered = exerciseLogs
         .filter((entry) => entry.exercise_id === chosenExercise.id)
         .map((entry) => {
-          const completedSets = entry.sets.filter((set) => set.done);
+          const filteredSets = entry.sets
+            .filter((set) => set.done)
+            .filter((set) => set.reps > 0 && set.weight > 0 && set.reps <= 12);
 
-          if (completedSets.length === 0) return null;
+          if (filteredSets.length === 0) return null;
 
-          const best = completedSets.reduce((best, current) => {
-            return current.weight > best.weight ? current : best;
-          });
+          let best1RM = 0;
+          for (const set of filteredSets) {
+            const epley = set.weight * (1 + set.reps / 30);
+            const brzycki = set.weight * (36 / (37 - set.reps));
 
-          const displayedWeight = formatValueBasedOnUnit(best.weight, unit);
+            const estimated1RM = (epley + brzycki) / 2;
+            if (estimated1RM > best1RM) {
+              best1RM = estimated1RM;
+            }
+          }
+
+          const displayedWeight = formatValueBasedOnUnit(best1RM, unit);
 
           return {
             date: entry.date.split("T")[0],
@@ -149,7 +160,7 @@ const ExercisesProgress = ({
           };
         })
         .filter((entry) => entry !== null);
-      setLabel(t("label.bestWeight"));
+      setLabel(t("label.est1Rm"));
     } else if (filterCriteria === "average-rest-time") {
       filtered = exerciseLogs
         .filter((entry) => entry.exercise_id === chosenExercise.id)
@@ -223,12 +234,12 @@ const ExercisesProgress = ({
           <select
             value={filterCriteria}
             onChange={(e) => {
-              setFilterCriteria(e.target.value.trim());
+              setFilterCriteria(e.target.value as FilterCriteria);
             }}
           >
             <option value="best-set-volume">{t("label.bestVol")}</option>
             <option value="total-volume">{t("label.totalVol")}</option>
-            <option value="best-weight">{t("label.bestWeight")}</option>
+            <option value="est-1-rm">{t("label.est1Rm")}</option>
             <option value="average-rest-time">{t("label.avgRest")}</option>
           </select>
         </div>

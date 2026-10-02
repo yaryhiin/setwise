@@ -245,7 +245,7 @@
   },
   "label": {
     "avgRest": "Descanso medio",
-    "bestWeight": "Peso máximo",
+    "est1Rm": "1-RM estimado",
     "totalVol": "Volumen total",
     "bestVol": "Mejor volumen por serie",
     "bw": "Peso corporal",

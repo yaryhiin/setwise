@@ -244,7 +244,7 @@
   },
   "label": {
     "avgRest": "Average Rest Time",
-    "bestWeight": "Best weight used",
+    "est1Rm": "Estimated 1-RM",
     "totalVol": "Total volume",
     "bestVol": "Best set volume",
     "bw": "Body Weight",
