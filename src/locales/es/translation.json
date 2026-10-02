@@ -368,5 +368,19 @@
     "forearm": "Antebrazo",
     "thigh": "Muslo",
     "calf": "Pantorrilla"
+  },
+  "completedWorkoutModal": {
+    "title": "🎉 ¡Entrenamiento completado!",
+    "duration": "Duración del entrenamiento",
+    "volumeLifted": "Volumen levantado",
+    "setsCompleted": "Series completadas",
+    "totalReps": "Repeticiones totales",
+    "save": "Guardando tu entrenamiento...",
+    "success": "¡Entrenamiento guardado correctamente!",
+    "error": "Error al guardar el entrenamiento. Inténtalo de nuevo.",
+    "improvement": {
+      "generic": "¡Gran entrenamiento! Otro más completado.",
+      "volume": "¡en comparación con tu entrenamiento anterior!"
+    }
   }
 }

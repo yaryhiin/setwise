@@ -1,0 +1,43 @@
+* {
+  margin: 0;
+}
+
+.title {
+  margin: 10px;
+}
+
+.statsContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: 5px;
+}
+
+.statData {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.statTitle {
+  font-size: 16px;
+  font-weight: normal;
+  color: var(--text-color);
+}
+
+.workoutName {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.closeBtn {
+  background-color: var(--accent);
+  font-size: 16px;
+}

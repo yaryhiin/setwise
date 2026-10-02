@@ -157,25 +157,25 @@ export function convertValueToBaseUnit(
 
 export function formatPreviousSets(
   preferredUnit: PreferredWeightUnit,
-  previousExercise?: WorkoutSet[] | null,
+  previousSets?: WorkoutSet[] | null,
 ) {
-  if (!previousExercise) return "No previous data";
+  if (!previousSets) return "No previous data";
 
   const grouped = new Map<number, number[]>();
 
-  [...previousExercise]
+  [...previousSets]
     .sort((a, b) => a.set_number - b.set_number)
     .filter((set) => set.done)
-    .filter((set) => set.reps > 0)
     .forEach((set) => {
       const reps = grouped.get(set.weight);
-
+      console.log("Set:", set, "Reps:", reps);
       if (reps) {
         reps.push(set.reps);
       } else {
         grouped.set(set.weight, [set.reps]);
       }
     });
+
   return [...grouped.entries()]
     .map(([weight, reps]) => {
       if (weight === 0) {

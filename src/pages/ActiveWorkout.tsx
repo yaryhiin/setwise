@@ -32,6 +32,7 @@ import { getProfile } from "../services/profiles";
 import { createEmptyWorkout } from "../services/defaults";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import CompletedWorkoutModal from "../components/CompletedWorkoutModal";
 
 const ACTIVE_WORKOUT_ROUTINE_KEY = "activeWorkoutRoutine";
 const ACTIVE_WORKOUT_KEY = "activeWorkout";
@@ -75,6 +76,7 @@ const ActiveWorkout = () => {
     .map((exercise) => exercise.exercise_id)
     .join(",");
   const [loading, setLoading] = useState(false);
+  const [workoutDone, setWorkoutDone] = useState(false);
 
   const [showBackModal, setShowBackModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
@@ -133,7 +135,6 @@ const ActiveWorkout = () => {
         const data = await getPreviousExerciseData(exerciseIds);
         if (data) {
           setPreviousData(data);
-          
         }
       } catch (error) {
         console.error("Error fetching previous data:", error);
@@ -201,7 +202,7 @@ const ActiveWorkout = () => {
   }, [routineId]);
 
   useEffect(() => {
-    if (!workout.started_at) return;
+    if (!workout.started_at || workoutDone) return;
 
     const interval = setInterval(() => {
       const timePassed = calculatePassedSeconds(workout.started_at);
@@ -209,7 +210,7 @@ const ActiveWorkout = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [workout.started_at]);
+  }, [workout.started_at, workoutDone]);
 
   useEffect(() => {
     if (!workout) return;
@@ -263,25 +264,11 @@ const ActiveWorkout = () => {
       finished_at: new Date().toISOString(),
       duration_seconds: seconds,
     };
-    const success = await run("saving", async () => {
+    await run("workout", async () => {
+      setWorkoutDone(true);
       await createWorkout(finishedWorkout);
       setShowFinishModal(false);
     });
-    if (success) {
-      setTimeout(() => {
-        navigate("/");
-        localStorage.removeItem(ACTIVE_WORKOUT_KEY);
-        localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
-        localStorage.removeItem(EXERCISES_KEY);
-        localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
-        localStorage.removeItem(PREFERRED_UNIT_KEY);
-        localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
-        localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
-        localStorage.removeItem(WORKOUT_REST_START_KEY);
-        localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
-        localStorage.removeItem(WORKOUT_SUPERSET);
-      }, 1000);
-    }
   }
 
   function handleBack() {
@@ -350,7 +337,29 @@ const ActiveWorkout = () => {
       )}
 
       <div className={styles.buttonContainer}></div>
-      <InfoModal state={state} />
+      {!workoutDone && <InfoModal state={state} />}
+      {workoutDone && (
+        <CompletedWorkoutModal
+          state={state}
+          workout={workout}
+          previousData={previousData}
+          unit={preferredUnit}
+          onDone={() => {
+            setWorkoutDone(false);
+            navigate("/");
+            localStorage.removeItem(ACTIVE_WORKOUT_KEY);
+            localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
+            localStorage.removeItem(EXERCISES_KEY);
+            localStorage.removeItem(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY);
+            localStorage.removeItem(PREFERRED_UNIT_KEY);
+            localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
+            localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
+            localStorage.removeItem(WORKOUT_REST_START_KEY);
+            localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
+            localStorage.removeItem(WORKOUT_SUPERSET);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -367,5 +367,19 @@
     "forearm": "Forearm",
     "thigh": "Thigh",
     "calf": "Calf"
+  },
+  "completedWorkoutModal": {
+    "title": "🎉 Workout Completed!",
+    "duration": "Workout time",
+    "volumeLifted": "Volume lifted",
+    "setsCompleted": "Sets Completed",
+    "totalReps": "Total Reps",
+    "save": "Saving your workout...",
+    "success": "Workout saved successfully!",
+    "error": "Error saving workout. Please try again.",
+    "improvement": {
+      "generic": "Great workout! Another one in the books.",
+      "volume": "compared with your previous workout!"
+    }
   }
 }
