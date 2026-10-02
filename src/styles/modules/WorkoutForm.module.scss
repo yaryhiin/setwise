@@ -105,6 +105,7 @@
   td,
   th {
     padding: 13px 7px;
+    width: fit-content;
   }
 }
 
@@ -230,10 +231,6 @@ input[type="checkbox"] {
   width: 90px;
   height: 45px;
   font-size: 11px;
-}
-
-.actionsTitle {
-  text-align: left;
 }
 
 .actionsColumn {

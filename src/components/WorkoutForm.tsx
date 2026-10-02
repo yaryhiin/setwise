@@ -788,9 +788,7 @@ const WorkoutForm = ({
                         {t("workout.weight")} ({t(`units.${preferredUnit}`)})
                       </th>
                       <th>{t("workout.reps")}</th>
-                      <th className={styles.actionsTitle}>
-                        {t("workout.done")}
-                      </th>
+                      <th>{t("workout.done")}</th>
                       <th>{t("workout.rest")}</th>
                       <th></th>
                     </tr>
