@@ -131,7 +131,10 @@ const ActiveWorkout = () => {
         if (exerciseIds.length === 0) return;
 
         const data = await getPreviousExerciseData(exerciseIds);
-        if (data) setPreviousData(data);
+        if (data) {
+          setPreviousData(data);
+          
+        }
       } catch (error) {
         console.error("Error fetching previous data:", error);
       }

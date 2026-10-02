@@ -213,3 +213,15 @@ export function buildWorkoutExercise(
     sets: [{ set_number: 1, weight: 0, reps: 0, rest_seconds: 0, done: false }],
   };
 }
+
+export function hasModifiedSets(exercise: WorkoutExercise): boolean {
+  if (exercise.sets.length > 1) return true;
+  if (
+    exercise.sets[0].weight === 0 &&
+    exercise.sets[0].reps === 0 &&
+    exercise.sets[0].rest_seconds === 0 &&
+    exercise.sets[0].done === false
+  )
+    return false;
+  return true;
+}

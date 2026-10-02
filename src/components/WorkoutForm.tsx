@@ -34,6 +34,8 @@ import {
   restStartFromSet,
   calculatePassedSeconds,
   buildWorkoutExercise,
+  hasModifiedSets,
+  formatValueBasedOnUnit,
 } from "../utils/utils";
 import {
   getPersistedJSON,
@@ -136,6 +138,41 @@ const WorkoutForm = ({
       }
     }
   }, [workout.exercises]);
+
+  useEffect(() => {
+    if (!previousData || !workout || !setWorkout) return;
+    const populatedExercises = workout.exercises.map((exercise) => {
+      if (!previousData[exercise.exercise_id] || hasModifiedSets(exercise))
+        return exercise;
+      const previousSets = previousData[exercise.exercise_id].workout_sets;
+      return {
+        ...exercise,
+        sets: previousSets.map((set, index) => ({
+          set_number: index + 1,
+          weight: formatValueBasedOnUnit(set.weight, preferredUnit ?? "kg"),
+          reps: 0,
+          rest_seconds: 0,
+          done: false,
+        })),
+      };
+    });
+    setWorkout((prev) => ({
+      ...prev,
+      exercises: populatedExercises,
+    }));
+    const newSelectedExercise = selectedExercise
+      ? (populatedExercises.find(
+          (e) => e.exercise_id === selectedExercise.exercise_id,
+        ) ?? null)
+      : null;
+    setSelectedExercise(newSelectedExercise);
+    setSelectedSet(
+      (prev) =>
+        newSelectedExercise?.sets.find(
+          (s) => s.set_number === prev?.set_number,
+        ) ?? null,
+    );
+  }, [previousData]);
 
   useEffect(() => {
     if (pageType === "view" || !selectedExercise) return;
