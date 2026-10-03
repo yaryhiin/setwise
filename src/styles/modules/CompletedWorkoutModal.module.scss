@@ -8,7 +8,8 @@
   gap: 6px;
   margin-bottom: 10px;
 
-  h4, p {
+  h4,
+  p {
     margin: 0;
   }
 }
@@ -23,6 +24,7 @@
 .statData {
   font-size: 20px;
   font-weight: bold;
+  margin: 0;
 }
 
 .statTitle {
@@ -40,4 +42,10 @@
 .closeBtn {
   background-color: var(--accent);
   font-size: 16px;
+}
+
+.infoMessage {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-secondary);
 }

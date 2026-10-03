@@ -168,7 +168,6 @@ export function formatPreviousSets(
     .filter((set) => set.done)
     .forEach((set) => {
       const reps = grouped.get(set.weight);
-      console.log("Set:", set, "Reps:", reps);
       if (reps) {
         reps.push(set.reps);
       } else {

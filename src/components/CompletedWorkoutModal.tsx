@@ -31,6 +31,7 @@ const CompletedWorkoutModal = ({
 }: CompletedWorkoutModalProps) => {
   const { t } = useTranslation();
 
+  const passedSeconds = calculatePassedSeconds(workout.started_at);
   const message =
     state.phase === "loading"
       ? t("completedWorkoutModal.save")
@@ -119,7 +120,7 @@ const CompletedWorkoutModal = ({
               {t("completedWorkoutModal.duration")}
             </h4>
             <p className={styles.statData}>
-              {formatDuration(calculatePassedSeconds(workout.started_at))}
+              {formatDuration(passedSeconds)}
             </p>
           </div>
           <div className={styles.stat}>
