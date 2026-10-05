@@ -78,7 +78,10 @@ const ProfilePage = ({
 
   async function handleSave() {
     const success = await run("saving", async () => {
-      handleUpdateProfile(profileForm);
+      handleUpdateProfile({
+        ...profileForm,
+        date_of_birth: profileForm.date_of_birth || null,
+      });
     });
     if (success)
       setTimeout(() => {
@@ -123,7 +126,7 @@ const ProfilePage = ({
                   date_of_birth: e.target.value.trim(),
                 }))
               }
-              value={profileForm.date_of_birth}
+              value={profileForm.date_of_birth ?? ""}
             />
           </div>
         </div>

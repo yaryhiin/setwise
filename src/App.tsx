@@ -8,6 +8,13 @@ import {
 import type { Session, Subscription } from "@supabase/supabase-js";
 import { useTranslation } from "react-i18next";
 
+import type {
+  PreferredWeightUnit,
+  PreferredMeasurementUnit,
+  Profile,
+  ProfileDB,
+} from "./types/profile";
+
 import WelcomeScreen from "./pages/WelcomeScreen";
 import Layout from "./components/Layout";
 import LoadingScreen from "./components/LoadingScreen";
@@ -24,34 +31,24 @@ const Exercises = lazy(() => import("./pages/Exercises"));
 const Routines = lazy(() => import("./pages/Routines"));
 const RoutineBuilder = lazy(() => import("./pages/RoutineBuilder"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-
 const ProfileSetupModal = lazy(() => import("./components/ProfileSetupModal"));
-
 const WeightCheckinModal = lazy(
   () => import("./components/WeightCheckinModal"),
 );
-
 const MeasurementsCheckinModal = lazy(
   () => import("./components/MeasurementsCheckinModal"),
 );
-
-import type {
-  PreferredWeightUnit,
-  PreferredMeasurementUnit,
-  Profile,
-  ProfileDB,
-} from "./types/profile";
+const WeightHistory = lazy(() => import("./pages/WeightHistory"));
+const MeasurementsHistory = lazy(() => import("./pages/MeasurementsHistory"));
 
 import { getProfile, createProfile, updateProfile } from "./services/profiles";
-import { getLatestWeightLog } from "./services/weightLogs";
-import { getDaysSince, getTodayDateString } from "./utils/utils";
-import {
-  getLatestMeasurementLog,
-  createDefaultMeasurementTypes,
-} from "./services/measurements";
+import { createDefaultMeasurementTypes } from "./services/measurements";
 import { createDefaultExercises } from "./services/exercises";
-import WeightHistory from "./pages/WeightHistory";
-import MeasurementsHistory from "./pages/MeasurementsHistory";
+
+import { useWeightCheckinReminder } from "./hooks/useWeightCheckinReminder";
+import { useMeasurementsCheckinReminder } from "./hooks/useMeasurementsCheckinReminder";
+
+import { getTodayDateString } from "./utils/utils";
 
 const WEIGHT_CHECKIN_SKIPPED_DATE_KEY = "weightCheckinSkippedDate";
 const MEASUREMENTS_CHECKIN_SKIPPED_DATE_KEY = "measurementsCheckinSkippedDate";
@@ -72,7 +69,7 @@ function getInitialProfile(): ProfileDB | null {
 function App() {
   const { i18n } = useTranslation();
 
-  const [session, setSession] = useState<Session | null>();
+  const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileDB | null>(getInitialProfile);
@@ -167,76 +164,16 @@ function App() {
     setupProfile();
   }, [session?.user.id, session]);
 
-  useEffect(() => {
-    async function checkWeightReminder() {
-      const skippedDay = localStorage.getItem(WEIGHT_CHECKIN_SKIPPED_DATE_KEY);
-      if (skippedDay === getTodayDateString()) {
-        return;
-      }
-      if (!session || !profile) return;
-      const latestWeightLog = await getLatestWeightLog();
-      if (!latestWeightLog) {
-        if (profile?.weight_checkin_frequency !== "off") {
-          setShowWeightCheckinModal(true);
-        }
-        return;
-      }
-      const dayDifference = getDaysSince(latestWeightLog.measured_at);
-      if (dayDifference >= 1 && profile?.weight_checkin_frequency === "daily") {
-        setShowWeightCheckinModal(true);
-        return;
-      }
-      if (
-        dayDifference >= 7 &&
-        profile?.weight_checkin_frequency === "weekly"
-      ) {
-        setShowWeightCheckinModal(true);
-        return;
-      }
-    }
+  useWeightCheckinReminder(session, profile, setShowWeightCheckinModal);
 
-    checkWeightReminder();
-  }, [session?.user.id, profile?.weight_checkin_frequency]);
-
-  useEffect(() => {
-    async function checkMeasurementsReminder() {
-      const skippedDay = localStorage.getItem(
-        MEASUREMENTS_CHECKIN_SKIPPED_DATE_KEY,
-      );
-      if (skippedDay === getTodayDateString()) {
-        return;
-      }
-      if (!session || !profile) return;
-      const latestMeasurementLog = await getLatestMeasurementLog();
-      if (!latestMeasurementLog) {
-        if (profile?.measurements_checkin_frequency !== "off") {
-          setShowMeasurementsCheckinModal(true);
-        }
-        return;
-      }
-      const dayDifference = getDaysSince(latestMeasurementLog.measured_at);
-      if (
-        dayDifference >= 14 &&
-        profile?.measurements_checkin_frequency === "biweekly"
-      ) {
-        setShowMeasurementsCheckinModal(true);
-        return;
-      }
-      if (
-        dayDifference >= 28 &&
-        profile?.measurements_checkin_frequency === "monthly"
-      ) {
-        setShowMeasurementsCheckinModal(true);
-        return;
-      }
-    }
-
-    checkMeasurementsReminder();
-  }, [session?.user.id, profile?.measurements_checkin_frequency]);
+  useMeasurementsCheckinReminder(
+    session,
+    profile,
+    setShowMeasurementsCheckinModal,
+  );
 
   useEffect(() => {
     if (!profile) return;
-
     localStorage.setItem("profile", JSON.stringify(profile));
   }, [profile]);
 

@@ -6,7 +6,11 @@ import styles from "../styles/modules/CompletedWorkoutModal.module.scss";
 
 import type { PreferredWeightUnit } from "../types/profile";
 import type { PreviousExerciseRow, Workout } from "../types/workout";
-import { calculatePassedSeconds, formatDuration } from "../utils/utils";
+import {
+  calculatePassedSeconds,
+  formatDuration,
+  formatValueBasedOnUnit,
+} from "../utils/utils";
 
 type ActionState =
   | { phase: "idle" }
@@ -46,7 +50,7 @@ const CompletedWorkoutModal = ({
   const [totalSets, setTotalSets] = useState(0);
   const [totalReps, setTotalReps] = useState(0);
   const [improvement, setImprovement] = useState(
-    "Great workout! Another one in the books.",
+    t("completedWorkoutModal.improvement.generic"),
   );
 
   useEffect(() => {
@@ -70,7 +74,8 @@ const CompletedWorkoutModal = ({
       const previousExercise = previousData[exercise.exercise_id];
       if (!previousExercise) continue;
       prevVolume += previousExercise.workout_sets.reduce(
-        (total, set) => total + set.weight * set.reps,
+        (total, set) =>
+          total + formatValueBasedOnUnit(set.weight, unit) * set.reps,
         0,
       );
     }
@@ -80,7 +85,7 @@ const CompletedWorkoutModal = ({
       : 0;
     if (volumeImprovement > 0) {
       setImprovement(
-        `+${volumeImprovement} ${unit}(${volumeImprovementPercentage.toFixed(1)}%) ${t("completedWorkoutModal.volume")}`,
+        `+${volumeImprovement.toFixed(2)} ${unit} (${volumeImprovementPercentage.toFixed(1)}%) ${t("completedWorkoutModal.improvement.volume")}`,
       );
       return;
     }
@@ -119,16 +124,14 @@ const CompletedWorkoutModal = ({
             <h4 className={styles.statTitle}>
               {t("completedWorkoutModal.duration")}
             </h4>
-            <p className={styles.statData}>
-              {formatDuration(passedSeconds)}
-            </p>
+            <p className={styles.statData}>{formatDuration(passedSeconds)}</p>
           </div>
           <div className={styles.stat}>
             <h4 className={styles.statTitle}>
               {t("completedWorkoutModal.volumeLifted")}
             </h4>
             <p className={styles.statData}>
-              {totalVolume} {unit}
+              {totalVolume.toFixed(2)} {unit}
             </p>
           </div>
           <div className={styles.stat}>
@@ -148,7 +151,7 @@ const CompletedWorkoutModal = ({
           </div>
         </div>
         <div className={styles.stat}>
-          <p className={styles.statData}>{improvement}</p>
+          <p className={styles.improvMessage}>{improvement}</p>
         </div>
         <p className={styles.infoMessage}>{message}</p>
         <button

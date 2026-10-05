@@ -25,7 +25,7 @@ export type ProfileDB = {
 
 export type Profile = {
   name: string;
-  date_of_birth: string;
+  date_of_birth: string | null;
   preferred_weight_unit: PreferredWeightUnit;
   preferred_workout_unit: PreferredWeightUnit;
   preferred_measurement_unit: PreferredMeasurementUnit;
