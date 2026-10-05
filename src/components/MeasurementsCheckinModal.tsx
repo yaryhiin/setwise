@@ -143,9 +143,9 @@ const MeasurementsCheckinModal = ({
   return (
     <div className="modal">
       <div className="modalContent">
-        <h1 className="heading">{t("measurementsCheckin.title")}</h1>
-        <div className={styles.message}>
-          <p className={styles.messageContainer}>
+        <h1 className={styles.heading}>{t("measurementsCheckin.title")}</h1>
+        <div className={styles.messageContainer}>
+          <p className={styles.message}>
             {new Date().getHours()
               ? t("home.greeting.morning")
               : new Date().getHours() < 18
@@ -167,44 +167,42 @@ const MeasurementsCheckinModal = ({
               .map((type) => (
                 <div key={type.id} className={styles.inputContainer}>
                   <p className={styles.inputLabel}>
-                    {`${type.name} (${t(`units.${unit}`)}):`}
+                    {`${type.name} (${t(`units.${unit}`)}): `}
                   </p>
+                  <input
+                    className={styles.input}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="1000"
+                    onChange={(e) =>
+                      setNewMeasurementData((prev) =>
+                        prev
+                          ? prev.map((log) =>
+                              log.measurement_type_id === type.id
+                                ? { ...log, value_cm: e.target.value }
+                                : log,
+                            )
+                          : null,
+                      )
+                    }
+                    value={
+                      newMeasurementData?.find(
+                        (log) => log.measurement_type_id === type.id,
+                      )?.value_cm ?? ""
+                    }
+                  />
 
-                  <div className={styles.inputBox}>
-                    <input
-                      className={styles.input}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max="1000"
-                      onChange={(e) =>
-                        setNewMeasurementData((prev) =>
-                          prev
-                            ? prev.map((log) =>
-                                log.measurement_type_id === type.id
-                                  ? { ...log, value_cm: e.target.value }
-                                  : log,
-                              )
-                            : null,
-                        )
-                      }
-                      value={
-                        newMeasurementData?.find(
-                          (log) => log.measurement_type_id === type.id,
-                        )?.value_cm ?? ""
-                      }
-                    />
-                    <button
-                      className={styles.deleteTypeBtn}
-                      onClick={() => {
-                        setChosenType(type);
-                        setShowModal(true);
-                      }}
-                      aria-label={`Delete ${type.name}`}
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  <button
+                    className={styles.deleteTypeBtn}
+                    onClick={() => {
+                      setChosenType(type);
+                      setShowModal(true);
+                    }}
+                    aria-label={`Delete ${type.name}`}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))
           )}
@@ -257,7 +255,7 @@ const MeasurementsCheckinModal = ({
         )}
         <div className="buttonContainer">
           <button
-            className={styles.continueBtn}
+            className={styles.saveBtn}
             onClick={handleCreateMeasurementLog}
           >
             {t("common.save")}

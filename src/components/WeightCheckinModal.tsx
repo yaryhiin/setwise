@@ -68,8 +68,8 @@ const WeightCheckinModal = ({
     <div className="modal">
       <div className="modalContent">
         <h1 className="heading">{t("weightCheckin.title")}</h1>
-        <div className={styles.message}>
-          <p className={styles.messageContainer}>
+        <div className={styles.messageContainer}>
+          <p className={styles.message}>
             {new Date().getHours()
               ? t("home.greeting.morning")
               : new Date().getHours() < 18
@@ -80,12 +80,12 @@ const WeightCheckinModal = ({
           </p>
           <p className={styles.message}>{t("weightCheckin.message")}</p>
         </div>
-        {previousData && (
+        {previousData && previousData.weight && previousData.date && (
           <p className={styles.previous}>
             {unit === "lb"
               ? Math.round(Number(previousData.weight) * 2.20462262 * 10) / 10
               : previousData.weight}
-            {t(`units.${unit}`)} - {formatDate(previousData.date)}
+            {` ${t(`units.${unit}`)} • ${formatDate(previousData.date)}`}
           </p>
         )}
 
@@ -111,7 +111,7 @@ const WeightCheckinModal = ({
         </div>
         <div className="buttonContainer">
           <button
-            className={styles.continueBtn}
+            className={styles.saveBtn}
             onClick={handleCreateWeightLog}
           >
             {t("common.save")}

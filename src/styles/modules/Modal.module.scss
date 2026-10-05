@@ -6,6 +6,22 @@
   justify-content: center;
 }
 
+.heading {
+  margin: 10px 0 0 0;
+}
+
+.messageContainer {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  justify-content: center;
+
+  p {
+    margin: 2px;
+  }
+}
+
 .inputNameContainer {
   margin: 5px;
   display: flex;
@@ -41,7 +57,13 @@
   width: 100%;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
+  text-align: left;
+
+  .inputContainer {
+    display: grid;
+    grid-template-columns: 110px 1fr 44px;
+  }
 }
 
 .addType {
@@ -86,7 +108,7 @@
 
 .inputLabel {
   font-size: 18px;
-  margin: 10px 0;
+  margin: 5px 0;
 }
 
 .inputBox {
@@ -96,11 +118,22 @@
   gap: 5px;
 }
 
+.previous {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
 .deleteTypeBtn {
   width: 35px;
   height: 35px;
   margin: 0;
-  background-color: var(--danger);
+  margin-left: 5px;
+  background-color: transparent;
+  border: none;
+
+  &:hover {
+    background-color: var(--danger);
+  }
 }
 
 .modalContent input {
@@ -157,4 +190,14 @@
   background: var(--card);
   color: var(--text-secondary);
   font-weight: 600;
+}
+
+.saveBtn {
+  background-color: var(--accent);
+  color: var(--text);
+  font-size: 16px;
+
+  &:hover {
+    background-color: var(--accent-hover);
+  }
 }
