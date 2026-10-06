@@ -34,6 +34,7 @@ import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const EXERCISES_KEY = "exercises";
 const ROUTINE_DRAFT_KEY = "routineDraft";
+const ROUTINES_KEY = "routines";
 
 const RoutineBuilder = () => {
   const navigate = useNavigate();
@@ -146,6 +147,7 @@ const RoutineBuilder = () => {
     });
     if (success) {
       localStorage.removeItem(ROUTINE_DRAFT_KEY);
+      localStorage.removeItem(ROUTINES_KEY);
       setTimeout(() => {
         navigate("/routines");
       }, 1000);
