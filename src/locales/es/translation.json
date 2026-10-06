@@ -380,7 +380,8 @@
     "error": "Error al guardar el entrenamiento. Inténtalo de nuevo.",
     "improvement": {
       "generic": "¡Gran entrenamiento! Otro más completado.",
-      "volume": "¡en comparación con tu entrenamiento anterior!"
+      "exercises_one": "¡Mejoraste en {{count}} ejercicio!",
+      "exercises_other": "¡Mejoraste en {{count}} ejercicios!"
     }
   }
 }

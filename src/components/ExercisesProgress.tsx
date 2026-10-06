@@ -12,6 +12,7 @@ import { formatValueBasedOnUnit } from "../utils/utils";
 import type { ChartData, FilterCriteria } from "../types/chart";
 import type { ExerciseDB, ExerciseLogDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
+import { findBestSet } from "../utils/setsComparison";
 
 type ExercisesProgressProps = {
   unit: PreferredWeightUnit;
@@ -80,17 +81,7 @@ const ExercisesProgress = ({
 
           if (completedSets.length === 0) return null;
 
-          const bestSet = completedSets.reduce((best, current) => {
-            // If weight is 0, we consider it as 1 for volume calculation,
-            // to avoid having a volume of 0 for bodyweight exercises
-            const formattedBestWeight = best.weight === 0 ? 1 : best.weight;
-            const formattedCurrentWeight =
-              current.weight === 0 ? 1 : current.weight;
-            const bestVolume = formattedBestWeight * best.reps;
-            const currentVolume = formattedCurrentWeight * current.reps;
-
-            return currentVolume > bestVolume ? current : best;
-          });
+          const bestSet = findBestSet(completedSets);
 
           const displayedWeight =
             bestSet.weight === 0

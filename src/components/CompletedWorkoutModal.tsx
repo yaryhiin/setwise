@@ -9,8 +9,9 @@ import type { PreviousExerciseRow, Workout } from "../types/workout";
 import {
   calculatePassedSeconds,
   formatDuration,
-  formatValueBasedOnUnit,
+  convertValueToBaseUnit,
 } from "../utils/utils";
+import { findBestSet, findBestWeightUsed } from "../utils/setsComparison";
 
 type ActionState =
   | { phase: "idle" }
@@ -64,31 +65,78 @@ const CompletedWorkoutModal = ({
   }, []);
 
   useEffect(() => {
-    const { volume } = calculateStats();
-    calculateImprovement(volume);
+    calculateStats();
+    calculateImprovement();
   }, [workout]);
 
-  function calculateImprovement(volume: number) {
-    let prevVolume = 0;
+  function calculateImprovement() {
+    let exercisesImproved = 0;
     for (let exercise of workout.exercises) {
       const previousExercise = previousData[exercise.exercise_id];
       if (!previousExercise) continue;
-      prevVolume += previousExercise.workout_sets.reduce(
-        (total, set) =>
-          total + formatValueBasedOnUnit(set.weight, unit) * set.reps,
-        0,
+      let prevCompletedSets = previousExercise.workout_sets.filter(
+        (set) => set.done,
       );
+      let currCompletedSets = exercise.sets
+        .filter((set) => set.done)
+        .map((set) => ({
+          ...set,
+          weight: convertValueToBaseUnit(set.weight, unit),
+        }));
+      if (!prevCompletedSets.length || !currCompletedSets.length) {
+        continue;
+      }
+      const prevBestSet = findBestSet(prevCompletedSets);
+      const currBestSet = findBestSet(currCompletedSets);
+
+      if (
+        currBestSet.weight * currBestSet.reps >
+        prevBestSet.weight * prevBestSet.reps
+      ) {
+        exercisesImproved++;
+        continue;
+      }
+
+      const prevBestWeight = findBestWeightUsed(prevCompletedSets);
+      const currBestWeight = findBestWeightUsed(currCompletedSets);
+
+      if (
+        currBestWeight.weight > prevBestWeight.weight &&
+        Math.ceil(currBestWeight.reps * 1.2) >= prevBestWeight.reps
+      ) {
+        exercisesImproved++;
+        continue;
+      }
+      let setPerformanceScore = 0;
+      for (
+        let i = 0;
+        i < Math.min(prevCompletedSets.length, currCompletedSets.length);
+        i++
+      ) {
+        let prevSetVolume =
+          prevCompletedSets[i].weight * prevCompletedSets[i].reps;
+        let currSetVolume =
+          currCompletedSets[i].weight * currCompletedSets[i].reps;
+
+        if (currSetVolume > prevSetVolume) {
+          setPerformanceScore++;
+        } else if (currSetVolume < prevSetVolume) {
+          setPerformanceScore--;
+        }
+      }
+      if (setPerformanceScore > 0) {
+        exercisesImproved++;
+        continue;
+      }
     }
-    let volumeImprovement = volume - prevVolume;
-    let volumeImprovementPercentage = prevVolume
-      ? (volumeImprovement / prevVolume) * 100
-      : 0;
-    if (volumeImprovement > 0) {
-      setImprovement(
-        `+${volumeImprovement.toFixed(2)} ${unit} (${volumeImprovementPercentage.toFixed(1)}%) ${t("completedWorkoutModal.improvement.volume")}`,
-      );
-      return;
-    }
+
+    // if (exercisesImproved > 0) {
+    setImprovement(
+      t("completedWorkoutModal.improvement.exercises", {
+        count: exercisesImproved,
+      }),
+    );
+    // }
   }
 
   function calculateStats() {
@@ -111,7 +159,6 @@ const CompletedWorkoutModal = ({
     setSetsCompleted(doneSetCount);
     setTotalSets(setCount);
     setTotalReps(reps);
-    return { volume, reps };
   }
 
   return (
