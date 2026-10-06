@@ -118,6 +118,7 @@ const ProfilePage = ({
           <div className={styles.inputContainer}>
             <p className={styles.inputLabel}>{t("profile.birthday")}</p>
             <input
+              aria-label={t("profile.birthday")}
               className={styles.input}
               type="date"
               onChange={(e) =>
@@ -249,6 +250,7 @@ const ProfilePage = ({
               {t("profile.preferences.firstDay")}
             </p>
             <select
+              aria-label={t("profile.preferences.firstDay")}
               className={styles.input}
               onChange={(e) =>
                 setProfileForm((prev) => ({
@@ -299,6 +301,7 @@ const ProfilePage = ({
           <div className={styles.inputContainer}>
             <p className={styles.inputLabel}>{t("language.title")}</p>
             <select
+              aria-label={t("language.title")}
               value={language}
               onChange={(e) => {
                 i18n.changeLanguage(e.target.value);

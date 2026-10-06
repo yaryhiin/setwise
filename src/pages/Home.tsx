@@ -14,8 +14,8 @@ import { getRoutines } from "../services/routines";
 import { formatDate, formatDuration } from "../utils/utils";
 
 import LoadingScreen from "../components/LoadingScreen";
-
 import ChooseRoutineModal from "../components/ChooseRoutineModal";
+
 import { useOutsideClick } from "../hooks/useOutsideClick";
 
 type HomeProps = {

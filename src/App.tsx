@@ -104,12 +104,17 @@ function App() {
     let subscription: Subscription;
 
     async function loadSession() {
+      if (!localStorage.getItem("setwise-auth")) {
+        setAuthLoading(false);
+        setProfileLoading(false);
+      }
       const { supabase } = await import("./supabase");
 
       const { data, error } = await supabase.auth.getSession();
       if (error) {
-        console.log("Error fetching session:", error);
+        console.error("Error fetching session:", error);
       }
+
       setSession(data.session);
       setAuthLoading(false);
 
@@ -130,7 +135,6 @@ function App() {
 
   useEffect(() => {
     if (authLoading) return;
-
     if (!session) {
       setProfile(null);
       localStorage.removeItem("profile");
@@ -162,7 +166,7 @@ function App() {
     }
 
     setupProfile();
-  }, [session?.user.id, session]);
+  }, [session?.user.id, session, authLoading]);
 
   useWeightCheckinReminder(session, profile, setShowWeightCheckinModal);
 
