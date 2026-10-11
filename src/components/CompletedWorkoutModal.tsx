@@ -6,12 +6,9 @@ import styles from "../styles/modules/CompletedWorkoutModal.module.scss";
 
 import type { PreferredWeightUnit } from "../types/profile";
 import type { PreviousExerciseRow, Workout } from "../types/workout";
-import {
-  calculatePassedSeconds,
-  formatDuration,
-  convertValueToBaseUnit,
-} from "../utils/utils";
-import { findBestSet, findBestWeightUsed } from "../utils/setsComparison";
+
+import { calculatePassedSeconds, formatDuration } from "../utils/utils";
+import { hasExerciseImproved } from "../utils/setsComparison";
 
 type ActionState =
   | { phase: "idle" }
@@ -74,69 +71,20 @@ const CompletedWorkoutModal = ({
     for (let exercise of workout.exercises) {
       const previousExercise = previousData[exercise.exercise_id];
       if (!previousExercise) continue;
-      let prevCompletedSets = previousExercise.workout_sets.filter(
-        (set) => set.done,
-      );
-      let currCompletedSets = exercise.sets
-        .filter((set) => set.done)
-        .map((set) => ({
-          ...set,
-          weight: convertValueToBaseUnit(set.weight, unit),
-        }));
-      if (!prevCompletedSets.length || !currCompletedSets.length) {
-        continue;
-      }
-      const prevBestSet = findBestSet(prevCompletedSets);
-      const currBestSet = findBestSet(currCompletedSets);
-
       if (
-        currBestSet.weight * currBestSet.reps >
-        prevBestSet.weight * prevBestSet.reps
+        hasExerciseImproved(previousExercise.workout_sets, exercise.sets, unit)
       ) {
         exercisesImproved++;
-        continue;
-      }
-
-      const prevBestWeight = findBestWeightUsed(prevCompletedSets);
-      const currBestWeight = findBestWeightUsed(currCompletedSets);
-
-      if (
-        currBestWeight.weight > prevBestWeight.weight &&
-        Math.ceil(currBestWeight.reps * 1.2) >= prevBestWeight.reps
-      ) {
-        exercisesImproved++;
-        continue;
-      }
-      let setPerformanceScore = 0;
-      for (
-        let i = 0;
-        i < Math.min(prevCompletedSets.length, currCompletedSets.length);
-        i++
-      ) {
-        let prevSetVolume =
-          prevCompletedSets[i].weight * prevCompletedSets[i].reps;
-        let currSetVolume =
-          currCompletedSets[i].weight * currCompletedSets[i].reps;
-
-        if (currSetVolume > prevSetVolume) {
-          setPerformanceScore++;
-        } else if (currSetVolume < prevSetVolume) {
-          setPerformanceScore--;
-        }
-      }
-      if (setPerformanceScore > 0) {
-        exercisesImproved++;
-        continue;
       }
     }
 
-    // if (exercisesImproved > 0) {
-    setImprovement(
-      t("completedWorkoutModal.improvement.exercises", {
-        count: exercisesImproved,
-      }),
-    );
-    // }
+    if (exercisesImproved > 0) {
+      setImprovement(
+        t("completedWorkoutModal.improvement.exercises", {
+          count: exercisesImproved,
+        }),
+      );
+    }
   }
 
   function calculateStats() {
