@@ -4,13 +4,12 @@ import type {
   Workout,
   WorkoutExercise,
   WorkoutSet,
-  //   Superset,
+  Superset,
 } from "../../types/workout";
 
 import {
   findLastCompletedSetInWorkout,
   findLastCompletedSetsInSuperset,
-  //   findLastCompletedSetsInSuperset,
 } from "./findLastCompletedSet";
 import { createLocalId } from "../utils";
 
@@ -77,7 +76,7 @@ function createWorkout(data: boolean[][]): Workout {
   };
 }
 
-function createSuperset(exercise1Id: string, exercise2Id: string) {
+function createSuperset(exercise1Id: string, exercise2Id: string): Superset {
   return {
     exercise0Id: "",
     exercise1Id,
