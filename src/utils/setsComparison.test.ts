@@ -20,6 +20,7 @@ type TestCaseBestSet = {
   sets: [number, number][];
   expectedIndex: number;
 };
+
 function createSet(
   weight: number,
   reps: number,
