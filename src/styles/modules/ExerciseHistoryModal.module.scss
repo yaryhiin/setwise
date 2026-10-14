@@ -4,6 +4,7 @@
   background: var(--bg);
   z-index: 999;
   width: 100%;
+  height: fit-content;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -27,8 +28,7 @@
   cursor: pointer;
   align-self: center;
   justify-self: end;
-  margin-bottom: 20px;
-  margin-top: 10px;
+  padding: 5px;
 }
 
 .loadingCloseBtn {
@@ -94,9 +94,19 @@
   font-size: 14px;
   text-align: center;
   border-collapse: collapse;
-  margin-bottom: 15px;
+
   th {
     padding: 10px;
+  }
+
+  tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  td,
+  th {
+    padding: 13px 7px;
+    width: fit-content;
   }
 }
 
