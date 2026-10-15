@@ -17,6 +17,7 @@ const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
 const WORKOUT_REST_START_KEY = "workoutRestStart";
 const WORKOUT_SUPERSET = "workoutSuperset";
+const WORKOUT_DONE = "workoutDone";
 const VIEW_WORKOUT_KEY = "viewWorkout";
 const CHANGE_WORKOUT_KEY = "changeWorkout";
 const ROUTINES_KEY = "routines";
@@ -61,6 +62,7 @@ export default function Layout({
         localStorage.removeItem(WORKOUT_REST_START_KEY);
         localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
         localStorage.removeItem(WORKOUT_SUPERSET);
+        localStorage.removeItem(WORKOUT_DONE);
       }
       if (!matchPath("/history/*", location.pathname)) {
         localStorage.removeItem(CHANGE_WORKOUT_KEY);
@@ -125,6 +127,7 @@ export default function Layout({
               localStorage.removeItem(WORKOUT_REST_START_KEY);
               localStorage.removeItem(ACTIVE_WORKOUT_ROUTINE_KEY);
               localStorage.removeItem(WORKOUT_SUPERSET);
+              localStorage.removeItem(WORKOUT_DONE);
             }}
           />
         )}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { useTranslation } from "react-i18next";
+import { LoaderCircle } from "lucide-react";
 
 import styles from "../styles/modules/CompletedWorkoutModal.module.scss";
 
@@ -154,7 +155,14 @@ const CompletedWorkoutModal = ({
           disabled={state.phase === "loading"}
           onClick={onDone}
         >
-          Done
+          {state.phase === "loading" ? (
+            <span>
+              {t("infoModal.save.title")}{" "}
+              <LoaderCircle size={14} className="loading__spinner" />
+            </span>
+          ) : (
+            t("workout.done")
+          )}
         </button>
       </div>
     </div>

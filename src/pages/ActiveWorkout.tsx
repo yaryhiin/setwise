@@ -44,6 +44,7 @@ const WORKOUT_SELECTED_EXERCISE_KEY = "workoutSelectedExercise";
 const WORKOUT_SELECTED_SET_KEY = "workoutSelectedSet";
 const WORKOUT_REST_START_KEY = "workoutRestStart";
 const WORKOUT_SUPERSET = "workoutSuperset";
+const WORKOUT_DONE = "workoutDone";
 
 function getInitialSeconds() {
   const savedSeconds = localStorage.getItem(ACTIVE_WORKOUT_SECONDS_KEY);
@@ -76,7 +77,14 @@ const ActiveWorkout = () => {
     .map((exercise) => exercise.exercise_id)
     .join(",");
   const [loading, setLoading] = useState(false);
-  const [workoutDone, setWorkoutDone] = useState(false);
+  const [workoutDone, setWorkoutDone] = useState(() => {
+    const savedWorkoutDone = localStorage.getItem(WORKOUT_DONE);
+    if (savedWorkoutDone) {
+      return true;
+    } else {
+      return false;
+    }
+  });
 
   const [showBackModal, setShowBackModal] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
@@ -266,6 +274,7 @@ const ActiveWorkout = () => {
     };
     await run("workout", async () => {
       setWorkoutDone(true);
+      localStorage.setItem(WORKOUT_DONE, "done");
       await createWorkout(finishedWorkout);
       setShowFinishModal(false);
     });
@@ -346,6 +355,7 @@ const ActiveWorkout = () => {
           unit={preferredUnit}
           onDone={() => {
             setWorkoutDone(false);
+            localStorage.removeItem(WORKOUT_DONE);
             navigate("/");
             localStorage.removeItem(ACTIVE_WORKOUT_KEY);
             localStorage.removeItem(ACTIVE_WORKOUT_SECONDS_KEY);
