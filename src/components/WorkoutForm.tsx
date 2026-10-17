@@ -318,10 +318,19 @@ const WorkoutForm = ({
           }
         : null;
       setSelectedExercise(updatedExercise);
-      if (selectedSet?.set_number === setNumber)
-        setSelectedSet(
-          updatedExercise?.sets[updatedExercise?.sets.length - 1] ?? null,
-        );
+      if (updatedExercise && selectedSet) {
+        if (selectedSet.set_number === setNumber) {
+          if (updatedExercise.sets.length < setNumber) {
+            setSelectedSet(
+              updatedExercise.sets[updatedExercise.sets.length - 1],
+            );
+          } else {
+            setSelectedSet(updatedExercise.sets[setNumber - 1] ?? null);
+          }
+        } else if (selectedSet.set_number > setNumber) {
+          setSelectedSet(updatedExercise.sets[setNumber - 1] ?? null);
+        }
+      }
     }
   }
 
