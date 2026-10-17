@@ -678,6 +678,7 @@ const WorkoutForm = ({
             <div
               className={`${styles.exerciseCard} ${exercise.id === selectedExercise?.id ? styles.selected : ""} ${superset?.some((e) => e.exercise1Id === exercise.exercise_id || e.exercise2Id === exercise.exercise_id) ? styles.superset : ""}`}
               id={exercise.id}
+              data-testid={`exercise-${exercise.id}`}
             >
               <div className={styles.exerciseCardHeader}>
                 <h2 className={styles.exerciseName}>
@@ -933,7 +934,7 @@ const WorkoutForm = ({
         selectedExercise &&
         selectedSet &&
         pageType !== "view" && (
-          <div className={styles.buttonContainer}>
+          <div data-testid="navBar" className={styles.buttonContainer}>
             <div className={styles.barHeader}>
               <p>{selectedExercise.exercise_name}</p>
               <p>
