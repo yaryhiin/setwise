@@ -452,4 +452,187 @@ describe("WorkoutForm", () => {
     expect(setCount).toHaveTextContent("Set 1");
     expect(exerciseName).toHaveTextContent("Incline Press");
   });
+
+  // Superset
+
+  it("completes set in superset correctly", async () => {
+    const sets = [
+      [
+        { weight: 80, reps: 10, done: false },
+        { weight: 85, reps: 12, done: false },
+      ],
+      [
+        { weight: 20, reps: 15, done: false },
+        { weight: 25, reps: 20, done: false },
+      ],
+    ].map((setStack) =>
+      setStack.map((set, index) =>
+        createSet({ ...set, set_number: index + 1 }),
+      ),
+    );
+    const exercises = sets.map((set, index) =>
+      createExercise({
+        sets: set,
+        order_index: index + 1,
+        exercise_name: index === 0 ? "Bench Press" : "Incline Press",
+      }),
+    );
+    const workout = createWorkout({ exercises });
+
+    renderWithProviders(
+      <TestWorkoutForm initialWorkout={workout} pageType="active" unit="kg" />,
+    );
+
+    const navBar = screen.getByTestId("navBar");
+
+    const weightInput = within(navBar).getByRole("spinbutton", {
+      name: "Weight (kg)",
+    });
+    const repsInput = within(navBar).getByRole("spinbutton", { name: "Reps" });
+    const setCount = within(navBar).getAllByRole("paragraph")[1];
+    const exerciseName = within(navBar).getAllByRole("paragraph")[0];
+
+    const completeSetBtn = within(navBar).getByRole("button", {
+      name: "Complete Set",
+    });
+
+    const renderedExercise1 = screen.getByTestId(
+      `exercise-${workout.exercises[0].id}`,
+    );
+
+    const renderedExercise2 = screen.getByTestId(
+      `exercise-${workout.exercises[1].id}`,
+    );
+
+    // Initiating superset through menu
+    await userEvent.click(
+      within(renderedExercise1).getByRole("button", {
+        name: "Exercise options",
+      }),
+    );
+    await userEvent.click(
+      within(renderedExercise1).getByRole("button", { name: "Superset" }),
+    );
+
+    const rows1Before = within(renderedExercise1).getAllByRole("row");
+    const rows2Before = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsBefore = within(rows1Before[1]).getAllByRole("cell");
+
+    const set2CellsBefore = within(rows2Before[1]).getAllByRole("cell");
+
+    expect(set1CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(set2CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(80);
+    expect(repsInput).toHaveValue(10);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Bench Press");
+
+    expect(completeSetBtn).toBeInTheDocument();
+
+    await userEvent.click(completeSetBtn);
+
+    const rows1After = within(renderedExercise1).getAllByRole("row");
+    const rows2After = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsAfter = within(rows1After[1]).getAllByRole("cell");
+
+    const set2CellsAfter = within(rows2After[1]).getAllByRole("cell");
+
+    expect(set1CellsAfter[3]).toHaveTextContent("✅");
+
+    expect(set2CellsAfter[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(20);
+    expect(repsInput).toHaveValue(15);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Incline Press");
+
+    expect(completeSetBtn).toBeInTheDocument();
+  });
+
+  it("completes exercise in superset correctly", async () => {
+    const sets = [
+      { weight: 80, reps: 10, done: false },
+      { weight: 85, reps: 12, done: false },
+    ].map((set) => createSet({ ...set }));
+    const exercises = sets.map((set, index) =>
+      createExercise({
+        sets: [set],
+        order_index: index + 1,
+        exercise_name: index === 1 ? "Incline Press" : "Bench Press",
+      }),
+    );
+    const workout = createWorkout({ exercises });
+
+    renderWithProviders(
+      <TestWorkoutForm initialWorkout={workout} pageType="active" unit="kg" />,
+    );
+
+    const navBar = screen.getByTestId("navBar");
+
+    const weightInput = within(navBar).getByRole("spinbutton", {
+      name: "Weight (kg)",
+    });
+    const repsInput = within(navBar).getByRole("spinbutton", { name: "Reps" });
+    const setCount = within(navBar).getAllByRole("paragraph")[1];
+    const exerciseName = within(navBar).getAllByRole("paragraph")[0];
+
+    const completeExerciseBtn = within(navBar).getByRole("button", {
+      name: "Complete Exercise",
+    });
+
+    const renderedExercise1 = screen.getByTestId(
+      `exercise-${workout.exercises[0].id}`,
+    );
+    const renderedExercise2 = screen.getByTestId(
+      `exercise-${workout.exercises[1].id}`,
+    );
+
+    // Initiating superset through menu
+    await userEvent.click(
+      within(renderedExercise1).getByRole("button", {
+        name: "Exercise options",
+      }),
+    );
+    await userEvent.click(
+      within(renderedExercise1).getByRole("button", { name: "Superset" }),
+    );
+
+    const rows1Before = within(renderedExercise1).getAllByRole("row");
+    const rows2Before = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsBefore = within(rows1Before[1]).getAllByRole("cell");
+    const set2CellsBefore = within(rows2Before[1]).getAllByRole("cell");
+
+    expect(set1CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(set2CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(80);
+    expect(repsInput).toHaveValue(10);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Bench Press");
+
+    expect(completeExerciseBtn).toBeInTheDocument();
+
+    await userEvent.click(completeExerciseBtn);
+
+    const rows1After = within(renderedExercise1).getAllByRole("row");
+    const rows2After = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsAfter = within(rows1After[1]).getAllByRole("cell");
+    const set2CellsAfter = within(rows2After[1]).getAllByRole("cell");
+
+    expect(set1CellsAfter[3]).toHaveTextContent("✅");
+
+    expect(set2CellsAfter[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(85);
+    expect(repsInput).toHaveValue(12);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Incline Press");
+  });
 });
