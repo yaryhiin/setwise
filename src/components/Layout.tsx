@@ -67,6 +67,7 @@ export default function Layout({
       if (!matchPath("/history/*", location.pathname)) {
         localStorage.removeItem(CHANGE_WORKOUT_KEY);
         localStorage.removeItem(VIEW_WORKOUT_KEY);
+        localStorage.removeItem("errorLoading");
       }
       if (!matchPath("/routines/*", location.pathname)) {
         localStorage.removeItem(ROUTINES_KEY);

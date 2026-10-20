@@ -58,60 +58,18 @@ const ChangeWorkout = () => {
     getInitialPreferredUnit,
   );
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [errorLoading, setErrorLoading] = useState(() => {
+    return localStorage.getItem("errorLoading") === "error";
+  });
 
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const savedWorkout = localStorage.getItem(CHANGE_WORKOUT_KEY);
     if (savedWorkout) {
+      setLoading(false);
       return;
-    }
-    async function loadData() {
-      setLoading(true);
-      try {
-        const preferredUnitData = await getProfile();
-        if (preferredUnitData) {
-          setPreferredUnit(preferredUnitData.preferred_workout_unit);
-        }
-        const workoutDetails = await getWorkoutDetails(String(workoutId));
-        if (!workoutDetails) {
-          console.error("Workout details not found");
-          return;
-        }
-        setWorkout({
-          name: workoutDetails.name,
-          started_at: workoutDetails.started_at,
-          finished_at: workoutDetails.finished_at,
-          duration_seconds: workoutDetails.duration_seconds,
-          exercises: [...workoutDetails.workout_exercises]
-            .sort((a, b) => a.order_index - b.order_index)
-            .map((item) => ({
-              id: item.id,
-              exercise_id: item.exercise_id,
-              exercise_name: item.exercise_name,
-              category: item.exercise_category,
-              order_index: item.order_index,
-              notes: item.notes,
-              sets: [...item.workout_sets]
-                .sort((a, b) => a.set_number - b.set_number)
-                .map((item) => ({
-                  set_number: item.set_number,
-                  weight: formatValueBasedOnUnit(
-                    Number(item.weight),
-                    preferredUnitData?.preferred_workout_unit ?? "kg",
-                  ),
-                  reps: item.reps,
-                  rest_seconds: item.rest_seconds,
-                  done: item.done,
-                })),
-            })),
-        });
-      } catch (error) {
-        console.error("Error loading data: ", error);
-      } finally {
-        setLoading(false);
-      }
     }
 
     loadData();
@@ -154,6 +112,61 @@ const ChangeWorkout = () => {
     if (!exercises) return;
     setPersistedJSON(EXERCISES_KEY, exercises);
   }, [exercises]);
+
+  async function loadData() {
+    localStorage.removeItem("errorLoading");
+    setErrorLoading(false);
+    setLoading(true);
+    try {
+      const preferredUnitData = await getProfile();
+      if (!preferredUnitData) {
+        console.error("Error loading profile");
+        setErrorLoading(false);
+        localStorage.setItem("errorLoading", "error");
+        return;
+      }
+      setPreferredUnit(preferredUnitData.preferred_workout_unit);
+      const workoutDetails = await getWorkoutDetails(String(workoutId));
+      if (!workoutDetails) {
+        console.error("Workout details not found");
+        setErrorLoading(true);
+        localStorage.setItem("errorLoading", "error");
+        return;
+      }
+      setWorkout({
+        name: workoutDetails.name,
+        started_at: workoutDetails.started_at,
+        finished_at: workoutDetails.finished_at,
+        duration_seconds: workoutDetails.duration_seconds,
+        exercises: [...workoutDetails.workout_exercises]
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((item) => ({
+            id: item.id,
+            exercise_id: item.exercise_id,
+            exercise_name: item.exercise_name,
+            category: item.exercise_category,
+            order_index: item.order_index,
+            notes: item.notes,
+            sets: [...item.workout_sets]
+              .sort((a, b) => a.set_number - b.set_number)
+              .map((item) => ({
+                set_number: item.set_number,
+                weight: formatValueBasedOnUnit(
+                  Number(item.weight),
+                  preferredUnitData.preferred_workout_unit ?? "kg",
+                ),
+                reps: item.reps,
+                rest_seconds: item.rest_seconds,
+                done: item.done,
+              })),
+          })),
+      });
+    } catch (error) {
+      console.error("Error loading data: ", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleDelete() {
     const success = await run("deleting", async () => {
@@ -210,6 +223,16 @@ const ChangeWorkout = () => {
     }
   }
 
+  function handleBack() {
+    setErrorLoading(false);
+    navigate("/");
+    localStorage.removeItem(CHANGE_WORKOUT_KEY);
+    localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
+    localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
+    localStorage.removeItem(WORKOUT_REST_START_KEY);
+    localStorage.removeItem("preferredUnit");
+  }
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -218,17 +241,7 @@ const ChangeWorkout = () => {
       <div className={styles.header}>
         <h3 className={styles.title}>{workout?.name}</h3>
         <div>
-          <button
-            className={styles.backBtn}
-            onClick={() => {
-              navigate("/");
-              localStorage.removeItem(CHANGE_WORKOUT_KEY);
-              localStorage.removeItem(WORKOUT_SELECTED_EXERCISE_KEY);
-              localStorage.removeItem(WORKOUT_SELECTED_SET_KEY);
-              localStorage.removeItem(WORKOUT_REST_START_KEY);
-              localStorage.removeItem("preferredUnit");
-            }}
-          >
+          <button className={styles.backBtn} onClick={handleBack}>
             {t("common.back")}
           </button>
           <p className={styles.stopwatch}>
@@ -260,6 +273,14 @@ const ChangeWorkout = () => {
             setShowModal(false);
           }}
           onDelete={handleDelete}
+        />
+      )}
+      {errorLoading && (
+        <ExecuteModal
+          text={t("modal.errorLoading.workout")}
+          btnText={t("common.retry")}
+          onClose={handleBack}
+          onDelete={loadData}
         />
       )}
       <InfoModal state={state} />

@@ -19,7 +19,8 @@
     "continue": "Continue",
     "ok": "Ok",
     "unlink": "Unlink",
-    "superset": "Superset"
+    "superset": "Superset",
+    "retry": "Retry"
   },
   "units": {
     "kg": "kg",
@@ -181,6 +182,9 @@
     "create": "+ Create Routine"
   },
   "modal": {
+    "errorLoading": {
+      "workout": "Something went wrong while loading your workout. Please try again."
+    },
     "continueWorkout": "You still have an unfinished workout. \n Would you like to continue it or delete it and start fresh?",
     "back": "Are you sure you want to exit? \n All unsaved progress will be lost.",
     "delete": {

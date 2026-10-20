@@ -19,7 +19,8 @@
     "continue": "Continuar",
     "ok": "Ok",
     "unlink": "Desvincular",
-    "superset": "Superserie"
+    "superset": "Superserie",
+    "retry": "Reintentar"
   },
   "units": {
     "kg": "kg",
@@ -181,6 +182,9 @@
     "create": "+ Crear rutina"
   },
   "modal": {
+    "errorLoading": {
+      "workout": "Algo salió mal al cargar tu entrenamiento. Inténtalo de nuevo."
+    },
     "continueWorkout": "Todavía tienes un entrenamiento sin terminar. \n ¿Quieres continuarlo o eliminarlo y empezar de nuevo?",
     "back": "¿Seguro que quieres salir? \n Se perderán todos los cambios no guardados.",
     "delete": {
