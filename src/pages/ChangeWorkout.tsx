@@ -121,7 +121,7 @@ const ChangeWorkout = () => {
       const preferredUnitData = await getProfile();
       if (!preferredUnitData) {
         console.error("Error loading profile");
-        setErrorLoading(false);
+        setErrorLoading(true);
         localStorage.setItem("errorLoading", "error");
         return;
       }
@@ -163,6 +163,7 @@ const ChangeWorkout = () => {
       });
     } catch (error) {
       console.error("Error loading data: ", error);
+      setErrorLoading(true);
     } finally {
       setLoading(false);
     }
