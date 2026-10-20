@@ -313,4 +313,143 @@ describe("WorkoutForm", () => {
 
     expect(completeExerciseBtn).toBeInTheDocument();
   });
+
+  it("completes set correctly", async () => {
+    const sets = [
+      { weight: 80, reps: 10, done: false },
+      { weight: 85, reps: 12, done: false },
+    ].map((set, index) => createSet({ ...set, set_number: index + 1 }));
+    const exercise = createExercise({ sets });
+    const workout = createWorkout({ exercises: [exercise] });
+
+    renderWithProviders(
+      <TestWorkoutForm initialWorkout={workout} pageType="active" unit="kg" />,
+    );
+
+    const navBar = screen.getByTestId("navBar");
+
+    const weightInput = within(navBar).getByRole("spinbutton", {
+      name: "Weight (kg)",
+    });
+    const repsInput = within(navBar).getByRole("spinbutton", { name: "Reps" });
+    const setCount = within(navBar).getAllByRole("paragraph")[1];
+
+    const completeSetBtn = within(navBar).getByRole("button", {
+      name: "Complete Set",
+    });
+
+    const renderedExercise = screen.getByTestId(
+      `exercise-${workout.exercises[0].id}`,
+    );
+    const rowsBefore = within(renderedExercise).getAllByRole("row");
+
+    const set1CellsBefore = within(rowsBefore[1]).getAllByRole("cell");
+
+    const set2CellsBefore = within(rowsBefore[2]).getAllByRole("cell");
+
+    expect(set1CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(set2CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(80);
+    expect(repsInput).toHaveValue(10);
+    expect(setCount).toHaveTextContent("Set 1");
+
+    expect(completeSetBtn).toBeInTheDocument();
+
+    await userEvent.click(completeSetBtn);
+
+    const completeExerciseBtn = within(navBar).getByRole("button", {
+      name: "Complete Exercise",
+    });
+
+    const rowsAfter = within(renderedExercise).getAllByRole("row");
+
+    const set1CellsAfter = within(rowsAfter[1]).getAllByRole("cell");
+
+    const set2CellsAfter = within(rowsAfter[2]).getAllByRole("cell");
+
+    expect(set1CellsAfter[3]).toHaveTextContent("✅");
+
+    expect(set2CellsAfter[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(85);
+    expect(repsInput).toHaveValue(12);
+    expect(setCount).toHaveTextContent("Set 2");
+
+    expect(completeExerciseBtn).toBeInTheDocument();
+  });
+
+  it("completes exercise correctly", async () => {
+    const sets = [
+      { weight: 80, reps: 10, done: false },
+      { weight: 85, reps: 12, done: false },
+    ].map((set) => createSet({ ...set }));
+    const exercises = sets.map((set, index) =>
+      createExercise({
+        sets: [set],
+        order_index: index + 1,
+        exercise_name: index === 1 ? "Incline Press" : "Bench Press",
+      }),
+    );
+    const workout = createWorkout({ exercises });
+
+    renderWithProviders(
+      <TestWorkoutForm initialWorkout={workout} pageType="active" unit="kg" />,
+    );
+
+    const navBar = screen.getByTestId("navBar");
+
+    const weightInput = within(navBar).getByRole("spinbutton", {
+      name: "Weight (kg)",
+    });
+    const repsInput = within(navBar).getByRole("spinbutton", { name: "Reps" });
+    const setCount = within(navBar).getAllByRole("paragraph")[1];
+    const exerciseName = within(navBar).getAllByRole("paragraph")[0];
+
+    const completeExerciseBtn = within(navBar).getByRole("button", {
+      name: "Complete Exercise",
+    });
+
+    const renderedExercise1 = screen.getByTestId(
+      `exercise-${workout.exercises[0].id}`,
+    );
+    const renderedExercise2 = screen.getByTestId(
+      `exercise-${workout.exercises[1].id}`,
+    );
+
+    const rows1Before = within(renderedExercise1).getAllByRole("row");
+    const rows2Before = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsBefore = within(rows1Before[1]).getAllByRole("cell");
+    const set2CellsBefore = within(rows2Before[1]).getAllByRole("cell");
+
+    expect(set1CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(set2CellsBefore[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(80);
+    expect(repsInput).toHaveValue(10);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Bench Press");
+
+    expect(completeExerciseBtn).toBeInTheDocument();
+
+    await userEvent.click(completeExerciseBtn);
+
+    const rows1After = within(renderedExercise1).getAllByRole("row");
+    const rows2After = within(renderedExercise2).getAllByRole("row");
+
+    const set1CellsAfter = within(rows1After[1]).getAllByRole("cell");
+    const set2CellsAfter = within(rows2After[1]).getAllByRole("cell");
+
+    expect(set1CellsAfter[3]).toHaveTextContent("✅");
+
+    expect(set2CellsAfter[3]).not.toHaveTextContent("✅");
+
+    expect(weightInput).toHaveValue(85);
+    expect(repsInput).toHaveValue(12);
+    expect(setCount).toHaveTextContent("Set 1");
+    expect(exerciseName).toHaveTextContent("Incline Press");
+  });
 });
