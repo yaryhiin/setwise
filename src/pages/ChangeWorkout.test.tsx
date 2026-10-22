@@ -6,7 +6,11 @@ import ChangeWorkout from "./ChangeWorkout";
 
 import { renderWithProviders } from "../test/render";
 
-import { getWorkoutDetails } from "../services/workouts";
+import {
+  deleteWorkout,
+  getWorkoutDetails,
+  updateWorkout,
+} from "../services/workouts";
 import { getProfile } from "../services/profiles";
 import { getExercises } from "../services/exercises";
 import userEvent from "@testing-library/user-event";
@@ -42,7 +46,9 @@ vi.mock("../services/exercises", () => ({
 }));
 
 vi.mock("../components/WorkoutForm", () => ({
-  default: () => <div data-testid="mock-workout-form" />,
+  default: ({ handleUpdate }: { handleUpdate: () => void }) => (
+    <button onClick={handleUpdate}>Save</button>
+  ),
 }));
 
 describe("ChangeWorkout", () => {
@@ -151,5 +157,96 @@ describe("ChangeWorkout", () => {
     expect(
       await screen.findByRole("heading", { name: "Test Workout" }),
     ).toBeInTheDocument();
+  });
+
+  it("saves workout correctly", async () => {
+    vi.mocked(getProfile).mockResolvedValue({ preferred_workout_unit: "kg" });
+    vi.mocked(getWorkoutDetails).mockResolvedValue(mockWorkout);
+    vi.mocked(getExercises).mockResolvedValue([]);
+    vi.mocked(updateWorkout).mockResolvedValue(undefined);
+
+    renderWithProviders(
+      <MemoryRouter initialEntries={["/history/workout-123/edit"]}>
+        <Routes>
+          <Route path="/history/:workoutId/edit" element={<ChangeWorkout />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const saveBtn = await screen.findByRole("button", { name: "Save" });
+
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateWorkout).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Test Workout",
+        }),
+        "workout-123",
+      );
+    });
+  });
+
+  it("deletes workout correctly", async () => {
+    vi.mocked(getProfile).mockResolvedValue({ preferred_workout_unit: "kg" });
+    vi.mocked(getWorkoutDetails).mockResolvedValue(mockWorkout);
+    vi.mocked(getExercises).mockResolvedValue([]);
+    vi.mocked(deleteWorkout).mockResolvedValue(true);
+
+    renderWithProviders(
+      <MemoryRouter initialEntries={["/history/workout-123/edit"]}>
+        <Routes>
+          <Route path="/history/:workoutId/edit" element={<ChangeWorkout />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const deleteBtn = await screen.findByRole("button", { name: "Delete" });
+
+    await userEvent.click(deleteBtn);
+
+    expect(
+      await screen.findByText(/Are you sure you want to delete this workout\?/),
+    ).toBeInTheDocument();
+
+    const modalDeleteBtn = await screen.findAllByRole("button", {
+      name: "Delete",
+    });
+
+    await userEvent.click(modalDeleteBtn[1]);
+
+    await waitFor(() => {
+      expect(deleteWorkout).toHaveBeenCalledWith("workout-123");
+    });
+  });
+
+  it("closes delete workout modal correctly", async () => {
+    vi.mocked(getProfile).mockResolvedValue({ preferred_workout_unit: "kg" });
+    vi.mocked(getWorkoutDetails).mockResolvedValue(mockWorkout);
+    vi.mocked(getExercises).mockResolvedValue([]);
+
+    renderWithProviders(
+      <MemoryRouter initialEntries={["/history/workout-123/edit"]}>
+        <Routes>
+          <Route path="/history/:workoutId/edit" element={<ChangeWorkout />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    const deleteBtn = await screen.findByRole("button", { name: "Delete" });
+
+    await userEvent.click(deleteBtn);
+
+    expect(
+      await screen.findByText(/Are you sure you want to delete this workout\?/),
+    ).toBeInTheDocument();
+
+    const modalDeleteBtn = await screen.findAllByRole("button", {
+      name: "Back",
+    });
+
+    await userEvent.click(modalDeleteBtn[1]);
+
+    expect(deleteWorkout).not.toHaveBeenCalled();
   });
 });
