@@ -43,25 +43,9 @@ body {
 }
 
 .viewHeader {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 10px;
-  justify-items: center;
-  align-items: center;
-  padding: 5px 15px;
-  background-color: var(--bg);
-  width: 100%;
-  border-bottom: 1px solid var(--border);
-
-  .backBtn,
-  .editBtn,
-  .finishBtn {
-    width: 95px;
-    height: 40px;
-    font-size: 14px;
-    margin-bottom: 15px;
-    align-self: center;
-  }
+  position: static;
+  top: auto;
+  padding: 0;
 }
 
 .deleteBtn {

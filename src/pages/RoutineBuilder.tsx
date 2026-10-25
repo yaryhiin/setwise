@@ -269,6 +269,7 @@ const RoutineBuilder = () => {
         <h2 className={styles.title}>{t("routine.title")}</h2>
         <div className={styles.input}>
           <input
+            aria-label="Routine Name"
             className={cn(styles.input, errors.name && "error")}
             type="text"
             value={routineDraft.name}

@@ -79,8 +79,11 @@ const Login = () => {
         <h1 className={styles.heading}>{t("auth.login")}</h1>
         <div className={styles.inputBox}>
           <div className={styles.inputContainer}>
-            <p className={styles.inputText}>{t("auth.email")}</p>
+            <label className={styles.inputText} htmlFor="email">
+              {t("auth.email")}
+            </label>
             <input
+              id="email"
               className={cn(styles.input, errors.email && "error")}
               type="email"
               placeholder="Email"
@@ -102,8 +105,11 @@ const Login = () => {
             )}
           </div>
           <div className={styles.inputContainer}>
-            <p className={styles.inputText}>{t("auth.password")}</p>
+            <label className={styles.inputText} htmlFor="password">
+              {t("auth.password")}
+            </label>
             <input
+              id="password"
               className={cn(styles.input, errors.password && "error")}
               type="password"
               placeholder="Password"

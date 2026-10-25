@@ -107,15 +107,16 @@ const ViewWorkout = () => {
   }
   return (
     <div className={styles.workoutContainer}>
-      <div className={styles.viewHeader}>
-        <button
-          className={styles.editBtn}
-          onClick={() => navigate(`/history/${workoutId}/edit`)}
-        >
-          {t("common.edit")}
-        </button>
+      <div className={`${styles.header} ${styles.viewHeader}`}>
+        <h3 className={styles.title}>{workout?.name}</h3>
         <div>
-          <h3 className={styles.title}>{workout?.name}</h3>
+          <button
+            className={styles.editBtn}
+            onClick={() => navigate(`/history/${workoutId}/edit`)}
+          >
+            {t("common.edit")}
+          </button>
+
           <p className={styles.stopwatch}>
             {formatTime(workout?.duration_seconds, "workout")}
           </p>

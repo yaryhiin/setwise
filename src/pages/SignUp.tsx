@@ -113,8 +113,11 @@ const SignUp = () => {
           <h1 className={styles.heading}>{t("auth.signup")}</h1>
           <div className={styles.inputBox}>
             <div className={styles.inputContainer}>
-              <p className={styles.inputText}>{t("auth.email")}</p>
+              <label htmlFor="email" className={styles.inputText}>
+                {t("auth.email")}
+              </label>
               <input
+                id="email"
                 className={cn(styles.input, errors.email && "error")}
                 type="email"
                 placeholder="Email"
@@ -134,8 +137,11 @@ const SignUp = () => {
               )}
             </div>
             <div className={styles.inputContainer}>
-              <p className={styles.inputText}>{t("auth.password")}</p>
+              <label htmlFor="password" className={styles.inputText}>
+                {t("auth.password")}
+              </label>
               <input
+                id="password"
                 className={cn(styles.input, errors.password && "error")}
                 type="password"
                 placeholder="Password"
@@ -155,8 +161,11 @@ const SignUp = () => {
               )}
             </div>
             <div className={cn(styles.inputContainer, styles.fullWidth)}>
-              <p className={styles.inputText}>{t("auth.confirmPass")}</p>
+              <label htmlFor="confPassword" className={styles.inputText}>
+                {t("auth.confirmPass")}
+              </label>
               <input
+                id="confPassword"
                 className={cn(styles.input, errors.confirmPassword && "error")}
                 type="password"
                 placeholder="Confirm Password"

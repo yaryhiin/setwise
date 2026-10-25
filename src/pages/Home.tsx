@@ -94,7 +94,11 @@ const Home = ({ name }: HomeProps) => {
                 new Date(a.finished_at).getTime(),
             )
             .map((workout) => (
-              <div className={styles.historyElement} key={workout.id}>
+              <div
+                className={styles.historyElement}
+                key={workout.id}
+                data-testid="workoutItem"
+              >
                 <div className={styles.descName}>
                   <p>
                     {workout.name} - {formatDate(workout.started_at)}

@@ -96,7 +96,11 @@ const Routines = () => {
       </div>
       <div className={styles.routinesList}>
         {routines?.map((routine) => (
-          <div key={routine.id} className={styles.routineElement}>
+          <div
+            key={routine.id}
+            data-testid="routineItem"
+            className={styles.routineElement}
+          >
             <div className={styles.routineElementTop}>
               <h3>{routine.name}</h3>
               <p>{routine.exercises_count} Exercises</p>
