@@ -40,6 +40,7 @@ const MeasurementsCheckinModal = lazy(
 );
 const WeightHistory = lazy(() => import("./pages/WeightHistory"));
 const MeasurementsHistory = lazy(() => import("./pages/MeasurementsHistory"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 import { getProfile, createProfile, updateProfile } from "./services/profiles";
 import { createDefaultMeasurementTypes } from "./services/measurements";
@@ -230,6 +231,7 @@ function App() {
       <Router>
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
+            <Route path="/oauth/consent" element={<OAuthConsent />}></Route>
             {!session ? (
               <Route
                 element={

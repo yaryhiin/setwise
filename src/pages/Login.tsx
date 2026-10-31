@@ -1,6 +1,6 @@
 import { supabase } from "../supabase";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import cn from "classnames";
@@ -11,7 +11,10 @@ import type { AuthErrors } from "../types/errors";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
+
+  const redirect = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +64,9 @@ const Login = () => {
 
     setEmail("");
     setPassword("");
-    navigate("/");
+    navigate(
+      redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/",
+    );
   }
 
   function onBack(e: React.MouseEvent<HTMLButtonElement>) {
@@ -70,7 +75,9 @@ const Login = () => {
     setEmail("");
     setPassword("");
 
-    navigate("/");
+    navigate(
+      redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : "/",
+    );
   }
 
   return (

@@ -386,5 +386,22 @@
       "exercises_one": "You improved on {{count}} exercise!",
       "exercises_other": "You improved on {{count}} exercises!"
     }
+  },
+  "oAuth": {
+    "header": "Connect",
+    "desc": "is requesting access to your Setwise account.",
+    "scope": {
+      "title": "Requested OAuth scope",
+      "text": "Access your"
+    },
+    "capabilities": {
+      "title": "Setwise capabilities after connecting",
+      "text": {
+        "1": "Read your exercises",
+        "2": "Create workout routines"
+      }
+    },
+    "authorize": "Authorize",
+    "deny": "Deny"
   }
 }
