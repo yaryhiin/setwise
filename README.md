@@ -143,6 +143,22 @@ Default exercises and measurement types are also created according to the user's
 
 ---
 
+## AI Integration (MCP)
+
+Setwise supports integration with AI assistants through a custom-built [Model Context Protocol (MCP) server](https://github.com/yaryhiin/setwise-mcp).
+
+The integration enables AI assistants such as ChatGPT to interact directly with Setwise data using natural language.
+
+**Currently implemented:**
+
+- Search and retrieve exercises from a user's account.
+- Create workout routines using existing exercises.
+- Authenticate through OAuth 2.1 with Supabase Auth.
+
+The MCP server is deployed on Cloudflare Workers and has been successfully tested with ChatGPT.
+
+**Status:** Restricted development. Public multi-user access and additional workout analysis tools are planned.
+
 ## Tech Stack
 
 ### Frontend
@@ -293,19 +309,18 @@ The source code in this repository is publicly available for **viewing and educa
 
 You may:
 
-* View the source code.
-* Study it for learning and reference purposes.
-* Run the project locally for personal evaluation.
+- View the source code.
+- Study it for learning and reference purposes.
+- Run the project locally for personal evaluation.
 
 You may **not**, without prior written permission:
 
-* Copy or redistribute substantial portions of the source code.
-* Modify and republish the project as your own.
-* Use the code in a commercial product or service.
-* Sell, sublicense, or otherwise commercially exploit the software.
-* Publish a derivative version of Setwise under another name.
+- Copy or redistribute substantial portions of the source code.
+- Modify and republish the project as your own.
+- Use the code in a commercial product or service.
+- Sell, sublicense, or otherwise commercially exploit the software.
+- Publish a derivative version of Setwise under another name.
 
 Setwise and its source code remain the intellectual property of **Tymofii Yaryhin**.
 
 For permission regarding reuse or commercial use, please contact the author.
-
