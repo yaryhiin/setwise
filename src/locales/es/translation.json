@@ -387,5 +387,22 @@
       "exercises_one": "¡Mejoraste en {{count}} ejercicio!",
       "exercises_other": "¡Mejoraste en {{count}} ejercicios!"
     }
+  },
+  "oAuth": {
+    "header": "Conectar",
+    "desc": "solicita acceso a tu cuenta de Setwise.",
+    "scope": {
+      "title": "Permisos OAuth solicitados",
+      "text": "Acceso a tus"
+    },
+    "capabilities": {
+      "title": "Funciones de Setwise después de conectar",
+      "text": {
+        "1": "Consultar tus ejercicios",
+        "2": "Crear rutinas de entrenamiento"
+      }
+    },
+    "authorize": "Autorizar",
+    "deny": "Denegar"
   }
 }
