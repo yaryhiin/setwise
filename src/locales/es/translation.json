@@ -20,7 +20,8 @@
     "ok": "Ok",
     "unlink": "Desvincular",
     "superset": "Superserie",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "targets": "Objetivos"
   },
   "units": {
     "kg": "kg",
@@ -199,6 +200,18 @@
     },
     "finish": "¿Seguro que quieres finalizar este entrenamiento?",
     "logout": "¿Seguro que quieres cerrar sesión?"
+  },
+  "targetsModal": {
+    "title": "Establecer objetivos",
+    "sets": "Series",
+    "range": "Rango de repeticiones",
+    "min": "Reps. mín.",
+    "max": "Reps. máx.",
+    "save": "Guardar objetivos",
+    "error": {
+      "sets": "El número de series debe estar entre 1 y 50",
+      "reps": "Introduce las reps. mín. y máx. El máximo debe ser mayor que el mínimo."
+    }
   },
   "welcomeScreen": {
     "title": {

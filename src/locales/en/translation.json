@@ -20,7 +20,8 @@
     "ok": "Ok",
     "unlink": "Unlink",
     "superset": "Superset",
-    "retry": "Retry"
+    "retry": "Retry",
+    "targets": "Targets"
   },
   "units": {
     "kg": "kg",
@@ -198,6 +199,18 @@
     },
     "finish": "Are you sure you want to finish this workout?",
     "logout": "You sure you want to Log Out?"
+  },
+  "targetsModal": {
+    "title": "Set Targets",
+    "sets": "Sets",
+    "range": "Rep range",
+    "min": "Min reps",
+    "max": "Max reps",
+    "save": "Save targets",
+    "error": {
+      "sets": "Sets must be between 1 and 50",
+      "reps": "Enter both min and max reps, with max greater than min."
+    }
   },
   "welcomeScreen": {
     "title": {

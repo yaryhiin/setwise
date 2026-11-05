@@ -1,12 +1,5 @@
 import type { ExerciseDB } from "./exercise";
 
-export type Routine = {
-  name: string;
-  exercises: RoutineExercise[];
-  exercises_count: number;
-  categories: string[];
-};
-
 export type RoutineDB = {
   id: string;
   user_id: string;
@@ -16,16 +9,14 @@ export type RoutineDB = {
   created_at: string;
 };
 
-export type RoutineExercise = {
-  exercise_id: string;
-  order_index: number;
-};
-
 export type RoutineExerciseDB = {
   id: string;
   routine_id: string;
   exercise_id: string;
   order_index: number;
+  sets: number;
+  min_reps: number;
+  max_reps: number;
   created_at: string;
 };
 
@@ -42,9 +33,18 @@ export type SelectedRoutineExercise = {
   exercise_name: string;
   category: string;
   order_index: number;
+  sets?: number | null;
+  min_reps?: number | null;
+  max_reps?: number | null;
 };
 
 export type RoutineDraft = {
   name: string;
   exercises: SelectedRoutineExercise[];
+};
+
+export type Targets = {
+  sets: number;
+  min_reps: number;
+  max_reps: number;
 };

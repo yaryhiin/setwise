@@ -7,12 +7,13 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/RoutineBuilder.module.scss";
 
-import type { Routine, RoutineDraft } from "../types/routine";
+import type { RoutineDraft, Targets } from "../types/routine";
 import type { ExerciseDB } from "../types/exercise";
 import type { RoutineErrors } from "../types/errors";
 
@@ -31,6 +32,7 @@ import { setPersistedJSON, getPersistedJSON } from "../utils/storage";
 
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import TargetsModal from "../components/TargetsModal";
 
 const EXERCISES_KEY = "exercises";
 const ROUTINE_DRAFT_KEY = "routineDraft";
@@ -52,6 +54,9 @@ const RoutineBuilder = () => {
     getPersistedJSON(EXERCISES_KEY, null),
   );
   const [chosenExerciseId, setChosenExerciseId] = useState("");
+  const chosenExercise = routineDraft.exercises.find(
+    (exercise) => exercise.exercise_id === chosenExerciseId,
+  );
   const [loading, setLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -64,6 +69,7 @@ const RoutineBuilder = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showChooseExerciseModal, setShowChooseExerciseModal] = useState(false);
   const [showBackModal, setShowBackModal] = useState(false);
+  const [showTargetsModal, setShowTargetsModal] = useState(false);
 
   useEffect(() => {
     const savedRoutine = localStorage.getItem(ROUTINE_DRAFT_KEY);
@@ -89,6 +95,9 @@ const RoutineBuilder = () => {
                 exercise_name: item.exercises.name,
                 category: item.exercises.category,
                 order_index: item.order_index,
+                sets: item.sets,
+                min_reps: item.min_reps,
+                max_reps: item.max_reps,
               })),
           });
       } catch (error) {
@@ -134,7 +143,7 @@ const RoutineBuilder = () => {
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
-  async function addRoutine(routine: Routine) {
+  async function addRoutine() {
     const newErrors = { name: false, exercises: false };
     if (!routineDraft.name.trim()) newErrors.name = true;
     if (routineDraft.exercises.length === 0) newErrors.exercises = true;
@@ -143,7 +152,10 @@ const RoutineBuilder = () => {
       return;
     }
     const success = await run("saving", async () => {
-      await createRoutine(routine);
+      await createRoutine({
+        p_name: routineDraft.name,
+        exercises: routineDraft.exercises,
+      });
     });
     if (success) {
       localStorage.removeItem(ROUTINE_DRAFT_KEY);
@@ -154,7 +166,7 @@ const RoutineBuilder = () => {
     }
   }
 
-  async function handleUpdateRoutine(routine: Routine, routineId: string) {
+  async function handleUpdateRoutine(routineId: string) {
     const newErrors = { name: false, exercises: false };
     if (!routineDraft.name.trim()) newErrors.name = true;
     if (routineDraft.exercises.length === 0) newErrors.exercises = true;
@@ -163,10 +175,15 @@ const RoutineBuilder = () => {
       return;
     }
     const success = await run("saving", async () => {
-      await updateRoutine(routine, routineId);
+      await updateRoutine({
+        p_routine_id: routineId,
+        p_name: routineDraft.name,
+        exercises: routineDraft.exercises,
+      });
     });
     if (success) {
       localStorage.removeItem(ROUTINE_DRAFT_KEY);
+      localStorage.removeItem(ROUTINES_KEY);
       setTimeout(() => {
         navigate("/routines");
       }, 1000);
@@ -260,6 +277,24 @@ const RoutineBuilder = () => {
     });
   }
 
+  function updateTargets(newTargets: Targets) {
+    setRoutineDraft((prev) => ({
+      ...prev,
+      exercises: prev.exercises.map((exercise) =>
+        exercise.exercise_id === chosenExerciseId
+          ? {
+              ...exercise,
+              sets: newTargets.sets > 0 ? newTargets.sets : null,
+              min_reps: newTargets.min_reps > 0 ? newTargets.min_reps : null,
+              max_reps: newTargets.max_reps > 0 ? newTargets.max_reps : null,
+            }
+          : exercise,
+      ),
+    }));
+    setShowTargetsModal(false);
+    setChosenExerciseId("");
+  }
+
   if (loading) {
     return <LoadingScreen />;
   }
@@ -313,6 +348,17 @@ const RoutineBuilder = () => {
                 <div className="exerciseMenuWrapper">
                   {showOptions && chosenExerciseId === exercise.exercise_id ? (
                     <div ref={menuRef} className="exerciseMenu">
+                      <button
+                        className={styles.deleteExerciseBtn}
+                        onClick={() => {
+                          setShowTargetsModal(true);
+                          setChosenExerciseId(exercise.exercise_id);
+                          setShowOptions(false);
+                        }}
+                      >
+                        <SlidersHorizontal size={15} />
+                        {t("common.targets")}
+                      </button>
                       <button
                         className={styles.editExerciseBtn}
                         onClick={() => {
@@ -369,23 +415,10 @@ const RoutineBuilder = () => {
         <button
           className={styles.saveRoutine}
           onClick={() => {
-            const routineToSave = {
-              name: routineDraft.name,
-              exercises: routineDraft.exercises.map((exercise) => ({
-                exercise_id: exercise.exercise_id,
-                order_index: exercise.order_index,
-              })),
-              exercises_count: routineDraft.exercises.length,
-              categories: [
-                ...new Set(
-                  routineDraft.exercises.map((exercise) => exercise.category),
-                ),
-              ],
-            };
             if (routineId) {
-              handleUpdateRoutine(routineToSave, routineId);
+              handleUpdateRoutine(routineId);
             } else {
-              addRoutine(routineToSave);
+              addRoutine();
             }
           }}
         >
@@ -436,6 +469,18 @@ const RoutineBuilder = () => {
             localStorage.removeItem(ROUTINE_DRAFT_KEY);
             navigate("/routines");
           }}
+        />
+      )}
+      {showTargetsModal && exercises && chosenExercise && (
+        <TargetsModal
+          onClose={() => setShowTargetsModal(false)}
+          onSave={updateTargets}
+          targets={{
+            sets: chosenExercise.sets ?? 0,
+            min_reps: chosenExercise.min_reps ?? 0,
+            max_reps: chosenExercise.max_reps ?? 0,
+          }}
+          exerciseName={chosenExercise.exercise_name}
         />
       )}
       <InfoModal state={state} />
