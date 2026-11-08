@@ -55,6 +55,8 @@ function createExercise(overrides?: Partial<WorkoutExercise>): WorkoutExercise {
     category: "Chest",
     order_index: 1,
     notes: "Last set hit failure",
+    min_reps: null,
+    max_reps: null,
     sets: [],
     ...overrides,
   };

@@ -3,7 +3,11 @@ import type {
   PreferredMeasurementUnit,
   PreferredWeightUnit,
 } from "../types/profile";
-import type { WorkoutExercise, WorkoutSet } from "../types/workout";
+import type {
+  PreviousExerciseRow,
+  WorkoutExercise,
+  WorkoutSet,
+} from "../types/workout";
 import type { ExerciseDB } from "../types/exercise";
 
 const locales = {
@@ -161,19 +165,22 @@ export function formatPreviousSets(
 ) {
   if (!previousSets) return "No previous data";
 
-  const grouped = new Map<number, number[]>();
-
   [...previousSets]
     .sort((a, b) => a.set_number - b.set_number)
-    .filter((set) => set.done)
-    .forEach((set) => {
-      const reps = grouped.get(set.weight);
-      if (reps) {
-        reps.push(set.reps);
-      } else {
-        grouped.set(set.weight, [set.reps]);
-      }
-    });
+    .filter((set) => set.done);
+
+  if (!previousSets) return "No previous data";
+
+  const grouped = new Map<number, number[]>();
+
+  [...previousSets].forEach((set) => {
+    const reps = grouped.get(set.weight);
+    if (reps) {
+      reps.push(set.reps);
+    } else {
+      grouped.set(set.weight, [set.reps]);
+    }
+  });
 
   return [...grouped.entries()]
     .map(([weight, reps]) => {
@@ -208,13 +215,15 @@ export function buildWorkoutExercise(
     exercise_id: exercise.id,
     category: exercise.category,
     order_index: orderIndex,
+    min_reps: null,
+    max_reps: null,
     notes: "",
     sets: [{ set_number: 1, weight: 0, reps: 0, rest_seconds: 0, done: false }],
   };
 }
 
 export function hasModifiedSets(exercise: WorkoutExercise): boolean {
-  if (exercise.sets.length > 1) return true;
+  // if (exercise.sets.length > 1) return true;
   if (
     exercise.sets[0].weight === 0 &&
     exercise.sets[0].reps === 0 &&
@@ -222,5 +231,25 @@ export function hasModifiedSets(exercise: WorkoutExercise): boolean {
     exercise.sets[0].done === false
   )
     return false;
+  return true;
+}
+
+export function needsIncrease(
+  set: WorkoutSet,
+  previousData: PreviousExerciseRow,
+  max_reps: number,
+  setAmount: number,
+) {
+  if (
+    set.set_number !== 1 ||
+    set.done ||
+    previousData.workout_sets.length < setAmount
+  )
+    return false;
+  for (let i = 0; i < previousData.workout_sets.length; i++) {
+    if (previousData.workout_sets[i].reps < max_reps) {
+      return false;
+    }
+  }
   return true;
 }

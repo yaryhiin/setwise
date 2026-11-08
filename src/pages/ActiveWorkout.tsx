@@ -178,15 +178,26 @@ const ActiveWorkout = () => {
                   category: item.exercises.category,
                   order_index: item.order_index,
                   notes: "",
-                  sets: [
-                    {
-                      set_number: 1,
-                      weight: 0,
-                      reps: 0,
-                      rest_seconds: 0,
-                      done: false,
-                    },
-                  ],
+                  min_reps: item.min_reps,
+                  max_reps: item.max_reps,
+                  ...(item.sets && { requiredSets: item.sets }),
+                  sets: item.sets
+                    ? Array.from({ length: item.sets }, (_, index) => ({
+                        set_number: index + 1,
+                        weight: 0,
+                        reps: 0,
+                        rest_seconds: 0,
+                        done: false,
+                      }))
+                    : [
+                        {
+                          set_number: 1,
+                          weight: 0,
+                          reps: 0,
+                          rest_seconds: 0,
+                          done: false,
+                        },
+                      ],
                 })),
             });
           }

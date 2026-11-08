@@ -14,9 +14,9 @@ export type RoutineExerciseDB = {
   routine_id: string;
   exercise_id: string;
   order_index: number;
-  sets: number;
-  min_reps: number;
-  max_reps: number;
+  sets: number | null;
+  min_reps: number | null;
+  max_reps: number | null;
   created_at: string;
 };
 
@@ -33,9 +33,9 @@ export type SelectedRoutineExercise = {
   exercise_name: string;
   category: string;
   order_index: number;
-  sets?: number | null;
-  min_reps?: number | null;
-  max_reps?: number | null;
+  sets: number | null;
+  min_reps: number | null;
+  max_reps: number | null;
 };
 
 export type RoutineDraft = {

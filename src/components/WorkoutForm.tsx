@@ -8,6 +8,7 @@ import {
   History,
   Unlink,
   Repeat2,
+  TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -36,6 +37,7 @@ import {
   buildWorkoutExercise,
   hasModifiedSets,
   formatValueBasedOnUnit,
+  needsIncrease,
 } from "../utils/utils";
 import {
   getPersistedJSON,
@@ -108,7 +110,11 @@ const WorkoutForm = ({
   const [superset, setSuperset] = useState<Superset[] | null>(
     getPersistedJSON(WORKOUT_SUPERSET, null),
   );
-
+  const [increasedWeight, setIncreasedWeight] = useState(0);
+  const [showIncrease, setShowIncrease] = useState<Record<string, boolean>>({});
+  const [increasingExerciseId, setIncreasingExerciseId] = useState<
+    string | null
+  >(null);
   const [showNotes, setShowNotes] = useState<Record<string, boolean>>({});
   const [showExerciseOptions, setShowExerciseOptions] = useState(false);
   const [showSupersetOptions, setShowSupersetOptions] = useState(false);
@@ -954,6 +960,74 @@ const WorkoutForm = ({
               {t("workout.rest")}:{" "}
               {formatTime(selectedSet.rest_seconds, "rest")}
             </p>
+            {previousData?.[selectedExercise.exercise_id] &&
+              selectedExercise.max_reps &&
+              needsIncrease(
+                selectedSet,
+                previousData[selectedExercise.exercise_id],
+                selectedExercise.max_reps,
+                selectedExercise.requiredSets ?? 1,
+              ) &&
+              !showIncrease[selectedExercise.exercise_id] &&
+              (increasingExerciseId === selectedExercise.exercise_id ? (
+                <div className={styles.increaseSuggestion}>
+                  <div>
+                    <label htmlFor="increaseWeight">
+                      {t("workout.increase.newWeight")}
+                    </label>
+                    <input
+                      id="increaseWeight"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="1000"
+                      placeholder="0"
+                      aria-label="Put in new weight"
+                      value={increasedWeight ? increasedWeight : ""}
+                      onChange={(e) =>
+                        setIncreasedWeight(Number(e.target.value))
+                      }
+                    ></input>
+                  </div>
+                  <button
+                    disabled={
+                      increasedWeight <= 0 ||
+                      increasedWeight > 1000 ||
+                      !Number.isFinite(increasedWeight)
+                    }
+                    onClick={() => {
+                      for (let i = 1; i <= selectedExercise.sets.length; i++) {
+                        updateSet(
+                          selectedExercise.exercise_id,
+                          i,
+                          "weight",
+                          increasedWeight,
+                        );
+                      }
+                      setShowIncrease((prev) => ({
+                        ...prev,
+                        [selectedExercise.exercise_id]: true,
+                      }));
+                    }}
+                  >
+                    {t("workout.increase.apply")}
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.increaseSuggestion}>
+                  <p>
+                    <TrendingUp size={17} color="#36f48f" />
+                    {t("workout.increase.text")}
+                  </p>
+                  <button
+                    onClick={() =>
+                      setIncreasingExerciseId(selectedExercise.exercise_id)
+                    }
+                  >
+                    {t("workout.increase.button")}
+                  </button>
+                </div>
+              ))}
             <div className={styles.barInputs}>
               <label>
                 {t("workout.weight")} ({t(`units.${preferredUnit}`)})

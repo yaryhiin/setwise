@@ -45,6 +45,9 @@ export type WorkoutExercise = {
   category: string;
   order_index: number;
   notes: string;
+  min_reps: number | null;
+  max_reps: number | null;
+  requiredSets?: number;
   sets: WorkoutSet[];
 };
 

@@ -211,6 +211,9 @@ const RoutineBuilder = () => {
                 exercise_name: exercise.name,
                 category: exercise.category,
                 order_index: e.order_index,
+                min_reps: null,
+                max_reps: null,
+                sets: null,
               }
             : e,
         ),
@@ -225,6 +228,9 @@ const RoutineBuilder = () => {
             exercise_name: exercise.name,
             category: exercise.category,
             order_index: prev.exercises.length + 1,
+            min_reps: null,
+            max_reps: null,
+            sets: null,
           },
         ],
       }));
@@ -284,9 +290,9 @@ const RoutineBuilder = () => {
         exercise.exercise_id === chosenExerciseId
           ? {
               ...exercise,
-              sets: newTargets.sets > 0 ? newTargets.sets : null,
-              min_reps: newTargets.min_reps > 0 ? newTargets.min_reps : null,
-              max_reps: newTargets.max_reps > 0 ? newTargets.max_reps : null,
+              sets: newTargets.sets,
+              min_reps: newTargets.min_reps,
+              max_reps: newTargets.max_reps,
             }
           : exercise,
       ),
@@ -473,7 +479,10 @@ const RoutineBuilder = () => {
       )}
       {showTargetsModal && exercises && chosenExercise && (
         <TargetsModal
-          onClose={() => setShowTargetsModal(false)}
+          onClose={() => {
+            setShowTargetsModal(false);
+            setChosenExerciseId("");
+          }}
           onSave={updateTargets}
           targets={{
             sets: chosenExercise.sets ?? 0,

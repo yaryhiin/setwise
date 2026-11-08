@@ -72,7 +72,13 @@
     "addSet": "Add Set",
     "addExercise": "Add Exercise",
     "completeExercise": "Complete Exercise",
-    "completeSet": "Complete Set"
+    "completeSet": "Complete Set",
+    "increase": {
+      "text": "Ready to increase weight",
+      "button": "Adjust",
+      "newWeight": "Target weight",
+      "apply": "Apply"
+    }
   },
   "exercises": {
     "title": "Exercises",

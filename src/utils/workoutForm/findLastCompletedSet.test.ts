@@ -59,6 +59,8 @@ function createExercise(
     category: "",
     order_index: 1,
     notes: "",
+    min_reps: null,
+    max_reps: null,
     sets: data.map((done, index) => createSet(done, { set_number: index + 1 })),
     ...overrides,
   };
