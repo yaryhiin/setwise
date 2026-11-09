@@ -103,43 +103,9 @@ export async function updateExercise(
 }
 
 export async function deleteExercise(exercise_id: string) {
-  const userId = await getCurrentUserId();
-
-  const { data, error: routinesError } = await supabase
-    .from("routines")
-    .select(
-      `
-    id,
-    exercises_count,
-    name,
-    routine_exercises!inner()
-  `,
-    )
-    .eq("routine_exercises.exercise_id", exercise_id);
-
-  if (routinesError) throw routinesError;
-
-  const updates = data.map((routine) =>
-    supabase
-      .from("routines")
-      .update({
-        exercises_count: routine.exercises_count - 1,
-      })
-      .eq("id", routine.id)
-      .eq("user_id", userId),
-  );
-
-  const results = await Promise.all(updates);
-
-  const failedUpdate = results.find(({ error }) => error);
-
-  if (failedUpdate?.error) throw failedUpdate?.error;
-
-  const { error } = await supabase
-    .from("exercises")
-    .delete()
-    .eq("id", exercise_id)
-    .eq("user_id", userId);
+  const { error } = await supabase.rpc("delete_exercise", {
+    p_exercise_id: exercise_id,
+  });
 
   if (error) {
     console.error(`Error deleting exercise:`, error.message);
