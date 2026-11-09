@@ -21,17 +21,14 @@ export function findLastCompletedSetsInSuperset(
   let exerciseSuperset2: SupersetExercise | null = null;
 
   for (let i of superset) {
-    if (
-      i.exercise1Id !== exercise.exercise_id &&
-      i.exercise2Id !== exercise.exercise_id
-    )
+    if (i.exercise1Id !== exercise.id && i.exercise2Id !== exercise.id)
       continue;
 
     const exercise1 = workout.exercises.find(
-      (exercise) => exercise.exercise_id === i.exercise1Id,
+      (exercise) => exercise.id === i.exercise1Id,
     );
     const exercise2 = workout.exercises.find(
-      (exercise) => exercise.exercise_id === i.exercise2Id,
+      (exercise) => exercise.id === i.exercise2Id,
     );
 
     if (!exercise1 || !exercise2) continue;
@@ -75,7 +72,6 @@ export function findLastCompletedSetInWorkout(
 
   for (let i = exerciseIndex; i >= 0 && !completedSetFound; i--) {
     const currentExercise = workout.exercises[i];
-
     const startingSetIndex =
       i === exerciseIndex
         ? set.set_number - 2
@@ -86,7 +82,7 @@ export function findLastCompletedSetInWorkout(
 
       if (previousSet.done) {
         completedSet = previousSet;
-        exerciseId = currentExercise.exercise_id;
+        exerciseId = currentExercise.id;
         completedSetFound = true;
         break;
       }

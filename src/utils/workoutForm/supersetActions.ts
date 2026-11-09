@@ -16,7 +16,7 @@ export function supersetCompleteSet(
   let newSelectedSet: WorkoutSet | null = null;
   let newSuperset: Superset[] | null = null;
   for (let i of superset) {
-    if (i.exercise1Id === selectedExercise.exercise_id) {
+    if (i.exercise1Id === selectedExercise.id) {
       const nextExercise =
         workout.exercises.find((exercise) =>
           selectedExercise
@@ -29,7 +29,7 @@ export function supersetCompleteSet(
           set_number: selectedSet.set_number,
           weight:
             workout.exercises.find(
-              (exercise) => exercise.exercise_id === nextExercise.exercise_id,
+              (exercise) => exercise.id === nextExercise.id,
             )?.sets[nextExercise.sets.length - 1].weight ?? 0,
           reps: 0,
           rest_seconds: 0,
@@ -40,7 +40,7 @@ export function supersetCompleteSet(
       }
       newSelectedExercise = nextExercise;
       newSuperset = superset.map((e) =>
-        e.exercise1Id === selectedExercise.exercise_id
+        e.exercise1Id === selectedExercise.id
           ? {
               ...e,
               exercise1RestStart: new Date().toISOString(),
@@ -49,7 +49,7 @@ export function supersetCompleteSet(
       );
       break;
     }
-    if (i.exercise2Id === selectedExercise.exercise_id) {
+    if (i.exercise2Id === selectedExercise.id) {
       const nextExercise =
         workout.exercises.find((exercise) =>
           selectedExercise
@@ -62,7 +62,7 @@ export function supersetCompleteSet(
           set_number: selectedSet.set_number + 1,
           weight:
             workout.exercises.find(
-              (exercise) => exercise.exercise_id === nextExercise.exercise_id,
+              (exercise) => exercise.id === nextExercise.id,
             )?.sets[nextExercise.sets.length - 1].weight ?? 0,
           reps: 0,
           rest_seconds: 0,
@@ -73,7 +73,7 @@ export function supersetCompleteSet(
       }
       newSelectedExercise = nextExercise;
       newSuperset = superset.map((e) =>
-        e.exercise2Id === selectedExercise.exercise_id
+        e.exercise2Id === selectedExercise.id
           ? {
               ...e,
               exercise2RestStart: new Date().toISOString(),
@@ -115,14 +115,14 @@ export function supersetCompleteExercise(
         : null,
     ) ?? null;
   for (let i of superset) {
-    if (i.exercise1Id === selectedExercise.exercise_id) {
+    if (i.exercise1Id === selectedExercise.id) {
       if (nextExercise && nextExercise.sets?.length < selectedSet.set_number) {
         addNewSet = true;
         newSelectedSet = {
           set_number: selectedSet.set_number,
           weight:
             workout.exercises.find(
-              (exercise) => exercise.exercise_id === nextExercise.exercise_id,
+              (exercise) => exercise.id === nextExercise.id,
             )?.sets[nextExercise.sets.length - 1].weight ?? 0,
           reps: 0,
           rest_seconds: 0,
@@ -133,7 +133,7 @@ export function supersetCompleteExercise(
       }
       newSelectedExercise = nextExercise;
       newSuperset = superset.map((e) =>
-        e.exercise1Id === selectedExercise.exercise_id
+        e.exercise1Id === selectedExercise.id
           ? {
               ...e,
               exercise1RestStart: new Date().toISOString(),
@@ -141,12 +141,12 @@ export function supersetCompleteExercise(
           : e,
       );
       break;
-    } else if (i.exercise2Id === selectedExercise.exercise_id) {
+    } else if (i.exercise2Id === selectedExercise.id) {
       if (prevExercise && prevExercise.sets.length > selectedSet.set_number) {
         newSelectedExercise = prevExercise;
         newSelectedSet = prevExercise?.sets[selectedSet.set_number] ?? null;
         newSuperset = superset.map((e) =>
-          e.exercise2Id === selectedExercise.exercise_id
+          e.exercise2Id === selectedExercise.id
             ? {
                 ...e,
                 exercise2RestStart: new Date().toISOString(),
