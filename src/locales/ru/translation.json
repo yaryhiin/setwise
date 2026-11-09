@@ -72,7 +72,13 @@
     "addSet": "Добавить подход",
     "addExercise": "Добавить упражнение",
     "completeExercise": "Завершить упражнение",
-    "completeSet": "Завершить подход"
+    "completeSet": "Завершить подход",
+    "increase": {
+      "text": "Пора увеличить вес",
+      "button": "Настроить",
+      "newWeight": "Целевой вес",
+      "apply": "Применить"
+    }
   },
   "exercises": {
     "title": "Упражнения",

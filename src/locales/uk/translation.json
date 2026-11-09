@@ -72,7 +72,13 @@
     "addSet": "Додати підхід",
     "addExercise": "Додати вправу",
     "completeExercise": "Завершити вправу",
-    "completeSet": "Завершити підхід"
+    "completeSet": "Завершити підхід",
+    "increase": {
+      "text": "Час збільшити вагу",
+      "button": "Налаштувати",
+      "newWeight": "Цільова вага",
+      "apply": "Застосувати"
+    }
   },
   "exercises": {
     "title": "Вправи",

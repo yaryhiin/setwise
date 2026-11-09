@@ -72,7 +72,13 @@
     "addSet": "Añadir serie",
     "addExercise": "Añadir ejercicio",
     "completeExercise": "Completar ejercicio",
-    "completeSet": "Completar serie"
+    "completeSet": "Completar serie",
+    "increase": {
+      "text": "Listo para aumentar el peso",
+      "button": "Ajustar",
+      "newWeight": "Peso objetivo",
+      "apply": "Aplicar"
+    }
   },
   "exercises": {
     "title": "Ejercicios",

@@ -147,6 +147,8 @@ const ChangeWorkout = () => {
             category: item.exercise_category,
             order_index: item.order_index,
             notes: item.notes,
+            max_reps: item.max_reps,
+            min_reps: item.min_reps,
             sets: [...item.workout_sets]
               .sort((a, b) => a.set_number - b.set_number)
               .map((item) => ({
