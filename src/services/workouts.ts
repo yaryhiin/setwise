@@ -68,74 +68,15 @@ export async function getWorkoutDetails(workoutId: string) {
 }
 
 export async function createWorkout(workout: Workout) {
-  const userId = await getCurrentUserId();
+  const { data, error } = await supabase.rpc("create_workout", {
+    p_workout: workout,
+  });
 
-  const formattedWorkout = {
-    id: createLocalId(),
-    user_id: userId,
-    name: workout.name,
-    duration_seconds: workout.duration_seconds,
-    started_at: workout.started_at ?? new Date().toISOString(),
-    finished_at: workout.finished_at ?? new Date().toISOString(),
-  };
-
-  let formattedExercises: WorkoutExerciseDB[] = [];
-  let formattedSets: WorkoutSetDB[] = [];
-  for (const exercise of workout.exercises) {
-    const newExerciseId = createLocalId();
-    formattedExercises.push({
-      id: newExerciseId,
-      workout_id: formattedWorkout.id,
-      exercise_name: exercise.exercise_name,
-      exercise_id: exercise.exercise_id,
-      category: exercise.category,
-      order_index: exercise.order_index,
-      notes: exercise.notes,
-      created_at: new Date().toISOString(),
-    });
-    for (const set of exercise.sets) {
-      formattedSets.push({
-        id: createLocalId(),
-        workout_exercise_id: newExerciseId,
-        set_number: set.set_number,
-        weight: set.weight,
-        reps: set.reps,
-        done: set.done,
-        rest_seconds: set.rest_seconds,
-        created_at: new Date().toISOString(),
-      });
-    }
+  if (error) {
+    throw error;
   }
 
-  const { data: createdWorkout, error: workoutError } = await supabase
-    .from("workouts")
-    .insert(formattedWorkout)
-    .select()
-    .single();
-
-  if (workoutError) {
-    throw workoutError;
-  }
-
-  const { error: exercisesError } = await supabase
-    .from("workout_exercises")
-    .insert(formattedExercises);
-
-  if (exercisesError) {
-    await deleteWorkout(createdWorkout.id);
-    throw exercisesError;
-  }
-
-  const { error: setsError } = await supabase
-    .from("workout_sets")
-    .insert(formattedSets);
-
-  if (setsError) {
-    await deleteWorkout(createdWorkout.id);
-    throw setsError;
-  }
-
-  return createdWorkout;
+  return data;
 }
 
 export async function updateWorkout(workout: Workout, workoutId: string) {
