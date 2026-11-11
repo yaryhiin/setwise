@@ -164,16 +164,16 @@ describe("supersetCompleteSet", () => {
       const workout = createWorkout(data);
       const supersets = supersetExerciseIndexes.map((superset) =>
         createSuperset(
-          workout.exercises[superset[0]].exercise_id,
-          workout.exercises[superset[1]].exercise_id,
+          workout.exercises[superset[0]].id,
+          workout.exercises[superset[1]].id,
         ),
       );
 
       const selectedExercise = workout.exercises[selectedExerciseIndex];
 
       const newSuperset = supersets.map((superset) =>
-        superset.exercise1Id === selectedExercise.exercise_id ||
-        superset.exercise2Id === selectedExercise.exercise_id
+        superset.exercise1Id === selectedExercise.id ||
+        superset.exercise2Id === selectedExercise.id
           ? editSuperset(superset, {
               [expected.restStartKey]: new Date().toISOString(),
             })
@@ -312,8 +312,8 @@ describe("supersetCompleteExercise", () => {
 
       const supersets = supersetExerciseIndexes.map((superset) =>
         createSuperset(
-          workout.exercises[superset[0]].exercise_id,
-          workout.exercises[superset[1]].exercise_id,
+          workout.exercises[superset[0]].id,
+          workout.exercises[superset[1]].id,
         ),
       );
       let newSuperset: Superset[] | null = null;
@@ -321,8 +321,8 @@ describe("supersetCompleteExercise", () => {
         const selectedExercise = workout.exercises[selectedExerciseIndex];
 
         newSuperset = supersets.map((superset) =>
-          superset.exercise1Id === selectedExercise.exercise_id ||
-          superset.exercise2Id === selectedExercise.exercise_id
+          superset.exercise1Id === selectedExercise.id ||
+          superset.exercise2Id === selectedExercise.id
             ? editSuperset(superset, {
                 [expected.restStartKey]: new Date().toISOString(),
               })

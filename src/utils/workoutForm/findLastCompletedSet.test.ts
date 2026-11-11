@@ -163,7 +163,7 @@ describe("findLastCompletedSetInWorkout", () => {
         ? workout.exercises[expected.exerciseIndex].sets[expected.setIndex]
         : null,
       exerciseId: expected
-        ? workout.exercises[expected.exerciseIndex].exercise_id
+        ? workout.exercises[expected.exerciseIndex].id
         : "",
     });
   });
@@ -230,8 +230,8 @@ describe("findLastCompletedSetInSuperset", () => {
       const workout = createWorkout(data);
       const supersets = supersetExerciseIndexes.map((superset) =>
         createSuperset(
-          workout.exercises[superset[0]].exercise_id,
-          workout.exercises[superset[1]].exercise_id,
+          workout.exercises[superset[0]].id,
+          workout.exercises[superset[1]].id,
         ),
       );
       const expectedExercise1 = workout.exercises[expected.exercise1Index];
@@ -239,8 +239,8 @@ describe("findLastCompletedSetInSuperset", () => {
 
       const expectedSuperset = supersets.find(
         (superset) =>
-          superset.exercise1Id === expectedExercise1.exercise_id ||
-          superset.exercise2Id === expectedExercise1.exercise_id,
+          superset.exercise1Id === expectedExercise1.id ||
+          superset.exercise2Id === expectedExercise1.id,
       );
       expect(
         findLastCompletedSetsInSuperset(
