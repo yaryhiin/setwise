@@ -359,11 +359,10 @@ const WorkoutForm = ({
           : exercise,
       ),
     }));
-    if (
-      selectedExercise?.id === exerciseId &&
-      selectedSet?.set_number === setNumber
-    ) {
-      setSelectedSet((prev) => (prev ? { ...prev, [field]: value } : null));
+    if (selectedExercise?.id === exerciseId) {
+      if (selectedSet?.set_number === setNumber) {
+        setSelectedSet((prev) => (prev ? { ...prev, [field]: value } : null));
+      }
       setSelectedExercise((prev) =>
         prev
           ? {
