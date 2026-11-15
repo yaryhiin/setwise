@@ -902,7 +902,8 @@ const WorkoutForm = ({
             <div className={styles.barHeader}>
               <p>{selectedExercise.exercise_name}</p>
               <p>
-                {t("workout.set")} {selectedSet.set_number}
+                {t("workout.set")} {selectedSet.set_number} {t("workout.of")}{" "}
+                {selectedExercise.sets.length}
               </p>
             </div>
             <p>

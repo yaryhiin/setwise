@@ -21,7 +21,8 @@
     "unlink": "Desvincular",
     "superset": "Superserie",
     "retry": "Reintentar",
-    "targets": "Objetivos"
+    "targets": "Objetivos",
+    "setTargets": "Establecer objetivos"
   },
   "units": {
     "kg": "kg",
@@ -59,6 +60,7 @@
   "workout": {
     "custom": "Entrenamiento libre",
     "set": "Serie",
+    "of": "de",
     "weight": "Peso",
     "reps": "Reps",
     "done": "Listo",

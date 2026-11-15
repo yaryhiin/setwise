@@ -60,6 +60,7 @@
   "workout": {
     "custom": "Custom Workout",
     "set": "Set",
+    "of": "of",
     "weight": "Weight",
     "reps": "Reps",
     "done": "Done",
