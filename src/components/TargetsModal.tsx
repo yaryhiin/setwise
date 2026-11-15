@@ -128,8 +128,9 @@ const TargetsModal = ({
             )}
           </div>
           <p className={styles.preview}>
-            {newTargets.sets} {t("targetsModal.sets")} x {newTargets.min_reps}-
-            {newTargets.max_reps} {t("workout.reps")}
+            {newTargets.sets} {t("targetsModal.sets").toLowerCase()} ×{" "}
+            {newTargets.min_reps}-{newTargets.max_reps}{" "}
+            {t("workout.reps").toLowerCase()}
           </p>
         </div>
         <button className={styles.saveBtn} onClick={handleSave}>

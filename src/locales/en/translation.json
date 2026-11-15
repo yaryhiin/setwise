@@ -21,7 +21,8 @@
     "unlink": "Unlink",
     "superset": "Superset",
     "retry": "Retry",
-    "targets": "Targets"
+    "targets": "Targets",
+    "setTargets": "Set Targets"
   },
   "units": {
     "kg": "kg",

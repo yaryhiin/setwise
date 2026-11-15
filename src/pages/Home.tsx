@@ -40,7 +40,7 @@ const Home = ({ name }: HomeProps) => {
     async function loadData() {
       setLoading(true);
       try {
-        const workoutsData = await getLatestWorkouts(3);
+        const workoutsData = await getLatestWorkouts(4);
         setWorkouts(workoutsData);
         const routinesData = await getRoutines();
         setRoutines(routinesData);
@@ -93,11 +93,13 @@ const Home = ({ name }: HomeProps) => {
                 new Date(b.finished_at).getTime() -
                 new Date(a.finished_at).getTime(),
             )
+            .slice(0, 3)
             .map((workout) => (
               <div
                 className={styles.historyElement}
                 key={workout.id}
                 data-testid="workoutItem"
+                onClick={() => navigate(`/history/${workout.id}`)}
               >
                 <div className={styles.descName}>
                   <p>
@@ -107,7 +109,8 @@ const Home = ({ name }: HomeProps) => {
                     {showOptions && chosenWorkoutId === workout.id ? (
                       <div ref={menuRef} className="exerciseMenu">
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             navigate(`/history/${workout.id}`);
                             setChosenWorkoutId("");
                             setShowOptions(false);
@@ -117,7 +120,8 @@ const Home = ({ name }: HomeProps) => {
                           {t("common.view")}
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             navigate(`/history/${workout.id}/edit`);
                             setChosenWorkoutId("");
                             setShowOptions(false);
@@ -130,7 +134,8 @@ const Home = ({ name }: HomeProps) => {
                     ) : (
                       <button
                         className="accessBtn"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setShowOptions(true);
                           setChosenWorkoutId(workout.id);
                         }}
@@ -157,7 +162,7 @@ const Home = ({ name }: HomeProps) => {
           </div>
         )}
 
-        {workouts.length > 0 && (
+        {workouts.length > 3 && (
           <button
             className={styles.viewAllBtn}
             onClick={() => navigate("/history")}

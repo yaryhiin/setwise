@@ -59,13 +59,9 @@ td {
   border-top: 1px solid var(--border);
   text-align: center;
   cursor: pointer;
-  &:hover {
-    background-color: var(--card-hover);
-  }
 
-  &:last-child:hover {
-    background-color: var(--card-bg);
-    cursor: default;
+  button:hover {
+    background-color: transparent;
   }
 }
 

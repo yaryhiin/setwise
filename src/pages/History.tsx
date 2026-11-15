@@ -151,7 +151,10 @@ const History = () => {
             </thead>
             <tbody>
               {sortedWorkouts.map((workout) => (
-                <tr key={workout.id}>
+                <tr
+                  key={workout.id}
+                  onClick={() => navigate(`/history/${workout.id}`)}
+                >
                   <td>{formatDate(workout.started_at)}</td>
                   <td>{workout.name}</td>
                   <td>{formatDuration(workout.duration_seconds)} </td>
@@ -160,7 +163,8 @@ const History = () => {
                       {showOptions && chosenWorkoutId === workout.id ? (
                         <div ref={menuRef} className="exerciseMenu">
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               navigate(`/history/${workout.id}`);
                               setChosenWorkoutId("");
                               setShowOptions(false);
@@ -170,7 +174,8 @@ const History = () => {
                             {t("common.view")}
                           </button>
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               navigate(`/history/${workout.id}/edit`);
                               setChosenWorkoutId("");
                               setShowOptions(false);
@@ -183,7 +188,8 @@ const History = () => {
                       ) : (
                         <button
                           className="accessBtn"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setShowOptions(true);
                             setChosenWorkoutId(workout.id);
                           }}

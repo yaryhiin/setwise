@@ -1002,7 +1002,11 @@ const WorkoutForm = ({
                   step="1"
                   min="0"
                   max="1000"
-                  placeholder="0"
+                  placeholder={
+                    selectedExercise.max_reps && selectedExercise.min_reps
+                      ? `${selectedExercise.min_reps}-${selectedExercise.max_reps}`
+                      : "0"
+                  }
                   onChange={(e) =>
                     updateSet(
                       selectedExercise.id,

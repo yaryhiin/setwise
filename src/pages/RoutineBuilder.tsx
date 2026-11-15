@@ -330,24 +330,28 @@ const RoutineBuilder = () => {
             key={exercise.exercise_id}
             className={styles.selectedExerciseElement}
           >
-            <div className={styles.orderButtons}>
-              <button
-                className={styles.orderBtn}
-                onClick={() => moveExercise(exercise.exercise_id, "up")}
-                hidden={exercise.order_index === 1}
-                aria-label="Move exercise up"
-              >
-                <ChevronUp size={17} strokeWidth={2} />
-              </button>
-              <button
-                className={styles.orderBtn}
-                onClick={() => moveExercise(exercise.exercise_id, "down")}
-                hidden={exercise.order_index === routineDraft.exercises.length}
-                aria-label="Move exercise down"
-              >
-                <ChevronDown size={17} strokeWidth={2} />
-              </button>
-            </div>
+            {routineDraft.exercises.length > 1 && (
+              <div className={styles.orderButtons}>
+                <button
+                  className={styles.orderBtn}
+                  onClick={() => moveExercise(exercise.exercise_id, "up")}
+                  hidden={exercise.order_index === 1}
+                  aria-label="Move exercise up"
+                >
+                  <ChevronUp size={17} strokeWidth={2} />
+                </button>
+                <button
+                  className={styles.orderBtn}
+                  onClick={() => moveExercise(exercise.exercise_id, "down")}
+                  hidden={
+                    exercise.order_index === routineDraft.exercises.length
+                  }
+                  aria-label="Move exercise down"
+                >
+                  <ChevronDown size={17} strokeWidth={2} />
+                </button>
+              </div>
+            )}
             <div className={styles.selectedExerciseElementTop}>
               <div className={styles.exerciseElementHeader}>
                 <h3>{exercise.exercise_name}</h3>
@@ -355,7 +359,7 @@ const RoutineBuilder = () => {
                   {showOptions && chosenExerciseId === exercise.exercise_id ? (
                     <div ref={menuRef} className="exerciseMenu">
                       <button
-                        className={styles.deleteExerciseBtn}
+                        className={styles.targetsExerciseBtn}
                         onClick={() => {
                           setShowTargetsModal(true);
                           setChosenExerciseId(exercise.exercise_id);
@@ -390,7 +394,7 @@ const RoutineBuilder = () => {
                     </div>
                   ) : (
                     <button
-                      className="accessBtn"
+                      className={`accessBtn ${styles.accessBtn}`}
                       onClick={() => {
                         setShowOptions(true);
                         setChosenExerciseId(exercise.exercise_id);
@@ -402,7 +406,21 @@ const RoutineBuilder = () => {
                   )}
                 </div>
               </div>
-              <p>{exercise.category}</p>
+              <div className={styles.exerciseElementBottom}>
+                <p className={styles.exerciseCategory}>{exercise.category}</p>
+                <p
+                  className={styles.setTargets}
+                  onClick={() => {
+                    setShowTargetsModal(true);
+                    setChosenExerciseId(exercise.exercise_id);
+                    setShowOptions(false);
+                  }}
+                >
+                  {exercise.max_reps || exercise.sets
+                    ? `${exercise.sets} ${t("targetsModal.sets").toLowerCase()} × ${exercise.min_reps}-${exercise.max_reps} ${t("workout.reps").toLowerCase()}`
+                    : t("common.setTargets")}
+                </p>
+              </div>
             </div>
           </div>
         ))}
