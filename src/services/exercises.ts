@@ -1,8 +1,6 @@
 import { supabase } from "../supabase";
 import { getCurrentUserId } from "./auth";
 import type { Exercise } from "../types/exercise";
-import { getDefaultExercises } from "./defaults";
-import i18n from "../i18n";
 import type { Range } from "../types/workout";
 
 export async function getExercises() {
@@ -113,32 +111,4 @@ export async function deleteExercise(exercise_id: string) {
   }
 
   return true;
-}
-
-export async function createDefaultExercises(selectedLangauge: string) {
-  const exercises = await getExercises();
-
-  if (exercises.length > 0) {
-    return;
-  }
-
-  const userId = await getCurrentUserId();
-
-  await i18n.changeLanguage(selectedLangauge);
-
-  const DEFAULT_EXERCISES = getDefaultExercises();
-
-  const updatedList = DEFAULT_EXERCISES.map((exercise) => ({
-    ...exercise,
-    user_id: userId,
-  }));
-
-  const { error } = await supabase
-    .from("exercises")
-    .insert(updatedList)
-    .select();
-
-  if (error) {
-    throw error;
-  }
 }

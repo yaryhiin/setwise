@@ -1,6 +1,7 @@
 import type { ChartData } from "../types/chart";
 import type { Workout } from "../types/workout";
 import i18n from "../i18n";
+import { supabase } from "../supabase";
 
 export function createEmptyWorkout(): Workout {
   return {
@@ -183,6 +184,7 @@ export const getDefaultMeasurementTypes = () =>
       name: i18n.t("measurementType.calf"),
     },
   ] as const;
+
 function getDateDaysAgo(daysAgo: number) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
@@ -209,3 +211,17 @@ export const exerciseData: ChartData[] = [
   { date: getDateDaysAgo(2), value: 1640 },
   { date: getDateDaysAgo(0), value: 1680 },
 ];
+
+export async function initializeUser(language: string) {
+  await i18n.changeLanguage(language);
+
+  const defaultExercises = getDefaultExercises();
+  const defaultMeasurementTypes = getDefaultMeasurementTypes();
+
+  const { error } = await supabase.rpc("initialize_user_defaults", {
+    p_default_exercises: defaultExercises,
+    p_default_measurement_types: defaultMeasurementTypes,
+  });
+
+  if (error) throw error;
+}

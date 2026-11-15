@@ -1,9 +1,7 @@
 import { supabase } from "../supabase";
 import { getCurrentUserId } from "./auth";
-import i18n from "../i18n";
 
 import type { FormattedMeasurement } from "../types/measurements";
-import { getDefaultMeasurementTypes } from "./defaults";
 
 export async function getMeasurementTypes() {
   const userId = await getCurrentUserId();
@@ -131,32 +129,4 @@ export async function updateMeasurementLog(
   if (error) throw error;
 
   return data;
-}
-
-export async function createDefaultMeasurementTypes(selectedLangauge: string) {
-  const types = await getMeasurementTypes();
-
-  if (types.length > 0) {
-    return;
-  }
-
-  const userId = await getCurrentUserId();
-
-  await i18n.changeLanguage(selectedLangauge);
-
-  const DEFAULT_MEASUREMENT_TYPES = getDefaultMeasurementTypes();
-
-  const updatedList = DEFAULT_MEASUREMENT_TYPES.map((type) => ({
-    ...type,
-    user_id: userId,
-  }));
-
-  const { error } = await supabase
-    .from("measurement_types")
-    .insert(updatedList)
-    .select();
-
-  if (error) {
-    throw error;
-  }
 }

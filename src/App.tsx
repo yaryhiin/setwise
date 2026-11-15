@@ -43,8 +43,7 @@ const MeasurementsHistory = lazy(() => import("./pages/MeasurementsHistory"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 import { getProfile, createProfile, updateProfile } from "./services/profiles";
-import { createDefaultMeasurementTypes } from "./services/measurements";
-import { createDefaultExercises } from "./services/exercises";
+import { initializeUser } from "./services/defaults";
 
 import { useWeightCheckinReminder } from "./hooks/useWeightCheckinReminder";
 import { useMeasurementsCheckinReminder } from "./hooks/useMeasurementsCheckinReminder";
@@ -169,6 +168,12 @@ function App() {
     setupProfile();
   }, [session?.user.id, session, authLoading]);
 
+  useEffect(() => {
+    if (!session?.user) return;
+
+    initializeUser(language);
+  }, [session?.user?.id]);
+
   useWeightCheckinReminder(session, profile, setShowWeightCheckinModal);
 
   useMeasurementsCheckinReminder(
@@ -199,14 +204,13 @@ function App() {
     preferredMeasurementUnit: PreferredMeasurementUnit,
   ) {
     try {
-      await createDefaultExercises(language);
-      await createDefaultMeasurementTypes(language);
       const profileData = await createProfile(
         name,
         preferredWeightUnit,
         preferredWorkoutUnit,
         preferredMeasurementUnit,
       );
+      await initializeUser(language);
       setProfile(profileData);
       setShowProfileSetup(false);
     } catch (error) {
