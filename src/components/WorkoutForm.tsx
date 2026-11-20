@@ -110,7 +110,9 @@ const WorkoutForm = ({
   const [superset, setSuperset] = useState<Superset[] | null>(
     getPersistedJSON(WORKOUT_SUPERSET, null),
   );
-  const [increasedWeight, setIncreasedWeight] = useState(0);
+  const [increasedWeight, setIncreasedWeight] = useState<
+    Record<string, number>
+  >({});
   const [showIncrease, setShowIncrease] = useState<Record<string, boolean>>({});
   const [increasingExerciseId, setIncreasingExerciseId] = useState<
     string | null
@@ -933,17 +935,24 @@ const WorkoutForm = ({
                       max="1000"
                       placeholder="0"
                       aria-label="Put in new weight"
-                      value={increasedWeight ? increasedWeight : ""}
+                      value={
+                        increasedWeight[selectedExercise.id]
+                          ? increasedWeight[selectedExercise.id]
+                          : ""
+                      }
                       onChange={(e) =>
-                        setIncreasedWeight(Number(e.target.value))
+                        setIncreasedWeight((prev) => ({
+                          ...prev,
+                          [selectedExercise.id]: Number(e.target.value),
+                        }))
                       }
                     ></input>
                   </div>
                   <button
                     disabled={
-                      increasedWeight <= 0 ||
-                      increasedWeight > 1000 ||
-                      !Number.isFinite(increasedWeight)
+                      increasedWeight[selectedExercise.id] <= 0 ||
+                      increasedWeight[selectedExercise.id] > 1000 ||
+                      !Number.isFinite(increasedWeight[selectedExercise.id])
                     }
                     onClick={() => {
                       for (let i = 1; i <= selectedExercise.sets.length; i++) {
@@ -951,12 +960,16 @@ const WorkoutForm = ({
                           selectedExercise.id,
                           i,
                           "weight",
-                          increasedWeight,
+                          increasedWeight[selectedExercise.id],
                         );
                       }
                       setShowIncrease((prev) => ({
                         ...prev,
                         [selectedExercise.id]: true,
+                      }));
+                      setIncreasedWeight((prev) => ({
+                        ...prev,
+                        [selectedExercise.id]: 0,
                       }));
                     }}
                   >
