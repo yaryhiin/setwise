@@ -22,7 +22,8 @@
     "superset": "Суперсет",
     "retry": "Повторити",
     "targets": "Цілі",
-    "setTargets": "Встановити цілі"
+    "setTargets": "Встановити цілі",
+    "optional": "Необов’язково"
   },
   "units": {
     "kg": "кг",

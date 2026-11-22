@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import styles from "../styles/modules/ProfileSetupModal.module.scss";
+import styles from "../styles/modules/ProfileSetup.module.scss";
 
 import type { Dispatch, SetStateAction } from "react";
 import type {
@@ -13,7 +13,7 @@ import InfoModal from "../components/InfoModal";
 
 import { useAsyncAction } from "../hooks/useAsyncAction";
 
-type ProfileSetupModal = {
+type ProfileSetupProps = {
   onCreate: (
     name: string,
     preferedWeightUnit: PreferredWeightUnit,
@@ -24,11 +24,11 @@ type ProfileSetupModal = {
   setLanguage: Dispatch<SetStateAction<string>>;
 };
 
-const ProfileSetupModal = ({
+const ProfileSetup = ({
   onCreate,
   language,
   setLanguage,
-}: ProfileSetupModal) => {
+}: ProfileSetupProps) => {
   const { t, i18n } = useTranslation();
   const { run, state } = useAsyncAction();
 
@@ -52,12 +52,14 @@ const ProfileSetupModal = ({
   }
 
   return (
-    <div className="modal">
-      <div className={styles.modalContent}>
+    <div className="appShell">
+      <div className={styles.content}>
         <h2 className={styles.heading}>{t("profile.welcome")}</h2>
         <p className={styles.message}>{t("profile.setup")}</p>
         <div className={styles.inputContainer}>
-          <p className={styles.inputLabel}>{t("profile.name.title")}:</p>
+          <p className={styles.inputLabel}>
+            {t("profile.name.title")}: ({t("common.optional")})
+          </p>
           <input
             className={styles.input}
             type="text"
@@ -154,10 +156,10 @@ const ProfileSetupModal = ({
             {t("common.continue")}
           </button>
         </div>
+        <InfoModal state={state} />
       </div>
-      <InfoModal state={state} />
     </div>
   );
 };
 
-export default ProfileSetupModal;
+export default ProfileSetup;

@@ -36,15 +36,16 @@ const ProfilePage = ({
   const { run, state } = useAsyncAction();
 
   const [profileForm, setProfileForm] = useState<Profile>({
-    name: profile.name || "",
-    date_of_birth: profile.date_of_birth || "",
-    preferred_weight_unit: profile.preferred_weight_unit || "kg",
-    preferred_workout_unit: profile.preferred_workout_unit || "kg",
-    preferred_measurement_unit: profile.preferred_measurement_unit || "cm",
-    first_day_of_week: profile.first_day_of_week || "monday",
-    weight_checkin_frequency: profile.weight_checkin_frequency || "off",
+    name: profile.name ?? "",
+    date_of_birth: profile.date_of_birth ?? "",
+    preferred_weight_unit: profile.preferred_weight_unit ?? "kg",
+    preferred_workout_unit: profile.preferred_workout_unit ?? "kg",
+    preferred_measurement_unit: profile.preferred_measurement_unit ?? "cm",
+    first_day_of_week: profile.first_day_of_week ?? "monday",
+    weight_checkin_frequency: profile.weight_checkin_frequency ?? "off",
     measurements_checkin_frequency:
-      profile.measurements_checkin_frequency || "off",
+      profile.measurements_checkin_frequency ?? "off",
+    onboarding_completed_on: profile.onboarding_completed_on ?? null,
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ const ProfilePage = ({
       first_day_of_week: profile.first_day_of_week,
       weight_checkin_frequency: profile.weight_checkin_frequency,
       measurements_checkin_frequency: profile.measurements_checkin_frequency,
+      onboarding_completed_on: profile.onboarding_completed_on,
     });
   }, [profile]);
 

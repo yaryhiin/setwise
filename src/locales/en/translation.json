@@ -22,7 +22,27 @@
     "superset": "Superset",
     "retry": "Retry",
     "targets": "Targets",
-    "setTargets": "Set Targets"
+    "setTargets": "Set Targets",
+    "optional": "Optional"
+  },
+  "onboarding": {
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish",
+    "skip": "Skip",
+    "createRoutine": {
+      "title": "Create your first routine",
+      "description": "Open the Routines tab, then tap + Create Routine"
+    },
+    "addExercise": {
+      "title": "Add exercises to the routine",
+      "description": "Click Add Exercise and then choose any exercise from available",
+      "hint": "Tap + Add Exercise to open the picker"
+    },
+    "setTargets": {
+      "title": "Set targets for exercises",
+      "description": "Tap Set Targets to choose how many sets to do and what rep range to aim for."
+    }
   },
   "units": {
     "kg": "kg",

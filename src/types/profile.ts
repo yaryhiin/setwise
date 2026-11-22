@@ -21,6 +21,8 @@ export type ProfileDB = {
   measurements_checkin_frequency: CheckinFrequency;
   created_at: string;
   updated_at: string | null;
+  setup_version: number;
+  onboarding_completed_on: string | null;
 };
 
 export type Profile = {
@@ -32,4 +34,5 @@ export type Profile = {
   first_day_of_week: string;
   weight_checkin_frequency: CheckinFrequency;
   measurements_checkin_frequency: CheckinFrequency;
+  onboarding_completed_on: string | null;
 };

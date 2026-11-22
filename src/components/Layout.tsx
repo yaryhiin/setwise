@@ -92,7 +92,7 @@ export default function Layout({
     matchPath("history/:id/edit", location.pathname);
 
   return (
-    <div className={"appShell"}>
+    <div className="appShell">
       {!isActiveWorkout && (
         <Header
           toggleTheme={toggleTheme}

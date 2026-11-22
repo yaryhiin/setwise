@@ -31,7 +31,7 @@ const Exercises = lazy(() => import("./pages/Exercises"));
 const Routines = lazy(() => import("./pages/Routines"));
 const RoutineBuilder = lazy(() => import("./pages/RoutineBuilder"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const ProfileSetupModal = lazy(() => import("./components/ProfileSetupModal"));
+const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
 const WeightCheckinModal = lazy(
   () => import("./components/WeightCheckinModal"),
 );
@@ -41,6 +41,7 @@ const MeasurementsCheckinModal = lazy(
 const WeightHistory = lazy(() => import("./pages/WeightHistory"));
 const MeasurementsHistory = lazy(() => import("./pages/MeasurementsHistory"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const OnboardingScreen = lazy(() => import("./pages/OnboardingScreen"));
 
 import { getProfile, createProfile, updateProfile } from "./services/profiles";
 import { initializeUser } from "./services/defaults";
@@ -74,7 +75,6 @@ function App() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileDB | null>(getInitialProfile);
 
-  const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [showWeightCheckinModal, setShowWeightCheckinModal] = useState(false);
   const [showMeasurementsCheckinModal, setShowMeasurementsCheckinModal] =
     useState(false);
@@ -155,8 +155,6 @@ function App() {
         if (profileData) {
           setProfile(profileData);
           localStorage.setItem("profile", JSON.stringify(profileData));
-        } else {
-          setShowProfileSetup(true);
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -169,7 +167,7 @@ function App() {
   }, [session?.user.id, session, authLoading]);
 
   useEffect(() => {
-    if (!session?.user) return;
+    if (!session?.user || !profile) return;
 
     initializeUser(language);
   }, [session?.user?.id]);
@@ -212,7 +210,6 @@ function App() {
       );
       await initializeUser(language);
       setProfile(profileData);
-      setShowProfileSetup(false);
     } catch (error) {
       console.error("Error creating profile:", error);
     }
@@ -256,94 +253,104 @@ function App() {
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
+            ) : !profile ? (
+              <Route
+                path="/"
+                element={
+                  <ProfileSetup
+                    onCreate={handleCreateProfile}
+                    language={language}
+                    setLanguage={setLanguage}
+                  />
+                }
+              />
+            ) : !profile.onboarding_completed_on ? (
+              <Route
+                path="/"
+                element={
+                  <OnboardingScreen profile={profile} setProfile={setProfile} />
+                }
+              />
             ) : (
-              profile && (
+              <Route
+                element={
+                  <Layout
+                    session={true}
+                    toggleTheme={toggleTheme}
+                    theme={theme}
+                    language={language}
+                    setLanguage={setLanguage}
+                  />
+                }
+              >
+                <Route path="/" element={<Home name={profile.name} />} />
+                <Route path="/workout" element={<ActiveWorkout />} />
                 <Route
+                  path="/workout/routine/:routineId"
+                  element={<ActiveWorkout />}
+                />
+
+                <Route path="/history" element={<History />} />
+                <Route
+                  path="/history/:workoutId/edit"
+                  element={<ChangeWorkout />}
+                />
+                <Route path="/history/:workoutId" element={<ViewWorkout />} />
+
+                <Route path="/routines" element={<Routines />} />
+                <Route path="/routines/new" element={<RoutineBuilder />} />
+                <Route
+                  path="/routines/:routineId/edit"
+                  element={<RoutineBuilder />}
+                />
+
+                <Route
+                  path="/exercises"
                   element={
-                    <Layout
-                      session={true}
+                    <Exercises
+                      preferredUnit={profile.preferred_workout_unit ?? "kg"}
+                    />
+                  }
+                />
+
+                <Route
+                  path="/profile"
+                  element={
+                    <ProfilePage
                       toggleTheme={toggleTheme}
                       theme={theme}
                       language={language}
                       setLanguage={setLanguage}
+                      profile={profile}
+                      handleUpdateProfile={handleUpdateProfile}
                     />
                   }
-                >
-                  <Route path="/" element={<Home name={profile.name} />} />
-                  <Route path="/workout" element={<ActiveWorkout />} />
-                  <Route
-                    path="/workout/routine/:routineId"
-                    element={<ActiveWorkout />}
-                  />
+                />
 
-                  <Route path="/history" element={<History />} />
-                  <Route
-                    path="/history/:workoutId/edit"
-                    element={<ChangeWorkout />}
-                  />
-                  <Route path="/history/:workoutId" element={<ViewWorkout />} />
-
-                  <Route path="/routines" element={<Routines />} />
-                  <Route path="/routines/new" element={<RoutineBuilder />} />
-                  <Route
-                    path="/routines/:routineId/edit"
-                    element={<RoutineBuilder />}
-                  />
-
-                  <Route
-                    path="/exercises"
-                    element={
-                      <Exercises
-                        preferredUnit={profile.preferred_workout_unit ?? "kg"}
-                      />
-                    }
-                  />
-
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProfilePage
-                        toggleTheme={toggleTheme}
-                        theme={theme}
-                        language={language}
-                        setLanguage={setLanguage}
-                        profile={profile}
-                        handleUpdateProfile={handleUpdateProfile}
-                      />
-                    }
-                  />
-
-                  <Route
-                    path="/progress"
-                    element={<Progress profile={profile} />}
-                  />
-                  <Route
-                    path="/progress/weight"
-                    element={
-                      <WeightHistory unit={profile.preferred_weight_unit} />
-                    }
-                  />
-                  <Route
-                    path="/progress/measurements"
-                    element={
-                      <MeasurementsHistory
-                        unit={profile?.preferred_measurement_unit ?? "cm"}
-                      />
-                    }
-                  />
-                </Route>
-              )
+                <Route
+                  path="/progress"
+                  element={<Progress profile={profile} />}
+                />
+                <Route
+                  path="/progress/weight"
+                  element={
+                    <WeightHistory unit={profile.preferred_weight_unit} />
+                  }
+                />
+                <Route
+                  path="/progress/measurements"
+                  element={
+                    <MeasurementsHistory
+                      unit={profile?.preferred_measurement_unit ?? "cm"}
+                    />
+                  }
+                />
+              </Route>
             )}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </Router>
-      {showProfileSetup && (
-        <ProfileSetupModal
-          onCreate={handleCreateProfile}
-          language={language}
-          setLanguage={setLanguage}
-        />
-      )}
       {showWeightCheckinModal && profile && (
         <WeightCheckinModal
           name={profile.name}

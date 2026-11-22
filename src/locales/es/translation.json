@@ -22,7 +22,8 @@
     "superset": "Superserie",
     "retry": "Reintentar",
     "targets": "Objetivos",
-    "setTargets": "Establecer objetivos"
+    "setTargets": "Establecer objetivos",
+    "optional": "Opcional"
   },
   "units": {
     "kg": "kg",
