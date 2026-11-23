@@ -30,13 +30,18 @@
     "back": "Back",
     "finish": "Finish",
     "skip": "Skip",
+    "start": "Start",
+    "takeTour": "Learn how to build a routine in 3 steps",
+    "welcome": "Welcome to Setwise",
+    "step": "Step",
+    "of": "of",
     "createRoutine": {
       "title": "Create your first routine",
       "description": "Open the Routines tab, then tap + Create Routine"
     },
     "addExercise": {
       "title": "Add exercises to the routine",
-      "description": "Click Add Exercise and then choose any exercise from available",
+      "description": "Click Add Exercise, then choose an exercise from the list",
       "hint": "Tap + Add Exercise to open the picker"
     },
     "setTargets": {

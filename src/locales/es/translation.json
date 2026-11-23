@@ -25,6 +25,31 @@
     "setTargets": "Establecer objetivos",
     "optional": "Opcional"
   },
+
+  "onboarding": {
+    "next": "Siguiente",
+    "back": "Atrás",
+    "finish": "Finalizar",
+    "skip": "Omitir",
+    "start": "Empezar",
+    "takeTour": "Aprende a crear una rutina en 3 pasos",
+    "welcome": "Bienvenido a Setwise",
+    "step": "Paso",
+    "of": "de",
+    "createRoutine": {
+      "title": "Crea tu primera rutina",
+      "description": "Abre la pestaña Rutinas y pulsa + Crear rutina"
+    },
+    "addExercise": {
+      "title": "Añade ejercicios a la rutina",
+      "description": "Pulsa Añadir ejercicio y elige uno de los ejercicios disponibles",
+      "hint": "Pulsa + Añadir ejercicio para abrir el selector"
+    },
+    "setTargets": {
+      "title": "Establece objetivos para los ejercicios",
+      "description": "Pulsa Establecer objetivos para elegir cuántas series hacer y qué rango de repeticiones alcanzar."
+    }
+  },
   "units": {
     "kg": "kg",
     "lb": "lb",

@@ -48,6 +48,29 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
   const [showTargetsModal, setShowTargetsModal] = useState(false);
   const steps: OnboardingScreenStep[] = [
     {
+      id: "start",
+      titleKey: "onboarding.welcome",
+      descriptionKey: "",
+      preview: (
+        <div className={styles.startScreen}>
+          <h2>{t("onboarding.takeTour")}</h2>
+          <div className={styles.startButtons}>
+            <button
+              className={styles.startBtn}
+              onClick={() => {
+                setStepCount(1);
+              }}
+            >
+              {t("onboarding.start")}
+            </button>
+            <button className={styles.skipBtn} onClick={finishOnboarding}>
+              {t("onboarding.skip")}
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: "create-routine",
       titleKey: "onboarding.createRoutine.title",
       descriptionKey: "onboarding.createRoutine.description",
@@ -213,8 +236,16 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
   return (
     <div className="appShell">
       <div className={styles.content}>
+        {steps[stepCount].id !== "start" && (
+          <div className={styles.header}>
+            <h1>
+              {t("onboarding.step")} {stepCount} {t("onboarding.of")}{" "}
+              {steps.length - 1}
+            </h1>
+          </div>
+        )}
         <div key={steps[stepCount].id} className={styles.step}>
-          <h1 className={styles.heading}>{t(steps[stepCount].titleKey)}</h1>
+          <h2 className={styles.heading}>{t(steps[stepCount].titleKey)}</h2>
           <div className={styles.body}>
             <p className={styles.description}>
               {t(steps[stepCount].descriptionKey)}
@@ -222,37 +253,39 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
             {steps[stepCount].preview}
           </div>
         </div>
-        <div className={styles.buttons}>
-          <div className={styles.moveButtons}>
-            {stepCount > 0 && (
-              <button
-                className={styles.backBtn}
-                onClick={() => {
-                  setStepCount((prev) => prev - 1);
-                }}
-              >
-                {t("onboarding.back")}
-              </button>
-            )}
-            {stepCount + 1 === steps.length ? (
-              <button className={styles.finishBtn} onClick={finishOnboarding}>
-                {t("onboarding.finish")}
-              </button>
-            ) : (
-              <button
-                className={styles.nextBtn}
-                onClick={() => {
-                  setStepCount((prev) => prev + 1);
-                }}
-              >
-                {t("onboarding.next")}
-              </button>
-            )}
+        {steps[stepCount].id !== "start" && (
+          <div className={styles.buttons}>
+            <div className={styles.moveButtons}>
+              {stepCount > 1 && (
+                <button
+                  className={styles.backBtn}
+                  onClick={() => {
+                    setStepCount((prev) => prev - 1);
+                  }}
+                >
+                  {t("onboarding.back")}
+                </button>
+              )}
+              {stepCount + 1 === steps.length ? (
+                <button className={styles.finishBtn} onClick={finishOnboarding}>
+                  {t("onboarding.finish")}
+                </button>
+              ) : (
+                <button
+                  className={styles.nextBtn}
+                  onClick={() => {
+                    setStepCount((prev) => prev + 1);
+                  }}
+                >
+                  {t("onboarding.next")}
+                </button>
+              )}
+            </div>
+            <button className={styles.skipBtn} onClick={finishOnboarding}>
+              {t("onboarding.skip")}
+            </button>
           </div>
-          <button className={styles.skipBtn} onClick={finishOnboarding}>
-            {t("onboarding.skip")}
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
