@@ -17,6 +17,19 @@
   margin: 0;
 }
 
+.search {
+  width: 100%;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+
+  input {
+    width: 100%;
+  }
+}
+
 .exercisesList {
   display: flex;
   flex-direction: column;
@@ -79,7 +92,7 @@
 .buttonContainer {
   display: flex;
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .createExerciseBtn {

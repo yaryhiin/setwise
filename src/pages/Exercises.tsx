@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { EllipsisVertical, Pencil, Trash2, History } from "lucide-react";
+import {
+  EllipsisVertical,
+  Pencil,
+  Trash2,
+  History,
+  Search,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Exercises.module.scss";
@@ -37,9 +43,19 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
   const [exercises, setExercises] = useState<ExerciseDB[] | null>(
     getPersistedJSON(EXERCISES_KEY, null),
   );
+
   const [chosenExercise, setChosenExercise] = useState<ExerciseDB | null>(
     exercises?.[0] ?? null,
   );
+  const [query, setQuery] = useState("");
+  const filteredExercises = exercises
+    ? exercises.filter((exercise) => {
+        if (query === "") return true;
+        return exercise.name
+          .toLocaleLowerCase()
+          .includes(query.toLocaleLowerCase());
+      })
+    : null;
   const [loading, setLoading] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -135,6 +151,16 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
           </div>
         )}
       </div>
+      <div className={styles.search}>
+        <Search />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("chooseExercise.search")}
+          aria-label={t("chooseExercise.search")}
+        />
+      </div>
       <div className={styles.buttonContainer}>
         <button
           className={styles.createExerciseBtn}
@@ -144,63 +170,67 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
         </button>
       </div>
       <div className={styles.exercisesList}>
-        {exercises?.map((exercise) => (
-          <div key={exercise.id} className={styles.exerciseElement}>
-            <div className={styles.exerciseElementTop}>
-              <div className={styles.exerciseElementHeader}>
-                <h3>{exercise.name}</h3>
-                <div className="exerciseMenuWrapper">
-                  {showOptions && chosenExercise?.id === exercise.id ? (
-                    <div ref={menuRef} className="exerciseMenu">
+        {filteredExercises && filteredExercises.length > 0 ? (
+          filteredExercises.map((exercise) => (
+            <div key={exercise.id} className={styles.exerciseElement}>
+              <div className={styles.exerciseElementTop}>
+                <div className={styles.exerciseElementHeader}>
+                  <h3>{exercise.name}</h3>
+                  <div className="exerciseMenuWrapper">
+                    {showOptions && chosenExercise?.id === exercise.id ? (
+                      <div ref={menuRef} className="exerciseMenu">
+                        <button
+                          className={styles.editExerciseBtn}
+                          onClick={() => {
+                            setShowEditModal(true);
+                            setShowOptions(false);
+                          }}
+                        >
+                          <Pencil size={15} />
+                          {t("common.edit")}
+                        </button>
+                        <button
+                          className={styles.deleteExerciseBtn}
+                          onClick={() => {
+                            setShowMessageModal(true);
+                            setShowOptions(false);
+                          }}
+                        >
+                          <Trash2 size={15} />
+                          {t("common.delete")}
+                        </button>
+                        <button
+                          className={styles.exerciseHistoryBtn}
+                          onClick={() => {
+                            setShowExerciseInfoModal(true);
+                            setShowOptions(false);
+                          }}
+                        >
+                          <History size={15} />
+                          {t("common.history")}
+                        </button>
+                      </div>
+                    ) : (
                       <button
-                        className={styles.editExerciseBtn}
+                        className="accessBtn"
                         onClick={() => {
-                          setShowEditModal(true);
-                          setShowOptions(false);
+                          setShowOptions(true);
+                          setChosenExercise(exercise);
                         }}
+                        aria-label="Exercise options"
                       >
-                        <Pencil size={15} />
-                        {t("common.edit")}
+                        <EllipsisVertical size={20} />
                       </button>
-                      <button
-                        className={styles.deleteExerciseBtn}
-                        onClick={() => {
-                          setShowMessageModal(true);
-                          setShowOptions(false);
-                        }}
-                      >
-                        <Trash2 size={15} />
-                        {t("common.delete")}
-                      </button>
-                      <button
-                        className={styles.exerciseHistoryBtn}
-                        onClick={() => {
-                          setShowExerciseInfoModal(true);
-                          setShowOptions(false);
-                        }}
-                      >
-                        <History size={15} />
-                        {t("common.history")}
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      className="accessBtn"
-                      onClick={() => {
-                        setShowOptions(true);
-                        setChosenExercise(exercise);
-                      }}
-                      aria-label="Exercise options"
-                    >
-                      <EllipsisVertical size={20} />
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
+                <p>{t(`categories.${exercise.category.toLowerCase()}`)}</p>
               </div>
-              <p>{t(`categories.${exercise.category.toLowerCase()}`)}</p>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="emptyState">{t("chooseExercise.emptySearch")}</p>
+        )}
       </div>
       {showExerciseInfoModal && chosenExercise && (
         <ExerciseHistoryModal

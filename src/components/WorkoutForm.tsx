@@ -1104,10 +1104,11 @@ const WorkoutForm = ({
       {showChooseExerciseModal && exercises && addExercise && (
         <ChooseExerciseModal
           initialSelectedExerciseId={chosenExerciseId}
-          exercises={exercises}
-          existingExercises={
-            new Set(workout.exercises.map((exercise) => exercise.exercise_id))
-          }
+          availableExercises={exercises.filter(
+            (exercise) =>
+              exercise.id === chosenExerciseId ||
+              !workout.exercises.some((wEx) => wEx.exercise_id === exercise.id),
+          )}
           onClose={() => {
             setShowChooseExerciseModal(false);
           }}

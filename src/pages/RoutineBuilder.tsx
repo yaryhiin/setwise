@@ -468,13 +468,13 @@ const RoutineBuilder = () => {
       )}
       {showChooseExerciseModal && exercises && (
         <ChooseExerciseModal
-          initialSelectedExerciseId={chosenExerciseId}
-          exercises={exercises}
-          existingExercises={
-            new Set(
-              routineDraft.exercises.map((exercise) => exercise.exercise_id),
-            )
-          }
+          availableExercises={exercises.filter(
+            (exercise) =>
+              exercise.id === chosenExerciseId ||
+              !routineDraft.exercises.some(
+                (rEx) => rEx.exercise_id === exercise.id,
+              ),
+          )}
           onClose={() => {
             setChosenExerciseId("");
             setShowChooseExerciseModal(false);

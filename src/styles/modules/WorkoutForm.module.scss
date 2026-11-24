@@ -338,7 +338,10 @@ input[type="checkbox"] {
   gap: 30px;
 
   p {
-    width: fit-content;
+    width: 100%;
+    &:last-of-type {
+      text-align: right;
+    }
     font-weight: bold;
     font-size: 18px;
     &:first-child {

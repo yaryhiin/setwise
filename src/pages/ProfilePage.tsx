@@ -107,6 +107,7 @@ const ProfilePage = ({
             <input
               className={styles.input}
               type="text"
+              maxLength={50}
               placeholder={t("profile.name.placeHolder")}
               onChange={(e) =>
                 setProfileForm((prev) => ({

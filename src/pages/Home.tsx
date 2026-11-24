@@ -70,7 +70,7 @@ const Home = ({ name }: HomeProps) => {
               ? t("home.greeting.afternoon")
               : t("home.greeting.evening")}
         {name && ", "} <br></br>
-        {name}
+        <span>{name}</span>
       </h1>
       <button
         className={styles.startBtn}

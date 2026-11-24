@@ -22,6 +22,9 @@
 
 .title {
   text-align: center;
+  span {
+    overflow-wrap: anywhere;
+  }
 }
 
 .historyElement {

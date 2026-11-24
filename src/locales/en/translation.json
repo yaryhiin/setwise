@@ -276,7 +276,9 @@
     "emptyState": "You dont have any exercises, add some first",
     "selected": "Selected exercise:",
     "selectedEmpty": "Tap an exercise above",
-    "create": "+ Create Exercise"
+    "create": "+ Create Exercise",
+    "search": "Search exercises...",
+    "emptySearch": "No exercises found"
   },
   "chooseRoutine": {
     "title": "Choose Routine:",

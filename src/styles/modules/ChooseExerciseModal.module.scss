@@ -6,18 +6,27 @@
   }
 }
 
+.heading {
+  margin: 5px;
+}
+
 .categoryContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 0;
 
   p {
     font-size: 23px;
     font-weight: normal;
-    margin-top: 5px;
+    margin: 5px;
+    margin-bottom: 10px;
   }
+}
+
+.search {
+  width: 100%;
 }
 
 .categories {
@@ -116,4 +125,8 @@
   border-radius: 999px;
   background: #222;
   color: #aaa;
+}
+
+.createExerciseBtn {
+  width: fit-content;
 }

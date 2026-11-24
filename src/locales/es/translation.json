@@ -278,7 +278,8 @@
     "emptyState": "No tienes ejercicios. Añade algunos primero",
     "selected": "Ejercicio seleccionado:",
     "selectedEmpty": "Pulsa un ejercicio arriba",
-    "create": "+ Crear ejercicio"
+    "create": "+ Crear ejercicio",
+    "search": "Buscar ejercicios…"
   },
   "chooseRoutine": {
     "title": "Elegir rutina:",

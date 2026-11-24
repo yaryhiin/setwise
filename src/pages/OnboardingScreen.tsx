@@ -126,8 +126,7 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
           )}
           {showChooseExerciseModal && exercises && (
             <ChooseExerciseModal
-              exercises={exercises}
-              existingExercises={new Set("")}
+              availableExercises={exercises}
               onClose={() => setShowChooseExerciseModal(false)}
               addExercise={(name, category) => {
                 console.log(name);

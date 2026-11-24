@@ -10,8 +10,7 @@ import CreateExerciseModal from "./ManageExerciseModal";
 
 type ChooseExerciseModalProps = {
   initialSelectedExerciseId?: string;
-  exercises: ExerciseDB[];
-  existingExercises: Set<string>;
+  availableExercises: ExerciseDB[];
   onClose: () => void;
   addExercise: (name: string, category: string) => void;
   chooseExercise: (exercise: ExerciseDB) => void;
@@ -19,27 +18,39 @@ type ChooseExerciseModalProps = {
 
 const ChooseExerciseModal = ({
   initialSelectedExerciseId,
-  exercises,
-  existingExercises,
+  availableExercises,
   onClose,
   addExercise,
   chooseExercise,
 }: ChooseExerciseModalProps) => {
   const categories = [
-    ...new Set(exercises.map((exercise) => exercise.category)),
+    ...new Set(availableExercises.map((exercise) => exercise.category)),
   ];
   const { t } = useTranslation();
   const [chosenExerciseCategory, setChosenExerciseCategory] = useState("");
   const [chosenExercise, setChosenExercise] = useState<ExerciseDB>();
-  const availableExercises = exercises.filter(
-    (exercise) => !existingExercises.has(exercise.id),
-  );
+  const [query, setQuery] = useState("");
+  const filteredExercises = availableExercises
+    ? availableExercises
+        .filter((exercise) => {
+          if (chosenExerciseCategory === "") return true;
+          return exercise.category === chosenExerciseCategory;
+        })
+        .filter((exercise) => {
+          if (query === "") return true;
+          return exercise.name
+            .toLocaleLowerCase()
+            .includes(query.toLocaleLowerCase());
+        })
+    : null;
 
   // If user is replacing exercise, show the exercise that is being replaced as selected
   useEffect(() => {
     if (!initialSelectedExerciseId) return;
     setChosenExercise(
-      exercises.find((exercise) => exercise.id === initialSelectedExerciseId),
+      availableExercises.find(
+        (exercise) => exercise.id === initialSelectedExerciseId,
+      ),
     );
   }, [initialSelectedExerciseId]);
 
@@ -47,11 +58,19 @@ const ChooseExerciseModal = ({
   return (
     <div className="modal">
       <div className="modalContent">
-        <h2 className="heading">
+        <h2 className={styles.heading}>
           {initialSelectedExerciseId
             ? t("chooseExercise.replace")
             : t("chooseExercise.choose")}
         </h2>
+        <input
+          type="search"
+          value={query}
+          className={styles.search}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("chooseExercise.search")}
+          aria-label={t("chooseExercise.search")}
+        />
         <div className={styles.categoryContainer}>
           <p>{t("chooseExercise.filter")}</p>
           <div className={styles.categories}>
@@ -76,30 +95,25 @@ const ChooseExerciseModal = ({
         </div>
         <div className={styles.exerciseContainer}>
           <div className={styles.exerciseList}>
-            {availableExercises.length === 0 ? (
-              <p>{t("chooseExercise.emptyState")}</p>
+            {filteredExercises && filteredExercises.length > 0 ? (
+              filteredExercises.map((exercise) => (
+                <button
+                  type="button"
+                  key={exercise.id}
+                  className={cn(
+                    styles.exerciseElement,
+                    chosenExercise?.id === exercise.id && styles.selected,
+                  )}
+                  onClick={() => setChosenExercise(exercise)}
+                >
+                  <span>{exercise.name}</span>{" "}
+                  <span className={styles.exerciseCategory}>
+                    {t(`categories.${exercise.category.toLowerCase()}`)}
+                  </span>
+                </button>
+              ))
             ) : (
-              availableExercises
-                .filter((exercise) => {
-                  if (chosenExerciseCategory === "") return true;
-                  return exercise.category === chosenExerciseCategory;
-                })
-                .map((exercise) => (
-                  <button
-                    type="button"
-                    key={exercise.id}
-                    className={cn(
-                      styles.exerciseElement,
-                      chosenExercise?.id === exercise.id && styles.selected,
-                    )}
-                    onClick={() => setChosenExercise(exercise)}
-                  >
-                    <span>{exercise.name}</span>{" "}
-                    <span className={styles.exerciseCategory}>
-                      {t(`categories.${exercise.category.toLowerCase()}`)}
-                    </span>
-                  </button>
-                ))
+              <p>{t("chooseExercise.emptySearch")}</p>
             )}
           </div>
           <div className={styles.hint}>

@@ -63,6 +63,7 @@ const ProfileSetup = ({
           <input
             className={styles.input}
             type="text"
+            maxLength={50}
             placeholder={t("profile.name.placeHolder")}
             onChange={(e) => setName(e.target.value.trim())}
             value={name}
