@@ -1088,7 +1088,11 @@ const WorkoutForm = ({
         )}
       {showExerciseInfoModal && (
         <ExerciseHistoryModal
-          exerciseId={chosenExerciseId}
+          exerciseId={
+            workout.exercises?.find(
+              (exercise) => exercise.id === chosenExerciseId,
+            )?.exercise_id ?? ""
+          }
           onClose={() => setShowExerciseInfoModal(false)}
           preferredUnit={preferredUnit ?? "kg"}
         />

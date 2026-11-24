@@ -451,5 +451,9 @@
     },
     "authorize": "Authorize",
     "deny": "Deny"
+  },
+  "exerciseHistory": {
+    "title": "Exercise History",
+    "emptyState": "No exercise history yet"
   }
 }

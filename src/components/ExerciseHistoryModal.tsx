@@ -34,7 +34,10 @@ const ExerciseHistoryModal = ({
   const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    if (!exerciseId) return;
+    if (!exerciseId) {
+      setLoading(false);
+      return;
+    }
 
     async function getInitialExerciseHistory() {
       setLoading(true);
@@ -86,7 +89,8 @@ const ExerciseHistoryModal = ({
       <div className="modalContent">
         <div className={styles.header}>
           <h2 className={styles.heading}>
-            {exerciseHistory?.[0]?.workout_exercises?.[0]?.exercise_name}
+            {exerciseHistory?.[0]?.workout_exercises?.[0]?.exercise_name ??
+              t("exerciseHistory.title")}
           </h2>
           <button
             className={styles.closeBtn}

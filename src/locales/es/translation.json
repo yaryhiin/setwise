@@ -452,5 +452,9 @@
     },
     "authorize": "Autorizar",
     "deny": "Denegar"
+  },
+  "exerciseHistory": {
+    "title": "Historial del ejercicio",
+    "emptyState": "Aún no hay registros del ejercicio"
   }
 }
