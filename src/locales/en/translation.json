@@ -344,12 +344,19 @@
   "categories": {
     "chest": "Chest",
     "back": "Back",
-    "legs": "Legs",
+    "traps": "Traps",
     "shoulders": "Shoulders",
-    "arms": "Arms",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "forearms": "Forearms",
+    "quads": "Quads",
+    "hamstrings": "Hamstrings",
+    "glutes": "Glutes",
+    "calves": "Calves",
     "core": "Core",
-    "cardio": "Cardio",
-    "other": "Other"
+    "other": "Other",
+    "legs": "Legs",
+    "arms": "Arms"
   },
   "measurementsCheckin": {
     "title": "Measurements check-in",
@@ -407,7 +414,16 @@
     "hammerCurl": "Hammer Curl",
     "tricepsPushdown": "Triceps Pushdown",
     "overheadTricepsExtension": "Overhead Triceps Extension",
-    "dips": "Dips"
+    "dips": "Dips",
+    "dumbbellShrug": "Dumbbell Shrugs",
+    "barbellShrug": "Barbell Shrugs",
+    "cableShrug": "Cable Shrugs",
+    "wristCurl": "Wrist Curls",
+    "reverseWristCurl": "Reverse Wrist Curls",
+    "reverseCurl": "Reverse Curls",
+    "crunch": "Crunches",
+    "cableCrunch": "Cable Crunches",
+    "hangingLegRaise": "Hanging Leg Raises"
   },
   "measurementType": {
     "waist": "Waist",

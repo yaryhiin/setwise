@@ -4,15 +4,20 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ChooseExerciseModal.module.scss";
 
-import type { ExerciseDB } from "../types/exercise";
+import type {
+  ExerciseCategory,
+  ExerciseDB,
+  ExerciseCategoryGroup,
+} from "../types/exercise";
 
 import CreateExerciseModal from "./ManageExerciseModal";
+import { categoryGroups } from "../services/defaults";
 
 type ChooseExerciseModalProps = {
   initialSelectedExerciseId?: string;
   availableExercises: ExerciseDB[];
   onClose: () => void;
-  addExercise: (name: string, category: string) => void;
+  addExercise: (name: string, category: ExerciseCategory) => void;
   chooseExercise: (exercise: ExerciseDB) => void;
 };
 
@@ -23,18 +28,24 @@ const ChooseExerciseModal = ({
   addExercise,
   chooseExercise,
 }: ChooseExerciseModalProps) => {
-  const categories = [
-    ...new Set(availableExercises.map((exercise) => exercise.category)),
-  ];
+  const filteredCategories: ExerciseCategoryGroup[] = (
+    Object.keys(categoryGroups) as ExerciseCategoryGroup[]
+  ).filter((key) =>
+    availableExercises.some((e) => categoryGroups[key].includes(e.category)),
+  );
   const { t } = useTranslation();
-  const [chosenExerciseCategory, setChosenExerciseCategory] = useState("");
+  const [chosenExerciseCategory, setChosenExerciseCategory] = useState<
+    ExerciseCategoryGroup | ""
+  >("");
   const [chosenExercise, setChosenExercise] = useState<ExerciseDB>();
   const [query, setQuery] = useState("");
   const filteredExercises = availableExercises
     ? availableExercises
         .filter((exercise) => {
           if (chosenExerciseCategory === "") return true;
-          return exercise.category === chosenExerciseCategory;
+          return categoryGroups[chosenExerciseCategory].includes(
+            exercise.category,
+          );
         })
         .filter((exercise) => {
           if (query === "") return true;
@@ -81,14 +92,14 @@ const ChooseExerciseModal = ({
             >
               {t("frequency.all")}
             </button>
-            {categories.map((category) => (
+            {filteredCategories.map((category) => (
               <button
                 key={category}
                 type="button"
                 className={`${styles.categoryBtn} ${chosenExerciseCategory === category ? "active" : ""}`}
                 onClick={() => setChosenExerciseCategory(category)}
               >
-                {t(`categories.${category.toLowerCase()}`)}
+                {t(`categories.${category}`)}
               </button>
             ))}
           </div>

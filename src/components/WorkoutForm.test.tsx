@@ -52,7 +52,7 @@ function createExercise(overrides?: Partial<WorkoutExercise>): WorkoutExercise {
     id: createLocalId(),
     exercise_name: "Bench press",
     exercise_id: createLocalId(),
-    category: "Chest",
+    category: "chest",
     order_index: 1,
     notes: "Last set hit failure",
     min_reps: null,

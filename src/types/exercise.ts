@@ -2,13 +2,13 @@ export type ExerciseDB = {
   id: string;
   user_id: string;
   name: string;
-  category: string;
+  category: ExerciseCategory;
   created_at: string;
 };
 
 export type Exercise = {
   name: string;
-  category: string;
+  category: ExerciseCategory;
 };
 
 export type ExerciseLogDB = {
@@ -47,5 +47,29 @@ export type ExerciseHistory = {
     }[];
   }[];
 };
+
+export type ExerciseCategory =
+  | "chest"
+  | "back"
+  | "traps"
+  | "shoulders"
+  | "biceps"
+  | "triceps"
+  | "forearms"
+  | "quads"
+  | "hamstrings"
+  | "glutes"
+  | "calves"
+  | "core"
+  | "other";
+
+export type ExerciseCategoryGroup =
+  | "chest"
+  | "back"
+  | "shoulders"
+  | "arms"
+  | "legs"
+  | "core"
+  | "other";
 
 export type ExerciseCriteria = "best-set-volume" | "total-volume";

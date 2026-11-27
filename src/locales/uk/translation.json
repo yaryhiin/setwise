@@ -346,12 +346,19 @@
   "categories": {
     "chest": "Груди",
     "back": "Спина",
-    "legs": "Ноги",
+    "traps": "Трапеції",
     "shoulders": "Плечі",
-    "arms": "Руки",
-    "core": "Кор",
-    "cardio": "Кардіо",
-    "other": "Інше"
+    "biceps": "Біцепс",
+    "triceps": "Трицепс",
+    "forearms": "Передпліччя",
+    "quads": "Квадрицепси",
+    "hamstrings": "Біцепс стегна",
+    "glutes": "Сідниці",
+    "calves": "Литки",
+    "core": "Прес",
+    "other": "Інше",
+    "legs": "Ноги",
+    "arms": "Руки"
   },
   "measurementsCheckin": {
     "title": "Виміри",
@@ -409,7 +416,16 @@
     "hammerCurl": "Молоткові згинання",
     "tricepsPushdown": "Розгинання рук на блоці",
     "overheadTricepsExtension": "Розгинання рук над головою",
-    "dips": "Віджимання на брусах"
+    "dips": "Віджимання на брусах",
+    "dumbbellShrug": "Шраги з гантелями",
+    "barbellShrug": "Шраги зі штангою",
+    "cableShrug": "Шраги в кросовері",
+    "wristCurl": "Згинання кистей",
+    "reverseWristCurl": "Розгинання кистей",
+    "reverseCurl": "Згинання рук зворотним хватом",
+    "crunch": "Скручування",
+    "cableCrunch": "Скручування на блоці",
+    "hangingLegRaise": "Підйом ніг у висі"
   },
   "measurementType": {
     "waist": "Талія",

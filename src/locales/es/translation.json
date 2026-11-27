@@ -345,12 +345,19 @@
   "categories": {
     "chest": "Pecho",
     "back": "Espalda",
-    "legs": "Piernas",
+    "traps": "Trapecios",
     "shoulders": "Hombros",
-    "arms": "Brazos",
+    "biceps": "Bíceps",
+    "triceps": "Tríceps",
+    "forearms": "Antebrazos",
+    "quads": "Cuádriceps",
+    "hamstrings": "Isquios",
+    "glutes": "Glúteos",
+    "calves": "Gemelos",
     "core": "Core",
-    "cardio": "Cardio",
-    "other": "Otros"
+    "other": "Otros",
+    "legs": "Piernas",
+    "arms": "Brazos"
   },
   "measurementsCheckin": {
     "title": "Medidas",
@@ -408,7 +415,16 @@
     "hammerCurl": "Curl martillo",
     "tricepsPushdown": "Extensión de tríceps en polea",
     "overheadTricepsExtension": "Extensión de tríceps sobre la cabeza",
-    "dips": "Fondos"
+    "dips": "Fondos",
+    "dumbbellShrug": "Encogimientos con mancuernas",
+    "barbellShrug": "Encogimientos con barra",
+    "cableShrug": "Encogimientos en polea",
+    "wristCurl": "Curl de muñeca",
+    "reverseWristCurl": "Curl inverso de muñeca",
+    "reverseCurl": "Curl inverso",
+    "crunch": "Crunch abdominal",
+    "cableCrunch": "Crunch en polea",
+    "hangingLegRaise": "Elevación de piernas en suspensión"
   },
   "measurementType": {
     "waist": "Cintura",

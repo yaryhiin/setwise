@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next";
 import styles from "../styles/modules/Modal.module.scss";
 
 import type { AddErrors } from "../types/errors";
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise";
 
 type CreateExerciseModalProps = {
   exercise?: ExerciseDB;
   onClose: () => void;
-  onAddExercise: (name: string, category: string) => void;
+  onAddExercise: (name: string, category: ExerciseCategory) => void;
 };
 
 const ManageExerciseModal = ({
@@ -21,18 +21,22 @@ const ManageExerciseModal = ({
   const { t } = useTranslation();
 
   const [newExerciseName, setNewExerciseName] = useState(exercise?.name || "");
-  const [newExerciseCategory, setNewExerciseCategory] = useState(
-    exercise?.category || "",
-  );
-  const categories = [
-    "Chest",
-    "Back",
-    "Legs",
-    "Shoulders",
-    "Arms",
-    "Core",
-    "Cardio",
-    "Other",
+  const [newExerciseCategory, setNewExerciseCategory] =
+    useState<ExerciseCategory>(exercise?.category ?? "other");
+  const categories: ExerciseCategory[] = [
+    "chest",
+    "back",
+    "traps",
+    "shoulders",
+    "biceps",
+    "triceps",
+    "forearms",
+    "quads",
+    "hamstrings",
+    "glutes",
+    "calves",
+    "core",
+    "other",
   ];
   const [errors, setErrors] = useState<AddErrors>({
     name: false,

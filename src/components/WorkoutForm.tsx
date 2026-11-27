@@ -21,7 +21,7 @@ import type {
   Superset,
   PreviousExerciseRow,
 } from "../types/workout";
-import type { ExerciseDB } from "../types/exercise.ts";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise.ts";
 import type { PreferredWeightUnit } from "../types/profile";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -69,7 +69,7 @@ type WorkoutFormProps = {
   setWorkout?: Dispatch<SetStateAction<Workout>>;
   exercises?: ExerciseDB[];
   previousData?: Record<string, PreviousExerciseRow>;
-  addExercise?: (name: string, category: string) => Promise<void>;
+  addExercise?: (name: string, category: ExerciseCategory) => Promise<void>;
   handleUpdate?: () => Promise<void>;
 };
 

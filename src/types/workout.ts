@@ -1,3 +1,5 @@
+import type { ExerciseCategory } from "./exercise";
+
 export type WorkoutSetDB = {
   id: string;
   workout_exercise_id?: string;
@@ -14,7 +16,7 @@ export type WorkoutExerciseDB = {
   workout_id: string;
   exercise_name: string;
   exercise_id: string;
-  category: string;
+  category: ExerciseCategory;
   order_index: number;
   notes: string;
   created_at: string;
@@ -42,7 +44,7 @@ export type WorkoutExercise = {
   id: string;
   exercise_name: string;
   exercise_id: string;
-  category: string;
+  category: ExerciseCategory;
   order_index: number;
   notes: string;
   min_reps: number | null;

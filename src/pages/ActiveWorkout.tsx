@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
 import type { Workout, PreviousExerciseRow } from "../types/workout";
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
 
 import ExecuteModal from "../components/ExecuteModal";
@@ -257,7 +257,7 @@ const ActiveWorkout = () => {
     setPersistedJSON(ACTIVE_WORKOUT_PREVIOUS_DATA_KEY, previousData);
   }, [previousData]);
 
-  async function addExercise(name: string, category: string) {
+  async function addExercise(name: string, category: ExerciseCategory) {
     await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
       setExercises((prev) =>

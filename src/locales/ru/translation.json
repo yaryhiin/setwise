@@ -345,12 +345,19 @@
   "categories": {
     "chest": "Грудь",
     "back": "Спина",
-    "legs": "Ноги",
+    "traps": "Трапеции",
     "shoulders": "Плечи",
-    "arms": "Руки",
-    "core": "Кор",
-    "cardio": "Кардио",
-    "other": "Другое"
+    "biceps": "Бицепс",
+    "triceps": "Трицепс",
+    "forearms": "Предплечья",
+    "quads": "Квадрицепсы",
+    "hamstrings": "Бицепс бедра",
+    "glutes": "Ягодицы",
+    "calves": "Икры",
+    "core": "Пресс",
+    "other": "Другое",
+    "legs": "Ноги",
+    "arms": "Руки"
   },
   "measurementsCheckin": {
     "title": "Замеры",
@@ -408,7 +415,16 @@
     "hammerCurl": "Молотковые сгибания",
     "tricepsPushdown": "Разгибание рук на блоке",
     "overheadTricepsExtension": "Разгибание рук из-за головы",
-    "dips": "Отжимания на брусьях"
+    "dips": "Отжимания на брусьях",
+    "dumbbellShrug": "Шраги с гантелями",
+    "barbellShrug": "Шраги со штангой",
+    "cableShrug": "Шраги в кроссовере",
+    "wristCurl": "Сгибания кистей",
+    "reverseWristCurl": "Разгибания кистей",
+    "reverseCurl": "Сгибания рук обратным хватом",
+    "crunch": "Скручивания",
+    "cableCrunch": "Скручивания на блоке",
+    "hangingLegRaise": "Подъём ног в висе"
   },
   "measurementType": {
     "waist": "Талия",

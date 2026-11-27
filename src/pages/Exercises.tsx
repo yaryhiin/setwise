@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/Exercises.module.scss";
 
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise";
 import type { PreferredWeightUnit } from "../types/profile";
 
 import LoadingScreen from "../components/LoadingScreen";
@@ -99,7 +99,7 @@ const Exercises = ({ preferredUnit }: ExercisesProps) => {
 
   useOutsideClick(menuRef, showOptions, () => setShowOptions(false));
 
-  async function addExercise(name: string, category: string) {
+  async function addExercise(name: string, category: ExerciseCategory) {
     await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
       setExercises((prev) =>

@@ -330,8 +330,8 @@ input[type="checkbox"] {
 
 .barHeader {
   width: 100%;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
   text-align: left;
   justify-content: space-between;
   margin-bottom: 0px;

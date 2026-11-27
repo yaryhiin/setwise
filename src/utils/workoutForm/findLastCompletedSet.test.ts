@@ -56,7 +56,7 @@ function createExercise(
     id: createLocalId(),
     exercise_name: "",
     exercise_id: createLocalId(),
-    category: "",
+    category: "other",
     order_index: 1,
     notes: "",
     min_reps: null,

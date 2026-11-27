@@ -37,7 +37,7 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
     {
       exercise_id: "default",
       exercise_name: t("exercise.barbellBenchPress"),
-      category: t("categories.chest"),
+      category: "chest",
       order_index: 1,
       sets: null,
       min_reps: null,
@@ -117,7 +117,7 @@ const OnboardingScreen = ({ profile, setProfile }: OnboardingScreenProps) => {
                   </div>
                   <div className={exerciseCardStyles.exerciseElementBottom}>
                     <p className={exerciseCardStyles.exerciseCategory}>
-                      {chosenExercise.category}
+                      {t(`categories.${chosenExercise.category}`)}
                     </p>
                   </div>
                 </div>

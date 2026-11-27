@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import styles from "../styles/modules/RoutineBuilder.module.scss";
 
 import type { RoutineDraft, Targets } from "../types/routine";
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise";
 import type { RoutineErrors } from "../types/errors";
 
 import LoadingScreen from "../components/LoadingScreen";
@@ -190,7 +190,7 @@ const RoutineBuilder = () => {
     }
   }
 
-  async function addExercise(name: string, category: string) {
+  async function addExercise(name: string, category: ExerciseCategory) {
     await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
       if (createExercise)

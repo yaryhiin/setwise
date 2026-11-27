@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../styles/modules/ActiveWorkout.module.scss";
 
-import type { ExerciseDB } from "../types/exercise";
+import type { ExerciseCategory, ExerciseDB } from "../types/exercise";
 import type { Workout } from "../types/workout";
 import type { PreferredWeightUnit } from "../types/profile";
 
@@ -188,7 +188,7 @@ const ChangeWorkout = () => {
     }
   }
 
-  async function addExercise(name: string, category: string) {
+  async function addExercise(name: string, category: ExerciseCategory) {
     await run("saving", async () => {
       const createdExercise = await createExercise({ name, category });
       setExercises((prev) =>

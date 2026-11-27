@@ -1,11 +1,15 @@
-import type { ExerciseDB } from "./exercise";
+import type {
+  ExerciseCategory,
+  ExerciseCategoryGroup,
+  ExerciseDB,
+} from "./exercise";
 
 export type RoutineDB = {
   id: string;
   user_id: string;
   name: string;
   exercises_count: number;
-  categories: string[];
+  categories: ExerciseCategoryGroup[];
   created_at: string;
 };
 
@@ -31,7 +35,7 @@ export type RoutineDetails = RoutineDB & {
 export type SelectedRoutineExercise = {
   exercise_id: string;
   exercise_name: string;
-  category: string;
+  category: ExerciseCategory;
   order_index: number;
   sets: number | null;
   min_reps: number | null;
