@@ -407,7 +407,9 @@ const RoutineBuilder = () => {
                 </div>
               </div>
               <div className={styles.exerciseElementBottom}>
-                <p className={styles.exerciseCategory}>{exercise.category}</p>
+                <p className={styles.exerciseCategory}>
+                  {t(`categories.${exercise.category.toLowerCase()}`)}
+                </p>
                 <p
                   className={styles.setTargets}
                   onClick={() => {

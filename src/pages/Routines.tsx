@@ -104,7 +104,11 @@ const Routines = () => {
             <div className={styles.routineElementTop}>
               <h3>{routine.name}</h3>
               <p>{routine.exercises_count} Exercises</p>
-              <p>{routine.categories.join(" • ")}</p>
+              <p>
+                {routine.categories
+                  .map((category) => t(`categories.${category.toLowerCase()}`))
+                  .join(" • ")}
+              </p>
             </div>
             <div className={styles.routineElementButtons}>
               <button
